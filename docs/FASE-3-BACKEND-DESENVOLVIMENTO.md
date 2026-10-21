@@ -5,7 +5,7 @@
 ## Código implementado
 
 - `src/lib/server/matricula-api.ts`: autenticação de token Supabase, verificação de perfil ativo, uso exclusivo da chave pública/anon no servidor e respostas sem detalhes internos.
-- `src/routes/api.courses.ts`: endpoint `GET /api/courses`, exige colaborador autenticado.
+- `src/routes/api.auth.login.ts`, `api.auth.session.ts` e `api.auth.logout.ts`: login por Supabase Auth, verificação de sessão e logout com cookie HttpOnly, SameSite=Strict; sem devolver token ao navegador.
 - `src/routes/api.enrollments.ts`: `GET /api/enrollments` com projeção explícita/paginação fixa e `POST /api/enrollments` com validação Zod, limite de corpo e chamada a RPC transacional.
 - `src/lib/server/matricula-api.test.ts`: testes dos bloqueios de ativação.
 - `.env.example`: nomes das variáveis de ambiente, sem credenciais reais.
