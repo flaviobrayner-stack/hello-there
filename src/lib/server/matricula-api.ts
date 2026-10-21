@@ -64,6 +64,7 @@ export async function authenticateStaff(request: Request): Promise<
 
   const authorization = request.headers.get("authorization") ?? "";
   const match = /^Bearer\s+([A-Za-z0-9._~-]+)$/i.exec(authorization);
+  const cookieToken = getCookie(request, "matricula_access");
   if (!match && !cookieToken) {
     return {
       ok: false,
