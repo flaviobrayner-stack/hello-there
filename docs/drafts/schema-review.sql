@@ -362,7 +362,9 @@ create table public.enrollment_protocol_sequences (
   last_number bigint not null default 0 check (last_number >= 0)
 );
 alter table public.enrollment_protocol_sequences enable row level security;
--- Não criar policies de acesso direto para authenticated/anon nesta tabela.
+revoke all on public.enrollment_protocol_sequences from public, anon, authenticated;
+-- Sem policy e sem grants de acesso direto. Somente a RPC SECURITY DEFINER revisada
+-- poderá incrementar a sequência; validar owner e privilégios antes de habilitar.
 
 create or replace function public.create_enrollment_transaction(
   p_student jsonb,
