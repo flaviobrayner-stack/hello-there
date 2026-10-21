@@ -35,6 +35,8 @@ export function AdminUsersDialog({
       email: newEmail,
       role: newRole,
       active: true,
+      password: "123456",
+      mustChangePassword: true,
       createdAt: new Date().toLocaleDateString("pt-BR"),
     };
 
@@ -42,7 +44,16 @@ export function AdminUsersDialog({
     setNewName("");
     setNewEmail("");
     setShowAddForm(false);
-    setNotice(`Usuário ${newUser.name} cadastrado com sucesso.`);
+    setNotice(`Usuário ${newUser.name} cadastrado com senha padrão 123456 (alteração obrigatória no primeiro acesso).`);
+  };
+
+  const handleResetPassword = (id: string) => {
+    onUpdateUsers(
+      users.map((u) =>
+        u.id === id ? { ...u, password: "123456", mustChangePassword: true } : u,
+      ),
+    );
+    setNotice("Senha resetada para '123456' com alteração obrigatória no próximo acesso.");
   };
 
   const handleToggleRole = (id: string) => {
@@ -206,11 +217,24 @@ export function AdminUsersDialog({
                           Bloqueado
                         </span>
                       )}
+                      {u.mustChangePassword && (
+                        <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800" title="Usuário deve alterar a senha padrão no primeiro acesso">
+                          Senha Padrão (Pendente Troca)
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5 font-mono">{u.email}</p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleResetPassword(u.id)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+                      title="Resetar senha para padrão 123456"
+                    >
+                      <KeyRound size={12} /> Resetar Senha
+                    </button>
                     <button
                       onClick={() => handleToggleRole(u.id)}
                       className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"

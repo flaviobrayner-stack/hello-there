@@ -76,7 +76,7 @@ export function EnrollmentWizard({
       id: "std-" + Date.now(),
       protocol: nextProtocol,
       academicYear: 2026,
-      course: "Desenvolvimento de Sistemas",
+      course: "Administração",
       shift: "Integral",
       isQuota: false,
       quotaType: "Não cotista",

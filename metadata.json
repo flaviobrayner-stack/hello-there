@@ -1,0 +1,8 @@
+{
+  "name": "Sistema de Matrícula 2026",
+  "description": "Gestão administrativa de matrículas da Escola Técnica Estadual Maria José Vasconcelos.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

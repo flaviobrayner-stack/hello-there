@@ -8,6 +8,8 @@ export interface UserProfile {
   active: boolean;
   avatar?: string;
   createdAt: string;
+  password?: string;
+  mustChangePassword?: boolean;
 }
 
 export type Shift = "Manhã" | "Tarde" | "Noite" | "Integral";
