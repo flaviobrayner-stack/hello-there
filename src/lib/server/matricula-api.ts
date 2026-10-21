@@ -21,7 +21,9 @@ const API_DISABLED_MESSAGE =
   "O backend de matrículas ainda não foi habilitado para este ambiente.";
 
 function backendConfig() {
-  const enabled = process.env.MATRICULA_BACKEND_ENABLED === "true";
+  const enabled =
+    process.env.MATRICULA_BACKEND_ENABLED === "true" &&
+    process.env.MATRICULA_ACCESS_POLICY_APPROVED === "true";
   const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
   const anonKey = process.env.SUPABASE_ANON_KEY;
 
@@ -148,14 +150,14 @@ export async function staffRestRequest(
   path: string,
   init: RequestInit = {},
 ): Promise<Response> {
+  const headers = new Headers(init.headers);
+  headers.set("apikey", config.anonKey);
+  headers.set("authorization", `Bearer ${accessToken}`);
+  headers.set("accept", "application/json");
+
   const response = await fetch(`${config.url}/rest/v1/${path}`, {
     ...init,
-    headers: {
-      apikey: config.anonKey,
-      authorization: `Bearer ${accessToken}`,
-      accept: "application/json",
-      ...init.headers,
-    },
+    headers,
     cache: "no-store",
   });
 
