@@ -19,7 +19,7 @@ type AuthenticatedStaff = {
 
 const API_DISABLED_MESSAGE = "O backend de matrículas ainda não foi habilitado para este ambiente.";
 
-function backendConfig() {
+export function getBackendConfig() {
   const enabled =
     process.env.MATRICULA_BACKEND_ENABLED === "true" &&
     process.env.MATRICULA_ACCESS_POLICY_APPROVED === "true";
@@ -57,19 +57,19 @@ export async function authenticateStaff(
   | { ok: true; staff: AuthenticatedStaff; config: NonNullable<ReturnType<typeof backendConfig>> }
   | { ok: false; response: Response }
 > {
-  const config = backendConfig();
+  const config = getBackendConfig();
   if (!config) return { ok: false, response: backendDisabledResponse() };
 
   const authorization = request.headers.get("authorization") ?? "";
   const match = /^Bearer\s+([A-Za-z0-9._~-]+)$/i.exec(authorization);
-  if (!match) {
+  if (!match && !cookieToken) {
     return {
       ok: false,
       response: jsonError("Autenticação necessária.", 401, "UNAUTHENTICATED"),
     };
   }
 
-  const accessToken = match[1];
+  const accessToken = match?.[1] ?? cookieToken;
   if (!accessToken) {
     return {
       ok: false,
@@ -185,4 +185,40 @@ export async function safeRestFailure(response: Response): Promise<Response> {
     status,
     status === 401 ? "INVALID_SESSION" : status === 403 ? "FORBIDDEN" : "DATA_SERVICE_ERROR",
   );
+}
+
+
+export function getCookie(request: Request, name: string): string | null {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  for (const part of cookieHeader.split(";")) {
+    const separator = part.indexOf("=");
+    if (separator < 0) continue;
+    if (part.slice(0, separator).trim() !== name) continue;
+    try {
+      return decodeURIComponent(part.slice(separator + 1).trim());
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export function sameOriginRequest(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  try {
+    return new URL(origin).origin === new URL(request.url).origin;
+  } catch {
+    return false;
+  }
+}
+
+export function accessTokenCookie(request: Request, token: string, maxAge: number): string {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return `matricula_access=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${Math.max(0, Math.min(maxAge, 3600))}${secure}`;
+}
+
+export function clearAccessTokenCookie(request: Request): string {
+  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  return `matricula_access=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`;
 }
