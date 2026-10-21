@@ -26,14 +26,17 @@ describe("matricula API safety gates", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it("accepts the current publishable key while access policy is not approved", () => {
+  it("prefers the current publishable key when the backend is approved", () => {
     vi.stubEnv("MATRICULA_BACKEND_ENABLED", "true");
-    vi.stubEnv("MATRICULA_ACCESS_POLICY_APPROVED", "false");
+    vi.stubEnv("MATRICULA_ACCESS_POLICY_APPROVED", "true");
     vi.stubEnv("SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "sb_publishable_test");
-    vi.stubEnv("SUPABASE_ANON_KEY", "");
+    vi.stubEnv("SUPABASE_ANON_KEY", "legacy_anon_test");
 
-    expect(getBackendConfig()).toBeNull();
+    expect(getBackendConfig()).toEqual({
+      url: "https://example.supabase.co",
+      anonKey: "sb_publishable_test",
+    });
   });
 
   it("does not enable the backend without explicit access-policy approval", async () => {
