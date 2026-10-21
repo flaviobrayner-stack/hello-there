@@ -1,12 +1,14 @@
 # Sistema de Matrícula 2026 — plano de implementação e revisão
 
 ## Estado desta entrega
+
 - Protótipo de interface no branch `feature/sistema-matricula-2026`.
 - Não foi executada nenhuma migração de banco nem provisionado backend.
 - Os nomes e números do painel são exemplos fictícios. Alterações feitas no protótipo existem apenas no estado da sessão.
 - O modelo Google Docs “Ficha Ok 2026” é tratado como fonte oficial e não deve ser editado; a integração deve criar cópias.
 
 ## Inspeção do projeto original
+
 - Aplicação Lovable com React 19, TypeScript, Vite 8 e TanStack Start/Router.
 - Rotas baseadas em arquivos em `src/routes`; a página inicial original era um placeholder.
 - `src/routeTree.gen.ts` é gerado automaticamente e não deve ser editado manualmente.
@@ -16,6 +18,7 @@
 - Dependências incluem Lucide React e utilitários de UI; não foi necessário adicionar dependências.
 
 ## Funcionalidades de interface implementadas nesta fase
+
 - Dashboard responsivo e navegação administrativa.
 - Lista de matrículas com busca, filtro de status e impressão/exportação do navegador.
 - Fluxo de cadastro de sete etapas: identificação, estudante, filiação, responsável legal, saúde, documentos e revisão.
@@ -25,6 +28,7 @@
 - Avisos visíveis sobre ausência de backend e dados demonstrativos.
 
 ## Modelo de dados proposto — para revisão, não executar ainda
+
 1. `profiles`: id (FK auth.users), nome, email, papel (admin/operador), ativo, timestamps.
 2. `enrollments`: id UUID, protocolo único, ano letivo, curso, status (rascunho/em análise/concluída/cancelada), cotista, tipo de cota, operador responsável, datas, timestamps.
 3. `students`: id UUID, enrollment_id, nome completo, nome social, CPF normalizado, RG, órgão expedidor, nascimento, naturalidade, sexo, estado civil, telefone, email, endereço, CEP, cidade/UF, raça/cor, PCD/tipo, transporte/tipo, escola de origem, uniforme, Bolsa Família. Definir a regra de unicidade de CPF após confirmar se um estudante pode ter mais de uma matrícula ao longo dos anos.
@@ -36,6 +40,7 @@
 9. `courses`, `document_rules` e `app_settings`: listas e parâmetros administráveis, incluindo documentos bloqueantes, formato de protocolo, prazo da Ficha 18, exigência de autorização de imagem, formato de pacote, pasta de destino e campo 3.7.3.
 
 ## Rascunho de políticas de segurança — revisar antes de implementar
+
 - Ativar RLS em todas as tabelas expostas pela API.
 - Negar por padrão a usuários anônimos todo acesso a dados de matrícula.
 - `admin`: acesso administrativo conforme política explicitamente aprovada.
@@ -48,6 +53,7 @@
 - Testes negativos obrigatórios: anon, operador tentando ação de admin, leitura cruzada, acesso a dados de saúde e URLs de arquivos expiradas.
 
 ## Rotas propostas
+
 - `/login`: autenticação administrativa; sem cadastro público de estudantes.
 - `/`: dashboard, protegido por sessão e papel admin.
 - `/matriculas`: consulta e filtros.
@@ -58,6 +64,7 @@
 - `/usuarios`: admin para gestão de perfis, bloqueio e redefinição conforme suporte disponível.
 
 ## Integração Google Workspace
+
 1. Confirmar acesso e permissões ao modelo “Ficha Ok 2026” e à pasta de destino; não modificar o original.
 2. Criar credenciais OAuth/service account de forma apropriada, com escopo mínimo e segredos somente no servidor.
 3. Configurar Edge Function para copiar o template, substituir marcadores únicos, salvar o ID/URL da cópia e produzir PDF quando solicitado.
@@ -66,6 +73,7 @@
 6. Registrar falhas sem incluir dados pessoais sensíveis nos logs.
 
 ## Questões a decidir antes de schema/migrações definitivas
+
 - Formato oficial do número de matrícula/protocolo.
 - Pasta de destino do Drive e conta de serviço/autorização.
 - Quais documentos bloqueiam a conclusão e prazo da Ficha 18.
@@ -78,6 +86,7 @@
 - Definição de retenção, cancelamento e exportação de dados pessoais.
 
 ## Próximas fases
+
 1. Revisar este plano, o schema e as policies RLS.
 2. Confirmar decisões administrativas e opções pendentes.
 3. Implementar backend de autenticação, banco, RLS e Storage em ambiente de desenvolvimento.

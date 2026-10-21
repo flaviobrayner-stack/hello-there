@@ -48,6 +48,7 @@ Os nomes e campos acima são proposta de revisão, não schema final. Antes de i
 - Revisar LGPD, finalidade, minimização, retenção e acesso com a escola antes de usar dados reais.
 
 Referências oficiais para a implementação futura:
+
 - Supabase RLS: https://supabase.com/docs/guides/database/postgres/row-level-security
 - Supabase Storage Access Control: https://supabase.com/docs/guides/storage/security/access-control
 - Supabase Secure Data: https://supabase.com/docs/guides/database/secure-data
@@ -78,28 +79,33 @@ Referências oficiais para a implementação futura:
 ## Plano por fases
 
 ### Fase 1 — concluída parcialmente nesta branch
+
 - Substituir placeholder por dashboard e protótipo de fluxo de matrícula.
 - Usar somente registros fictícios claramente identificados.
 - Registrar desenho técnico e pontos de revisão.
 - Não conectar backend nem executar migração.
 
 ### Fase 2 — revisão antes de backend
+
 - Revisar o schema proposto, papéis, permissões, políticas RLS/Storage, rotas, índices, validação de CPF, regras de conclusão e integração Google.
 - Confirmar configurações pendentes do documento original e formulário.
 - Aprovar estratégia de ambiente de desenvolvimento e testes com dados sintéticos.
 
 ### Fase 3 — backend de desenvolvimento
+
 - Configurar Supabase/Auth, migrations versionadas, tabelas, RLS e bucket privado em ambiente não produtivo.
 - Adicionar testes automatizados de autorização para cada tabela/ação.
 - Integrar o cliente Supabase apenas após confirmar dependências e variáveis de ambiente.
 - Sem dados reais até aprovação de segurança.
 
 ### Fase 4 — fluxo completo e documentos
+
 - Implementar validação no servidor, unicidade, salvamento de rascunho, upload privado, auditoria e geração de documentos.
 - Criar integração Google por Edge Function/servidor com segredos protegidos.
 - Testar os oito documentos e exportações.
 
 ### Fase 5 — homologação e produção
+
 - Testar criação, rascunho, CPF duplicado, idade, campos condicionais, cotas, documentos, upload, geração de PDF, acesso admin, bloqueio de não autorizado, filtros, exportação, auditoria e ocultação de dados de saúde.
 - Homologação pela escola, revisão de privacidade e autorização explícita antes de aplicar migrações de produção.
 

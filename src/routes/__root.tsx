@@ -23,7 +23,10 @@ function NotFoundComponent() {
           A página solicitada não existe ou foi movida.
         </p>
         <div className="mt-6">
-          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
             Voltar ao início
           </Link>
         </div>
@@ -42,11 +45,28 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">Não foi possível carregar a página</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Ocorreu um erro. Tente atualizar a página ou voltar ao início.</p>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          Não foi possível carregar a página
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ocorreu um erro. Tente atualizar a página ou voltar ao início.
+        </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button onClick={() => { router.invalidate(); reset(); }} className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">Tentar novamente</button>
-          <a href="/" className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent">Voltar ao início</a>
+          <button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Tentar novamente
+          </button>
+          <a
+            href="/"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Voltar ao início
+          </a>
         </div>
       </div>
     </div>
@@ -59,10 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Sistema de Matrícula 2026" },
-      { name: "description", content: "Gestão administrativa de matrículas da Escola Técnica Estadual Maria José Vasconcelos." },
+      {
+        name: "description",
+        content:
+          "Gestão administrativa de matrículas da Escola Técnica Estadual Maria José Vasconcelos.",
+      },
       { name: "author", content: "Escola Técnica Estadual Maria José Vasconcelos" },
       { property: "og:title", content: "Sistema de Matrícula 2026" },
-      { property: "og:description", content: "Gestão administrativa de matrículas e documentação escolar." },
+      {
+        property: "og:description",
+        content: "Gestão administrativa de matrículas e documentação escolar.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -80,13 +107,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
-      <head><HeadContent /></head>
-      <body>{children}<Scripts /></body>
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
     </html>
   );
 }
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  return <QueryClientProvider client={queryClient}><Outlet /></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Outlet />
+    </QueryClientProvider>
+  );
 }
