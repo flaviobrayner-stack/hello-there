@@ -2,9 +2,9 @@
  * Backend boundary for the enrollment API.
  *
  * This module is server-only. It deliberately uses the caller's Supabase access
- * token and the public/anon key, never a service-role key. Postgres RLS remains
- * the authorization boundary. The API stays disabled until an operator has
- * explicitly enabled it after reviewing and applying the approved schema.
+ * token and the public/publishable key, never a service-role key. Postgres RLS
+ * remains the authorization boundary. The API stays disabled until an operator
+ * has explicitly enabled it after reviewing and applying the approved schema.
  */
 type StaffProfile = {
   id: string;
@@ -24,7 +24,9 @@ export function getBackendConfig() {
     process.env.MATRICULA_BACKEND_ENABLED === "true" &&
     process.env.MATRICULA_ACCESS_POLICY_APPROVED === "true";
   const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
-  const anonKey = process.env.SUPABASE_ANON_KEY;
+  // Prefer the current Supabase publishable key; keep the legacy variable as
+  // a compatibility fallback for existing development environments.
+  const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
 
   if (!enabled || !url || !anonKey) return null;
   try {
@@ -55,7 +57,7 @@ export async function authenticateStaff(request: Request): Promise<
   | {
       ok: true;
       staff: AuthenticatedStaff;
-      config: NonNullable<ReturnType<typeof getBackendConfig>>;
+      config: NonNullable<ReturnType<typeof backendConfig>>;
     }
   | { ok: false; response: Response }
 > {
