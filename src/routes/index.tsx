@@ -1,24 +1,95 @@
 import { useState } from "react";
-import { calculateAge, formatCep, formatCpf, formatPhone, isValidCpf } from "../lib/enrollment-validation";
 import {
-  Activity, ArrowDownToLine, ArrowRight, Bell, BookOpen, CalendarDays,
-  Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck,
-  Clock3, FileCheck2, FileText, Filter, GraduationCap, HeartPulse, LayoutDashboard,
-  LockKeyhole, Menu, MoreHorizontal, Plus, Search, Settings2, ShieldCheck,
-  SlidersHorizontal, Users, UserRound, X, AlertCircle, Upload, CircleHelp,
+  calculateAge,
+  formatCep,
+  formatCpf,
+  formatPhone,
+  isValidCpf,
+} from "../lib/enrollment-validation";
+import {
+  Activity,
+  ArrowDownToLine,
+  ArrowRight,
+  Bell,
+  BookOpen,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  Clock3,
+  FileCheck2,
+  FileText,
+  Filter,
+  GraduationCap,
+  HeartPulse,
+  LayoutDashboard,
+  LockKeyhole,
+  Menu,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Settings2,
+  ShieldCheck,
+  SlidersHorizontal,
+  Users,
+  UserRound,
+  X,
+  AlertCircle,
+  Upload,
+  CircleHelp,
 } from "lucide-react";
 
 type Section = "dashboard" | "matriculas" | "nova" | "documentos" | "configuracoes";
 type Enrollment = {
-  id: string; name: string; course: string; date: string; status: "Concluída" | "Em análise" | "Rascunho";
-  quota: string; docs: string;
+  id: string;
+  name: string;
+  course: string;
+  date: string;
+  status: "Concluída" | "Em análise" | "Rascunho";
+  quota: string;
+  docs: string;
 };
 
 const demoEnrollments: Enrollment[] = [
-  { id: "MAT-2026-0148", name: "Estudante de demonstração A", course: "Desenvolvimento de Sistemas", date: "21/10/2026", status: "Concluída", quota: "Escola pública", docs: "10/10" },
-  { id: "MAT-2026-0147", name: "Estudante de demonstração B", course: "Administração", date: "21/10/2026", status: "Em análise", quota: "Não cotista", docs: "7/10" },
-  { id: "MAT-2026-0146", name: "Estudante de demonstração C", course: "Desenvolvimento de Sistemas", date: "20/10/2026", status: "Rascunho", quota: "Renda", docs: "4/10" },
-  { id: "MAT-2026-0145", name: "Estudante de demonstração D", course: "Enfermagem", date: "20/10/2026", status: "Em análise", quota: "PCD", docs: "8/10" },
+  {
+    id: "MAT-2026-0148",
+    name: "Estudante de demonstração A",
+    course: "Desenvolvimento de Sistemas",
+    date: "21/10/2026",
+    status: "Concluída",
+    quota: "Escola pública",
+    docs: "10/10",
+  },
+  {
+    id: "MAT-2026-0147",
+    name: "Estudante de demonstração B",
+    course: "Administração",
+    date: "21/10/2026",
+    status: "Em análise",
+    quota: "Não cotista",
+    docs: "7/10",
+  },
+  {
+    id: "MAT-2026-0146",
+    name: "Estudante de demonstração C",
+    course: "Desenvolvimento de Sistemas",
+    date: "20/10/2026",
+    status: "Rascunho",
+    quota: "Renda",
+    docs: "4/10",
+  },
+  {
+    id: "MAT-2026-0145",
+    name: "Estudante de demonstração D",
+    course: "Enfermagem",
+    date: "20/10/2026",
+    status: "Em análise",
+    quota: "PCD",
+    docs: "8/10",
+  },
 ];
 
 const steps = [
@@ -37,11 +108,28 @@ function StatusBadge({ status }: { status: Enrollment["status"] }) {
     "Em análise": "bg-amber-50 text-amber-700 ring-amber-200",
     Rascunho: "bg-slate-100 text-slate-600 ring-slate-200",
   };
-  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${styles[status]}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{status}</span>;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${styles[status]}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {status}
+    </span>
+  );
 }
 
-function Metric({ label, value, note, icon: Icon, tone = "blue" }: {
-  label: string; value: string; note: string; icon: typeof Users; tone?: "blue" | "green" | "amber" | "violet";
+function Metric({
+  label,
+  value,
+  note,
+  icon: Icon,
+  tone = "blue",
+}: {
+  label: string;
+  value: string;
+  note: string;
+  icon: typeof Users;
+  tone?: "blue" | "green" | "amber" | "violet";
 }) {
   const tones = {
     blue: "bg-blue-50 text-blue-700",
@@ -49,10 +137,18 @@ function Metric({ label, value, note, icon: Icon, tone = "blue" }: {
     amber: "bg-amber-50 text-amber-700",
     violet: "bg-violet-50 text-violet-700",
   };
-  return <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/30">
-    <div className="flex items-start justify-between gap-3"><p className="text-sm font-medium text-slate-500">{label}</p><span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tones[tone]}`}><Icon size={19} /></span></div>
-    <p className="mt-3 text-3xl font-bold tracking-tight text-slate-900">{value}</p><p className="mt-2 text-xs text-slate-500">{note}</p>
-  </div>;
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/30">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium text-slate-500">{label}</p>
+        <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tones[tone]}`}>
+          <Icon size={19} />
+        </span>
+      </div>
+      <p className="mt-3 text-3xl font-bold tracking-tight text-slate-900">{value}</p>
+      <p className="mt-2 text-xs text-slate-500">{note}</p>
+    </div>
+  );
 }
 
 export const Route = createFileRoute("/")({
@@ -71,19 +167,64 @@ function Index() {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [documentStatus, setDocumentStatus] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
-    course: "", quota: "Não cotista", student: "", socialName: "", cpf: "", rg: "", rgIssuer: "", birth: "",
-    birthplace: "", sex: "", maritalStatus: "", phone: "", email: "", address: "", neighborhood: "", city: "", state: "PE", cep: "", race: "",
-    cotista: "Não", pcd: "Não", pcdType: "", transport: "Não", transportType: "", schoolOrigin: "", shirtSize: "", bolsaFamilia: "Não",
-    mother: "", motherStatus: "Informado", father: "", fatherStatus: "Informado",
-    guardian: "", guardianRelation: "", guardianCpf: "",
-    healthInsurance: "Não", hospital: "", familyHospital: "", allergy: "Não", allergyDetails: "",
-    medication: "Não", medicationDetails: "", bloodType: "", rhFactor: "", emergencyContact: "", emergencyName: "", emergencyRelation: "", healthNotes: "Não", healthNotesDetails: "",
+    course: "",
+    quota: "Não cotista",
+    student: "",
+    socialName: "",
+    cpf: "",
+    rg: "",
+    rgIssuer: "",
+    birth: "",
+    birthplace: "",
+    sex: "",
+    maritalStatus: "",
+    phone: "",
+    email: "",
+    address: "",
+    neighborhood: "",
+    city: "",
+    state: "PE",
+    cep: "",
+    race: "",
+    cotista: "Não",
+    pcd: "Não",
+    pcdType: "",
+    transport: "Não",
+    transportType: "",
+    schoolOrigin: "",
+    shirtSize: "",
+    bolsaFamilia: "Não",
+    mother: "",
+    motherStatus: "Informado",
+    father: "",
+    fatherStatus: "Informado",
+    guardian: "",
+    guardianRelation: "",
+    guardianCpf: "",
+    healthInsurance: "Não",
+    hospital: "",
+    familyHospital: "",
+    allergy: "Não",
+    allergyDetails: "",
+    medication: "Não",
+    medicationDetails: "",
+    bloodType: "",
+    rhFactor: "",
+    emergencyContact: "",
+    emergencyName: "",
+    emergencyRelation: "",
+    healthNotes: "Não",
+    healthNotesDetails: "",
     confirmed: false,
   });
   const age = calculateAge(form.birth);
   const now = new Date();
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const visibleEnrollments = demoEnrollments.filter((item) => `${item.id} ${item.name} ${item.course} ${item.status}`.toLowerCase().includes(search.toLowerCase()));
+  const visibleEnrollments = demoEnrollments.filter((item) =>
+    `${item.id} ${item.name} ${item.course} ${item.status}`
+      .toLowerCase()
+      .includes(search.toLowerCase()),
+  );
   const documentItems = [
     { name: "Certidão de nascimento", required: true },
     { name: "RG e CPF", required: true },
@@ -92,11 +233,21 @@ function Index() {
     { name: "Comprovante de residência com CEP", required: true },
     { name: "Cartão de vacina atualizado", required: true },
     { name: "Ficha 18", required: true },
-    { name: "Comprovante de renda familiar", required: form.cotista === "Sim" && form.quota === "Renda" },
-    { name: "Comprovante de vulnerabilidade socioeconômica", required: form.cotista === "Sim" && form.quota === "Vulnerabilidade" },
+    {
+      name: "Comprovante de renda familiar",
+      required: form.cotista === "Sim" && form.quota === "Renda",
+    },
+    {
+      name: "Comprovante de vulnerabilidade socioeconômica",
+      required: form.cotista === "Sim" && form.quota === "Vulnerabilidade",
+    },
   ];
-  const completedDocuments = documentItems.filter((doc) => ["Entregue", "Conferido"].includes(documentStatus[doc.name])).length;
-  const pendingDocuments = documentItems.filter((doc) => doc.required && !["Entregue", "Conferido"].includes(documentStatus[doc.name]));
+  const completedDocuments = documentItems.filter((doc) =>
+    ["Entregue", "Conferido"].includes(documentStatus[doc.name]),
+  ).length;
+  const pendingDocuments = documentItems.filter(
+    (doc) => doc.required && !["Entregue", "Conferido"].includes(documentStatus[doc.name]),
+  );
 
   const navItems: { id: Section; label: string; icon: typeof LayoutDashboard }[] = [
     { id: "dashboard", label: "Visão geral", icon: LayoutDashboard },
@@ -105,8 +256,18 @@ function Index() {
     { id: "configuracoes", label: "Configurações", icon: Settings2 },
   ];
 
-  const title = section === "dashboard" ? "Visão geral" : section === "matriculas" ? "Matrículas" : section === "nova" ? "Nova matrícula" : section === "documentos" ? "Documentação" : "Configurações";
-  const updateForm = (key: keyof typeof form, value: string | boolean) => setForm((current) => ({ ...current, [key]: value }));
+  const title =
+    section === "dashboard"
+      ? "Visão geral"
+      : section === "matriculas"
+        ? "Matrículas"
+        : section === "nova"
+          ? "Nova matrícula"
+          : section === "documentos"
+            ? "Documentação"
+            : "Configurações";
+  const updateForm = (key: keyof typeof form, value: string | boolean) =>
+    setForm((current) => ({ ...current, [key]: value }));
   const validateCurrentStep = () => {
     if (step === 0 && !form.course) {
       setNotice("Selecione o curso antes de avançar.");
@@ -135,80 +296,1460 @@ function Index() {
     return true;
   };
 
-  return <div className="min-h-screen bg-slate-50 text-slate-900">
-    <aside className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:translate-x-0 ${mobileMenu ? "translate-x-0" : "-translate-x-full"}`}>
-      <div className="flex h-[84px] items-center gap-3 border-b border-slate-100 px-6">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-700 text-white shadow-lg shadow-blue-700/20"><GraduationCap size={24} /></div>
-        <div><p className="text-sm font-bold tracking-tight">Matrícula <span className="text-blue-700">2026</span></p><p className="mt-0.5 text-xs text-slate-500">Gestão escolar</p></div>
-        <button onClick={() => setMobileMenu(false)} className="ml-auto rounded-lg p-1 text-slate-400 hover:bg-slate-100 lg:hidden" aria-label="Fechar menu"><X size={18}/></button>
-      </div>
-      <div className="px-4 pt-6"><p className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Menu principal</p>
-        <nav className="mt-3 space-y-1">{navItems.map((item) => <button key={item.id} onClick={() => { setSection(item.id); setMobileMenu(false); }} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition ${section === item.id ? "bg-blue-50 text-blue-800" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}><item.icon size={18}/>{item.label}{item.id === "matriculas" && <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-xs text-slate-500">{demoEnrollments.length}</span>}</button>)}</nav>
-      </div>
-      <div className="mt-auto p-4">
-        <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4"><div className="flex items-center gap-2 text-blue-800"><LockKeyhole size={16}/><span className="text-xs font-bold">Área administrativa</span></div><p className="mt-2 text-xs leading-5 text-slate-600">Acesso restrito a funcionários autorizados. Autenticação real será conectada na fase de backend.</p></div>
-        <div className="mt-4 flex items-center gap-3 rounded-xl px-2 py-2"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600">AD</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">Administrador de demonstração</p><p className="text-xs text-slate-500">Perfil de protótipo</p></div><ChevronDown size={16} className="text-slate-400"/></div>
-      </div>
-    </aside>
-    {mobileMenu && <button className="fixed inset-0 z-30 bg-slate-950/30 lg:hidden" aria-label="Fechar menu" onClick={() => setMobileMenu(false)} />}
-
-    <main className="min-h-screen lg:pl-64">
-      <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md sm:px-7 lg:px-10">
-        <div className="flex items-center gap-3"><button onClick={() => setMobileMenu(true)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Abrir menu"><Menu size={20}/></button><div><div className="flex items-center gap-2 text-xs text-slate-400"><span>Início</span><ChevronRight size={13}/><span className="font-medium text-slate-600">{title}</span></div><h1 className="mt-1 text-lg font-bold tracking-tight">{title}</h1></div></div>
-        <div className="flex items-center gap-2 sm:gap-3"><span className="hidden items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-amber-500"/>Ambiente de demonstração</span><button className="relative rounded-xl border border-slate-200 p-2.5 text-slate-500 hover:bg-slate-50" aria-label="Notificações"><Bell size={18}/><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-blue-600"/></button><div className="hidden h-9 w-px bg-slate-200 sm:block"/><div className="hidden text-right sm:block"><p className="text-xs font-semibold">Equipe escolar</p><p className="text-[11px] text-slate-500">Acesso administrativo</p></div></div>
-      </header>
-
-      <div className="mx-auto max-w-[1440px] p-4 sm:p-7 lg:p-10">
-        {notice && <div role="status" className="mb-5 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800"><CheckCircle2 size={17}/>{notice}<button className="ml-auto" onClick={() => setNotice("")} aria-label="Fechar aviso"><X size={16}/></button></div>}
-        {section === "dashboard" && <>
-          <div className="mb-7 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="text-sm font-medium text-blue-700">Quarta-feira, 21 de outubro de 2026</p><h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Painel de matrículas</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Acompanhe o andamento das matrículas, a documentação e as pendências da escola em um só lugar.</p></div><button onClick={() => { setSection("nova"); setStep(0); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-700/15 transition hover:bg-blue-800"><Plus size={18}/>Nova matrícula</button></div>
-          <div className="mb-7 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><div className="flex items-start gap-3"><AlertCircle size={18} className="mt-0.5 shrink-0"/><p><strong>Protótipo em desenvolvimento:</strong> indicadores e registros abaixo são dados fictícios para validar a interface. Nenhum dado é persistido ou enviado a um banco de dados.</p></div></div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Matrículas no ano" value="148" note="+12 neste mês · dados de exemplo" icon={GraduationCap}/><Metric label="Concluídas" value="112" note="75,7% das matrículas fictícias" icon={CheckCircle2} tone="green"/><Metric label="Documentação pendente" value="23" note="Requer acompanhamento" icon={FileCheck2} tone="amber"/><Metric label="Em análise" value="13" note="Aguardando conferência" icon={Clock3} tone="violet"/></div>
-          <div className="mt-7 grid gap-6 xl:grid-cols-[1.55fr_1fr]">
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/30"><div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-bold">Matrículas recentes</h3><p className="mt-1 text-xs text-slate-500">Amostra fictícia para validação visual</p></div><button onClick={() => setSection("matriculas")} className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900">Ver todas <ArrowRight size={15}/></button></div>
-              <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-left text-sm"><thead className="bg-slate-50 text-xs font-semibold text-slate-500"><tr><th className="px-5 py-3">Estudante / protocolo</th><th className="px-4 py-3">Curso</th><th className="px-4 py-3">Documentos</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"></th></tr></thead><tbody className="divide-y divide-slate-100">{demoEnrollments.slice(0,4).map((item) => <tr key={item.id} className="hover:bg-slate-50/70"><td className="px-5 py-4"><p className="font-semibold text-slate-800">{item.name}</p><p className="mt-1 text-xs text-slate-400">{item.id} · {item.date}</p></td><td className="px-4 py-4 text-slate-600">{item.course}</td><td className="px-4 py-4"><span className="font-semibold text-slate-700">{item.docs}</span><span className="ml-1 text-xs text-slate-400">itens</span></td><td className="px-4 py-4"><StatusBadge status={item.status}/></td><td className="px-4 py-4"><button onClick={() => { setSection("matriculas"); setSearch(item.id); }} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Ver matrícula"><MoreHorizontal size={18}/></button></td></tr>)}</tbody></table></div>
-              <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-xs text-slate-500"><span>Mostrando 4 registros de demonstração</span><span className="inline-flex items-center gap-1"><Activity size={13}/>Atualizado visualmente</span></div>
-            </section>
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/30"><div className="flex items-center justify-between"><div><h3 className="font-bold">Pendências prioritárias</h3><p className="mt-1 text-xs text-slate-500">Exemplos de alertas operacionais</p></div><span className="rounded-lg bg-amber-50 p-2 text-amber-700"><Bell size={18}/></span></div>
-              <div className="mt-5 space-y-3">{[{name:"Fotos 3×4 pendentes",count:"08",tone:"amber",detail:"Conferir anexos de identificação"},{name:"Ficha 18 pendente",count:"12",tone:"blue",detail:"Prazo depende da configuração"},{name:"Comprovante de renda",count:"03",tone:"violet",detail:"Aplicável à cota de renda"}].map((p) => <div key={p.name} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"><div className={`flex h-10 w-10 items-center justify-center rounded-xl ${p.tone === "amber" ? "bg-amber-50 text-amber-700" : p.tone === "blue" ? "bg-blue-50 text-blue-700" : "bg-violet-50 text-violet-700"}`}><FileCheck2 size={18}/></div><div className="min-w-0 flex-1"><p className="text-sm font-semibold">{p.name}</p><p className="mt-1 text-xs text-slate-500">{p.detail}</p></div><span className="text-lg font-bold">{p.count}</span></div>)}</div><button onClick={() => setSection("documentos")} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Revisar documentação <ArrowRight size={15}/></button>
-            </section>
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:translate-x-0 ${mobileMenu ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="flex h-[84px] items-center gap-3 border-b border-slate-100 px-6">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-700 text-white shadow-lg shadow-blue-700/20">
+            <GraduationCap size={24} />
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-3"><div className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex items-center gap-2 text-slate-500"><BookOpen size={17}/><span className="text-xs font-semibold uppercase tracking-wide">Cursos</span></div><p className="mt-3 text-2xl font-bold">4</p><p className="mt-1 text-xs text-slate-500">Cursos de exemplo cadastrados</p></div><div className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex items-center gap-2 text-slate-500"><CalendarDays size={17}/><span className="text-xs font-semibold uppercase tracking-wide">Ano letivo</span></div><p className="mt-3 text-2xl font-bold">2026</p><p className="mt-1 text-xs text-slate-500">Configuração demonstrativa</p></div><div className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex items-center gap-2 text-slate-500"><ShieldCheck size={17}/><span className="text-xs font-semibold uppercase tracking-wide">Privacidade</span></div><p className="mt-3 text-lg font-bold">Dados fictícios</p><p className="mt-1 text-xs text-slate-500">Sem integração de produção nesta fase</p></div></div>
-        </>}
-
-        {section === "matriculas" && <section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-xl font-bold">Registros de matrícula</h2><p className="mt-1 text-sm text-slate-500">Lista fictícia — será substituída pela consulta autenticada ao banco.</p></div><button onClick={() => { setSection("nova"); setStep(0); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white"><Plus size={17}/>Nova matrícula</button></div><div className="flex flex-col gap-3 p-5 sm:flex-row"><div className="relative flex-1"><Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome, protocolo, curso ou status..." className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100"/></div><button onClick={() => setNotice("Filtros avançados serão conectados aos dados reais na fase de backend.")} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><Filter size={16}/>Filtros</button><button onClick={() => setNotice("Exportação desativada no protótipo para evitar exportar dados fictícios como se fossem reais.")} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><ArrowDownToLine size={16}/>Exportar</button></div><div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="px-5 py-3">Protocolo / estudante</th><th className="px-4 py-3">Curso</th><th className="px-4 py-3">Cota</th><th className="px-4 py-3">Data</th><th className="px-4 py-3">Documentos</th><th className="px-4 py-3">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{visibleEnrollments.map((item) => <tr key={item.id}><td className="px-5 py-4"><p className="font-semibold">{item.name}</p><p className="mt-1 text-xs text-slate-400">{item.id}</p></td><td className="px-4 py-4">{item.course}</td><td className="px-4 py-4">{item.quota}</td><td className="px-4 py-4 text-slate-500">{item.date}</td><td className="px-4 py-4">{item.docs}</td><td className="px-4 py-4"><StatusBadge status={item.status}/></td></tr>)}</tbody></table>{visibleEnrollments.length === 0 && <div className="p-10 text-center text-sm text-slate-500">Nenhum registro fictício corresponde à busca.</div>}</div></section>}
-
-        {section === "nova" && <div className="grid gap-6 xl:grid-cols-[280px_1fr]"><section className="h-fit rounded-2xl border border-slate-200 bg-white p-4"><div className="px-2 pb-4 pt-2"><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Nova matrícula</p><h2 className="mt-1 text-lg font-bold">Cadastro em etapas</h2><p className="mt-1 text-xs leading-5 text-slate-500">Os campos são demonstrativos e não salvam dados.</p></div><div className="space-y-1">{steps.map((s, i) => <button key={s.label} onClick={() => { if (i <= step) { setStep(i); setNotice(""); } else if (i === step + 1 && validateCurrentStep()) { setStep(i); } else { setNotice("Conclua a etapa atual antes de avançar para as próximas."); } }} className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${step === i ? "bg-blue-50 text-blue-800" : "text-slate-500 hover:bg-slate-50"}`}><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${step === i ? "bg-blue-700 text-white" : i < step ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{i < step ? <Check size={17}/> : <s.icon size={17}/>}</span><span className="min-w-0"><span className="block text-sm font-semibold">{i+1}. {s.label}</span><span className="mt-0.5 block text-xs text-slate-500">{s.hint}</span></span></button>)}</div><div className="mt-4 rounded-xl bg-slate-50 p-3"><div className="mb-2 flex justify-between text-xs text-slate-500"><span>Progresso visual</span><span>{Math.round((step+1)/steps.length*100)}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-blue-700 transition-all" style={{width:`${(step+1)/steps.length*100}%`}}/></div></div></section>
-          <section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="border-b border-slate-100 p-5 sm:p-7"><div className="flex items-center justify-between"><div><p className="text-sm font-medium text-blue-700">Etapa {step+1} de {steps.length}</p><h2 className="mt-1 text-xl font-bold">{steps[step].label}</h2><p className="mt-1 text-sm text-slate-500">{steps[step].hint}</p></div><span className="rounded-xl bg-blue-50 p-3 text-blue-700"><stepsIcon index={step}/></span></div></div>
-            <div className="space-y-5 p-5 sm:p-7">
-              {step === 0 && <><Field label="Ano letivo"><input value="2026" disabled className={inputClass}/></Field><Field label="Curso *"><select value={form.course} onChange={e=>updateForm("course",e.target.value)} className={inputClass}><option value="">Selecione o curso</option><option>Desenvolvimento de Sistemas</option><option>Administração</option><option>Enfermagem</option><option>Logística</option></select></Field><Field label="É cotista?"><select value={form.cotista} onChange={e=>{updateForm("cotista",e.target.value);if(e.target.value==="Não")updateForm("quota","Não cotista");}} className={inputClass}><option>Não</option><option>Sim</option></select></Field>{form.cotista==="Sim" && <Field label="Tipo de cota *"><select value={form.quota} onChange={e=>updateForm("quota",e.target.value)} className={inputClass}><option value="Não cotista">Selecione</option><option>Escola Pública</option><option>Renda</option><option>Vulnerabilidade</option><option>PCD</option></select></Field>}<p className="rounded-xl bg-blue-50 p-3 text-xs leading-5 text-blue-800">O número de matrícula será gerado no servidor após a validação e a aprovação das regras oficiais.</p></>}
-              {step === 1 && <><Field label="Nome completo *"><input required value={form.student} onChange={e=>updateForm("student",e.target.value)} placeholder="Nome completo do estudante" className={inputClass}/></Field><Field label="CPF (opcional nesta etapa)"><input inputMode="numeric" autoComplete="off" value={form.cpf} onChange={e=>{updateForm("cpf",formatCpf(e.target.value));setCpfError("");}} onBlur={()=>setCpfError(form.cpf.trim() && !isValidCpf(form.cpf) ? "CPF inválido. Confira os 11 dígitos." : "")} placeholder="000.000.000-00" aria-invalid={Boolean(cpfError)} className={`${inputClass} ${cpfError ? "border-rose-400 focus:border-rose-400 focus:ring-rose-100" : ""}`}/>{cpfError && <p role="alert" className="mt-1 text-xs text-rose-700">{cpfError}</p>}{form.cpf && isValidCpf(form.cpf) && <p className="mt-1 text-xs text-emerald-700">Dígitos verificadores válidos. A duplicidade ainda será verificada no servidor.</p>}</Field><div className="grid gap-4 sm:grid-cols-2"><Field label="Data de nascimento"><input type="date" max={todayIso} value={form.birth} onChange={e=>updateForm("birth",e.target.value)} className={inputClass}/></Field><Field label="Idade calculada"><input value={age !== null ? `${age} anos` : ""} readOnly placeholder="Calculada automaticamente" className={inputClass}/></Field></div><Field label="Estudante PCD?"><select value={form.pcd} onChange={e=>updateForm("pcd",e.target.value)} className={inputClass}><option>Não</option><option>Sim</option></select></Field>{form.pcd==="Sim" && <Field label="Tipo de PCD"><input value={form.pcdType} onChange={e=>updateForm("pcdType",e.target.value)} placeholder="Informar tipo, com acesso restrito" className={inputClass}/></Field>}<Field label="Utiliza transporte escolar?"><select value={form.transport} onChange={e=>updateForm("transport",e.target.value)} className={inputClass}><option>Não</option><option>Sim</option></select></Field>{form.transport==="Sim" && <Field label="Tipo de transporte"><select value={form.transportType} onChange={e=>updateForm("transportType",e.target.value)} className={inputClass}><option value="">Selecione</option><option>Ônibus</option><option>Van</option><option>Outro</option></select></Field>}<div className="grid gap-4 sm:grid-cols-2"><Field label="Nome social"><input value={form.socialName} onChange={e=>updateForm("socialName",e.target.value)} className={inputClass}/></Field><Field label="RG"><input value={form.rg} onChange={e=>updateForm("rg",e.target.value)} className={inputClass}/></Field><Field label="Órgão expedidor"><input value={form.rgIssuer} onChange={e=>updateForm("rgIssuer",e.target.value)} placeholder="Ex.: SDS/PE" className={inputClass}/></Field><Field label="Naturalidade"><input value={form.birthplace} onChange={e=>updateForm("birthplace",e.target.value)} className={inputClass}/></Field><Field label="Sexo"><select value={form.sex} onChange={e=>updateForm("sex",e.target.value)} className={inputClass}><option value="">Não informado</option><option>Feminino</option><option>Masculino</option><option>Outro</option><option>Prefere não informar</option></select></Field><Field label="Estado civil"><select value={form.maritalStatus} onChange={e=>updateForm("maritalStatus",e.target.value)} className={inputClass}><option value="">Não informado</option><option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viúvo(a)</option><option>União estável</option></select></Field><Field label="Telefone"><input inputMode="tel" value={form.phone} onChange={e=>updateForm("phone",formatPhone(e.target.value))} placeholder="(00) 00000-0000" className={inputClass}/></Field><Field label="E-mail"><input type="email" value={form.email} onChange={e=>updateForm("email",e.target.value)} className={inputClass}/></Field><Field label="Endereço"><input value={form.address} onChange={e=>updateForm("address",e.target.value)} className={inputClass}/></Field><Field label="Bairro"><input value={form.neighborhood} onChange={e=>updateForm("neighborhood",e.target.value)} className={inputClass}/></Field><Field label="Cidade"><input value={form.city} onChange={e=>updateForm("city",e.target.value)} className={inputClass}/></Field><Field label="UF"><select value={form.state} onChange={e=>updateForm("state",e.target.value)} className={inputClass}>{["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"].map(uf=><option key={uf}>{uf}</option>)}</select></Field><Field label="CEP"><input inputMode="numeric" value={form.cep} onChange={e=>updateForm("cep",formatCep(e.target.value))} placeholder="00000-000" className={inputClass}/></Field><Field label="Raça/cor"><select value={form.race} onChange={e=>updateForm("race",e.target.value)} className={inputClass}><option value="">Não informado</option><option>Branca</option><option>Preta</option><option>Parda</option><option>Amarela</option><option>Indígena</option><option>Prefere não informar</option></select></Field><Field label="Escola de origem"><input value={form.schoolOrigin} onChange={e=>updateForm("schoolOrigin",e.target.value)} className={inputClass}/></Field><Field label="Tamanho da farda/camisa"><select value={form.shirtSize} onChange={e=>updateForm("shirtSize",e.target.value)} className={inputClass}><option value="">Selecione</option>{["PP","P","M","G","GG","XGG"].map(size=><option key={size}>{size}</option>)}</select></Field><Field label="Recebe Bolsa Família?"><select value={form.bolsaFamilia} onChange={e=>updateForm("bolsaFamilia",e.target.value)} className={inputClass}><option>Não</option><option>Sim</option></select></Field></div></>}
-              {step === 2 && <><p className="text-sm leading-6 text-slate-600">Informe os dados de filiação conforme o formulário oficial. Cada vínculo permite marcar quando a informação não se aplica.</p><Field label="Nome da mãe"><input value={form.mother} onChange={e=>updateForm("mother",e.target.value)} placeholder="Nome completo" className={inputClass}/></Field><Field label="Situação da mãe"><select value={form.motherStatus} onChange={e=>updateForm("motherStatus",e.target.value)} className={inputClass}><option>Informado</option><option>Não informado</option><option>Falecido(a)</option><option>Não se aplica</option></select></Field><Field label="Nome do pai"><input value={form.father} onChange={e=>updateForm("father",e.target.value)} placeholder="Nome completo" className={inputClass}/></Field><Field label="Situação do pai"><select value={form.fatherStatus} onChange={e=>updateForm("fatherStatus",e.target.value)} className={inputClass}><option>Informado</option><option>Não informado</option><option>Falecido(a)</option><option>Não se aplica</option></select></Field></>}
-              {step === 3 && <><Field label="Responsável legal *"><input required value={form.guardian} onChange={e=>updateForm("guardian",e.target.value)} placeholder="Nome completo do responsável selecionado" className={inputClass}/></Field><Field label="Vínculo com o estudante *"><select required value={form.guardianRelation} onChange={e=>updateForm("guardianRelation",e.target.value)} className={inputClass}><option value="">Selecione</option><option>Mãe</option><option>Pai</option><option>Outro responsável legal</option></select></Field><Field label="CPF do responsável"><input inputMode="numeric" value={form.guardianCpf} onChange={e=>updateForm("guardianCpf",formatCpf(e.target.value))} placeholder="000.000.000-00" className={inputClass}/></Field><p className="rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">O sistema não presumirá que a mãe é a responsável. Os documentos utilizarão o responsável legal escolhido.</p></>}
-              {step === 4 && <><Field label="Possui seguro de saúde?"><select value={form.healthInsurance} onChange={e=>updateForm("healthInsurance",e.target.value)} className={inputClass}><option>Não</option><option>Sim</option></select></Field><Field label="Possui alergia medicamentosa?"><select value={form.allergy} onChange={e=>updateForm("allergy",e.target.value)} className={inputClass}><option>Não</option><option>Sim</option></select></Field>{form.allergy==="Sim" && <Field label="Tipo de alergia"><input value={form.allergyDetails} onChange={e=>updateForm("allergyDetails",e.target.value)} placeholder="Informação de saúde — acesso restrito" className={inputClass}/></Field>}<Field label="Utiliza medicação controlada?"><select value={form.medication} onChange={e=>updateForm("medication",e.target.value)} className={inputClass}><option>Não</option><option>Sim</option></select></Field>{form.medication==="Sim" && <Field label="Nome da medicação"><input value={form.medicationDetails} onChange={e=>updateForm("medicationDetails",e.target.value)} placeholder="Informação de saúde — acesso restrito" className={inputClass}/></Field>}<div className="grid gap-4 sm:grid-cols-2"><Field label="Hospital credenciado"><input value={form.hospital} onChange={e=>updateForm("hospital",e.target.value)} placeholder="Se houver seguro" className={inputClass}/></Field><Field label="Hospital indicado pela família"><input value={form.familyHospital} onChange={e=>updateForm("familyHospital",e.target.value)} className={inputClass}/></Field><Field label="Tipo sanguíneo"><select value={form.bloodType} onChange={e=>updateForm("bloodType",e.target.value)} className={inputClass}><option value="">Não informado</option>{["A","B","AB","O"].map(type=><option key={type}>{type}</option>)}</select></Field><Field label="Fator RH"><select value={form.rhFactor} onChange={e=>updateForm("rhFactor",e.target.value)} className={inputClass}><option value="">Não informado</option><option>Positivo (+)</option><option>Negativo (-)</option></select></Field><Field label="Nome da pessoa de emergência"><input value={form.emergencyName} onChange={e=>updateForm("emergencyName",e.target.value)} className={inputClass}/></Field><Field label="Telefone de emergência"><input inputMode="tel" value={form.emergencyContact} onChange={e=>updateForm("emergencyContact",formatPhone(e.target.value))} placeholder="(00) 00000-0000" className={inputClass}/></Field><Field label="Parentesco"><input value={form.emergencyRelation} onChange={e=>updateForm("emergencyRelation",e.target.value)} className={inputClass}/></Field></div><Field label="Há outro dado de saúde a informar à escola?"><select value={form.healthNotes} onChange={e=>updateForm("healthNotes",e.target.value)} className={inputClass}><option>Não</option><option>Sim</option></select></Field>{form.healthNotes==="Sim" && <Field label="Descrição do dado de saúde"><textarea value={form.healthNotesDetails} onChange={e=>updateForm("healthNotesDetails",e.target.value)} rows={3} className={inputClass} placeholder="Informação sensível; será protegida no backend"/></Field>}<p className="rounded-xl bg-rose-50 p-3 text-xs leading-5 text-rose-800">Dados de saúde são sensíveis. Esta tela não transmite nem armazena informações nesta fase.</p></>}
-              {step === 5 && <><div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center"><Upload size={25} className="mx-auto text-slate-400"/><p className="mt-3 text-sm font-semibold">Selecionar fotos e documentos</p><p className="mt-1 text-xs text-slate-500">Seleção local de arquivos para validar a interface. Nada é enviado nem armazenado no servidor.</p><input type="file" accept="image/*,.pdf" multiple capture="environment" onChange={e=>setSelectedFiles(Array.from(e.target.files ?? []).map(file=>file.name))} className="mx-auto mt-4 block max-w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-blue-800"/>{selectedFiles.length>0 && <p className="mt-3 text-xs font-semibold text-blue-800">{selectedFiles.length} arquivo(s) selecionado(s): {selectedFiles.join(", ")}</p>}</div><div className="mb-3 flex items-center justify-between text-xs text-slate-500"><span>Documentação obrigatória concluída</span><span>{documentItems.filter(doc=>doc.required && ["Entregue","Conferido"].includes(documentStatus[doc.name])).length}/{documentItems.filter(doc=>doc.required).length}</span></div><div className="mb-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-blue-700 transition-all" style={{width:`${documentItems.filter(doc=>doc.required && ["Entregue","Conferido"].includes(documentStatus[doc.name])).length / Math.max(documentItems.filter(doc=>doc.required).length,1)*100}%`}}/></div><div className="space-y-2">{documentItems.map((doc,i)=><div key={doc.name} className="flex flex-col gap-3 rounded-xl border border-slate-100 px-3 py-3 sm:flex-row sm:items-center"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500">{i+1}</span><div className="flex-1"><p className="text-sm font-medium text-slate-700">{doc.name}</p><p className={`mt-1 text-xs ${doc.required ? "text-slate-500" : "text-slate-400"}`}>{doc.required ? "Obrigatório nesta configuração" : "Não obrigatório para a cota selecionada"}</p></div><select aria-label={`Status: ${doc.name}`} value={documentStatus[doc.name] ?? (doc.required ? "Pendente" : "Não se aplica")} onChange={e=>setDocumentStatus(current=>({...current,[doc.name]:e.target.value}))} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs"><option>Pendente</option><option>Entregue</option><option>Conferido</option><option>Recusado</option><option>Não se aplica</option></select></div>)}</div></>}
-              {step === 6 && <><div className="rounded-xl border border-slate-200 p-4"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Resumo da matrícula (prévia local)</p><div className="mt-4 grid gap-4 sm:grid-cols-2"><Summary label="Estudante" value={form.student || "Não informado"}/><Summary label="Curso" value={form.course || "Não selecionado"}/><Summary label="Cota" value={form.cotista==="Sim" ? form.quota : "Não cotista"}/><Summary label="Idade" value={age !== null ? `${age} anos` : "Não informada"}/><Summary label="Responsável legal" value={form.guardian || "Não informado"}/><Summary label="Documentos concluídos" value={`${completedDocuments}/${documentItems.length}`}/><Summary label="Pendências obrigatórias" value={String(pendingDocuments.length)}/></div></div><label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-sm leading-5 text-slate-600"><input type="checkbox" checked={form.confirmed} onChange={e=>updateForm("confirmed",e.target.checked)} className="mt-1 h-4 w-4 accent-blue-700"/>Confirmo que os dados desta prévia foram revisados. Esta confirmação não conclui uma matrícula real.</label><p className="text-xs leading-5 text-slate-500">Antes de ativar a conclusão, serão validados os campos obrigatórios, CPF duplicado, documentos condicionais e as permissões no servidor. Pendências obrigatórias nesta prévia: {pendingDocuments.length}.</p></>}
+          <div>
+            <p className="text-sm font-bold tracking-tight">
+              Matrícula <span className="text-blue-700">2026</span>
+            </p>
+            <p className="mt-0.5 text-xs text-slate-500">Gestão escolar</p>
+          </div>
+          <button
+            onClick={() => setMobileMenu(false)}
+            className="ml-auto rounded-lg p-1 text-slate-400 hover:bg-slate-100 lg:hidden"
+            aria-label="Fechar menu"
+          >
+            <X size={18} />
+          </button>
+        </div>
+        <div className="px-4 pt-6">
+          <p className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            Menu principal
+          </p>
+          <nav className="mt-3 space-y-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setSection(item.id);
+                  setMobileMenu(false);
+                }}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition ${section === item.id ? "bg-blue-50 text-blue-800" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}
+              >
+                <item.icon size={18} />
+                {item.label}
+                {item.id === "matriculas" && (
+                  <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-xs text-slate-500">
+                    {demoEnrollments.length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div className="mt-auto p-4">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+            <div className="flex items-center gap-2 text-blue-800">
+              <LockKeyhole size={16} />
+              <span className="text-xs font-bold">Área administrativa</span>
             </div>
-            <div className="flex flex-col-reverse justify-between gap-3 border-t border-slate-100 p-5 sm:flex-row sm:p-7"><button onClick={() => step===0 ? setSection("dashboard") : setStep(step-1)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"><ChevronLeft size={17}/>{step===0 ? "Cancelar" : "Voltar"}</button><div className="flex flex-col gap-2 sm:flex-row"><button onClick={() => setNotice("Rascunho não salvo: a persistência será habilitada somente após autenticação e revisão do banco.")} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Salvar rascunho</button>{step < steps.length-1 ? <button onClick={() => { if (validateCurrentStep()) setStep(step+1); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800">Próxima etapa <ChevronRight size={17}/></button> : <button onClick={() => { if (!form.confirmed) { setNotice("Marque a confirmação da revisão para validar o fluxo demonstrativo."); return; } setNotice("Revisão demonstrada. Matrícula não concluída: falta conectar o backend seguro."); }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800">Validar revisão <Check size={17}/></button>}</div></div>
-          </section></div>}
+            <p className="mt-2 text-xs leading-5 text-slate-600">
+              Acesso restrito a funcionários autorizados. Autenticação real será conectada na fase
+              de backend.
+            </p>
+          </div>
+          <div className="mt-4 flex items-center gap-3 rounded-xl px-2 py-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600">
+              AD
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">Administrador de demonstração</p>
+              <p className="text-xs text-slate-500">Perfil de protótipo</p>
+            </div>
+            <ChevronDown size={16} className="text-slate-400" />
+          </div>
+        </div>
+      </aside>
+      {mobileMenu && (
+        <button
+          className="fixed inset-0 z-30 bg-slate-950/30 lg:hidden"
+          aria-label="Fechar menu"
+          onClick={() => setMobileMenu(false)}
+        />
+      )}
 
-        {section === "documentos" && <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><span className="rounded-xl bg-blue-50 p-3 text-blue-700"><FileText size={21}/></span><div><h2 className="text-xl font-bold">Central de documentação</h2><p className="mt-1 text-sm leading-6 text-slate-500">A especificação prevê conferência, status, prazos, armazenamento privado e geração dos oito documentos oficiais a partir do modelo “Ficha Ok 2026”.</p></div></div><div className="mt-6 grid gap-3 md:grid-cols-2">{["Ficha de matrícula","Observações","Documentação para matrícula","Comprovante de matrícula","Ficha de saúde","Concessão de imagem e som da voz","Resumo de contato","Termo de compromisso educacional"].map((name,i)=><div key={name} className="flex items-center gap-3 rounded-xl border border-slate-200 p-4"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600">{i+1}</span><div className="flex-1"><p className="text-sm font-semibold">{name}</p><p className="mt-1 text-xs text-slate-500">Modelo oficial · integração pendente</p></div><span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">Pendente</span></div>)}</div><div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4"><p className="flex items-center gap-2 text-sm font-semibold text-blue-900"><CircleHelp size={17}/>Preservação do modelo original</p><p className="mt-1 text-sm leading-6 text-blue-800">A integração deverá criar uma cópia do Google Docs configurado, preencher marcadores únicos e nunca editar ou substituir o arquivo “Ficha Ok 2026”.</p></div></section>}
+      <main className="min-h-screen lg:pl-64">
+        <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md sm:px-7 lg:px-10">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileMenu(true)}
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+              aria-label="Abrir menu"
+            >
+              <Menu size={20} />
+            </button>
+            <div>
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <span>Início</span>
+                <ChevronRight size={13} />
+                <span className="font-medium text-slate-600">{title}</span>
+              </div>
+              <h1 className="mt-1 text-lg font-bold tracking-tight">{title}</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="hidden items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              Ambiente de demonstração
+            </span>
+            <button
+              className="relative rounded-xl border border-slate-200 p-2.5 text-slate-500 hover:bg-slate-50"
+              aria-label="Notificações"
+            >
+              <Bell size={18} />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-blue-600" />
+            </button>
+            <div className="hidden h-9 w-px bg-slate-200 sm:block" />
+            <div className="hidden text-right sm:block">
+              <p className="text-xs font-semibold">Equipe escolar</p>
+              <p className="text-[11px] text-slate-500">Acesso administrativo</p>
+            </div>
+          </div>
+        </header>
 
-        {section === "configuracoes" && <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><h2 className="text-xl font-bold">Configurações administrativas</h2><p className="mt-1 text-sm text-slate-500">Pontos que precisam ser confirmados antes de fixar regras de negócio.</p><div className="mt-6 space-y-3">{[{name:"Formato do número de matrícula",desc:"Definir padrão e unicidade no servidor."},{name:"Pasta de destino do Google Drive",desc:"Configurar ID e credenciais em ambiente seguro."},{name:"Documentos que bloqueiam a conclusão",desc:"Definir regra por tipo de matrícula."},{name:"Prazo da Ficha 18",desc:"Definir se pode ser entregue posteriormente."},{name:"Obrigatoriedade do termo de imagem",desc:"Confirmar política institucional."},{name:"Formato dos arquivos gerados",desc:"Pacote único ou documentos separados."},{name:"Permissão de visualização",desc:"Restringir acesso aos documentos gerados."},{name:"Campo 3.7.3 do formulário",desc:"Identificar o título ausente no formulário oficial."}].map((item)=> <div key={item.name} className="flex items-start gap-3 rounded-xl border border-slate-100 p-4"><SlidersHorizontal size={18} className="mt-0.5 text-slate-400"/><div className="flex-1"><p className="text-sm font-semibold">{item.name}</p><p className="mt-1 text-sm text-slate-500">{item.desc}</p></div><span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">A confirmar</span></div>)}</div><button onClick={() => setNotice("Configurações registradas como itens de revisão; nenhuma regra foi aplicada ao banco.")} className="mt-5 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Marcar revisão da lista</button></section>}
-        <footer className="mt-8 flex flex-col gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between"><span>Escola Técnica Estadual Maria José Vasconcelos · Sistema de Matrícula 2026</span><span className="inline-flex items-center gap-1.5"><ShieldCheck size={13}/>Protótipo sem dados reais e sem persistência</span></footer>
-      </div>
-    </main>
-  </div>;
+        <div className="mx-auto max-w-[1440px] p-4 sm:p-7 lg:p-10">
+          {notice && (
+            <div
+              role="status"
+              className="mb-5 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800"
+            >
+              <CheckCircle2 size={17} />
+              {notice}
+              <button className="ml-auto" onClick={() => setNotice("")} aria-label="Fechar aviso">
+                <X size={16} />
+              </button>
+            </div>
+          )}
+          {section === "dashboard" && (
+            <>
+              <div className="mb-7 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+                <div>
+                  <p className="text-sm font-medium text-blue-700">
+                    Quarta-feira, 21 de outubro de 2026
+                  </p>
+                  <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+                    Painel de matrículas
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                    Acompanhe o andamento das matrículas, a documentação e as pendências da escola
+                    em um só lugar.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSection("nova");
+                    setStep(0);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-700/15 transition hover:bg-blue-800"
+                >
+                  <Plus size={18} />
+                  Nova matrícula
+                </button>
+              </div>
+              <div className="mb-7 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <div className="flex items-start gap-3">
+                  <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                  <p>
+                    <strong>Protótipo em desenvolvimento:</strong> indicadores e registros abaixo
+                    são dados fictícios para validar a interface. Nenhum dado é persistido ou
+                    enviado a um banco de dados.
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <Metric
+                  label="Matrículas no ano"
+                  value="148"
+                  note="+12 neste mês · dados de exemplo"
+                  icon={GraduationCap}
+                />
+                <Metric
+                  label="Concluídas"
+                  value="112"
+                  note="75,7% das matrículas fictícias"
+                  icon={CheckCircle2}
+                  tone="green"
+                />
+                <Metric
+                  label="Documentação pendente"
+                  value="23"
+                  note="Requer acompanhamento"
+                  icon={FileCheck2}
+                  tone="amber"
+                />
+                <Metric
+                  label="Em análise"
+                  value="13"
+                  note="Aguardando conferência"
+                  icon={Clock3}
+                  tone="violet"
+                />
+              </div>
+              <div className="mt-7 grid gap-6 xl:grid-cols-[1.55fr_1fr]">
+                <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/30">
+                  <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-bold">Matrículas recentes</h3>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Amostra fictícia para validação visual
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setSection("matriculas")}
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900"
+                    >
+                      Ver todas <ArrowRight size={15} />
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[640px] text-left text-sm">
+                      <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
+                        <tr>
+                          <th className="px-5 py-3">Estudante / protocolo</th>
+                          <th className="px-4 py-3">Curso</th>
+                          <th className="px-4 py-3">Documentos</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {demoEnrollments.slice(0, 4).map((item) => (
+                          <tr key={item.id} className="hover:bg-slate-50/70">
+                            <td className="px-5 py-4">
+                              <p className="font-semibold text-slate-800">{item.name}</p>
+                              <p className="mt-1 text-xs text-slate-400">
+                                {item.id} · {item.date}
+                              </p>
+                            </td>
+                            <td className="px-4 py-4 text-slate-600">{item.course}</td>
+                            <td className="px-4 py-4">
+                              <span className="font-semibold text-slate-700">{item.docs}</span>
+                              <span className="ml-1 text-xs text-slate-400">itens</span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <StatusBadge status={item.status} />
+                            </td>
+                            <td className="px-4 py-4">
+                              <button
+                                onClick={() => {
+                                  setSection("matriculas");
+                                  setSearch(item.id);
+                                }}
+                                className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                                aria-label="Ver matrícula"
+                              >
+                                <MoreHorizontal size={18} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+                    <span>Mostrando 4 registros de demonstração</span>
+                    <span className="inline-flex items-center gap-1">
+                      <Activity size={13} />
+                      Atualizado visualmente
+                    </span>
+                  </div>
+                </section>
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/30">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold">Pendências prioritárias</h3>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Exemplos de alertas operacionais
+                      </p>
+                    </div>
+                    <span className="rounded-lg bg-amber-50 p-2 text-amber-700">
+                      <Bell size={18} />
+                    </span>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    {[
+                      {
+                        name: "Fotos 3×4 pendentes",
+                        count: "08",
+                        tone: "amber",
+                        detail: "Conferir anexos de identificação",
+                      },
+                      {
+                        name: "Ficha 18 pendente",
+                        count: "12",
+                        tone: "blue",
+                        detail: "Prazo depende da configuração",
+                      },
+                      {
+                        name: "Comprovante de renda",
+                        count: "03",
+                        tone: "violet",
+                        detail: "Aplicável à cota de renda",
+                      },
+                    ].map((p) => (
+                      <div
+                        key={p.name}
+                        className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"
+                      >
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-xl ${p.tone === "amber" ? "bg-amber-50 text-amber-700" : p.tone === "blue" ? "bg-blue-50 text-blue-700" : "bg-violet-50 text-violet-700"}`}
+                        >
+                          <FileCheck2 size={18} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold">{p.name}</p>
+                          <p className="mt-1 text-xs text-slate-500">{p.detail}</p>
+                        </div>
+                        <span className="text-lg font-bold">{p.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setSection("documentos")}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Revisar documentação <ArrowRight size={15} />
+                  </button>
+                </section>
+              </div>
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <BookOpen size={17} />
+                    <span className="text-xs font-semibold uppercase tracking-wide">Cursos</span>
+                  </div>
+                  <p className="mt-3 text-2xl font-bold">4</p>
+                  <p className="mt-1 text-xs text-slate-500">Cursos de exemplo cadastrados</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <CalendarDays size={17} />
+                    <span className="text-xs font-semibold uppercase tracking-wide">
+                      Ano letivo
+                    </span>
+                  </div>
+                  <p className="mt-3 text-2xl font-bold">2026</p>
+                  <p className="mt-1 text-xs text-slate-500">Configuração demonstrativa</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <ShieldCheck size={17} />
+                    <span className="text-xs font-semibold uppercase tracking-wide">
+                      Privacidade
+                    </span>
+                  </div>
+                  <p className="mt-3 text-lg font-bold">Dados fictícios</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Sem integração de produção nesta fase
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {section === "matriculas" && (
+            <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-bold">Registros de matrícula</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Lista fictícia — será substituída pela consulta autenticada ao banco.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSection("nova");
+                    setStep(0);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white"
+                >
+                  <Plus size={17} />
+                  Nova matrícula
+                </button>
+              </div>
+              <div className="flex flex-col gap-3 p-5 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search
+                    size={17}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar por nome, protocolo, curso ou status..."
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+                <button
+                  onClick={() =>
+                    setNotice(
+                      "Filtros avançados serão conectados aos dados reais na fase de backend.",
+                    )
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <Filter size={16} />
+                  Filtros
+                </button>
+                <button
+                  onClick={() =>
+                    setNotice(
+                      "Exportação desativada no protótipo para evitar exportar dados fictícios como se fossem reais.",
+                    )
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <ArrowDownToLine size={16} />
+                  Exportar
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead className="bg-slate-50 text-xs text-slate-500">
+                    <tr>
+                      <th className="px-5 py-3">Protocolo / estudante</th>
+                      <th className="px-4 py-3">Curso</th>
+                      <th className="px-4 py-3">Cota</th>
+                      <th className="px-4 py-3">Data</th>
+                      <th className="px-4 py-3">Documentos</th>
+                      <th className="px-4 py-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {visibleEnrollments.map((item) => (
+                      <tr key={item.id}>
+                        <td className="px-5 py-4">
+                          <p className="font-semibold">{item.name}</p>
+                          <p className="mt-1 text-xs text-slate-400">{item.id}</p>
+                        </td>
+                        <td className="px-4 py-4">{item.course}</td>
+                        <td className="px-4 py-4">{item.quota}</td>
+                        <td className="px-4 py-4 text-slate-500">{item.date}</td>
+                        <td className="px-4 py-4">{item.docs}</td>
+                        <td className="px-4 py-4">
+                          <StatusBadge status={item.status} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {visibleEnrollments.length === 0 && (
+                  <div className="p-10 text-center text-sm text-slate-500">
+                    Nenhum registro fictício corresponde à busca.
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {section === "nova" && (
+            <div className="grid gap-6 xl:grid-cols-[280px_1fr]">
+              <section className="h-fit rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="px-2 pb-4 pt-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-700">
+                    Nova matrícula
+                  </p>
+                  <h2 className="mt-1 text-lg font-bold">Cadastro em etapas</h2>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    Os campos são demonstrativos e não salvam dados.
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  {steps.map((s, i) => (
+                    <button
+                      key={s.label}
+                      onClick={() => {
+                        if (i <= step) {
+                          setStep(i);
+                          setNotice("");
+                        } else if (i === step + 1 && validateCurrentStep()) {
+                          setStep(i);
+                        } else {
+                          setNotice("Conclua a etapa atual antes de avançar para as próximas.");
+                        }
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${step === i ? "bg-blue-50 text-blue-800" : "text-slate-500 hover:bg-slate-50"}`}
+                    >
+                      <span
+                        className={`flex h-9 w-9 items-center justify-center rounded-xl ${step === i ? "bg-blue-700 text-white" : i < step ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                      >
+                        {i < step ? <Check size={17} /> : <s.icon size={17} />}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold">
+                          {i + 1}. {s.label}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-slate-500">{s.hint}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-4 rounded-xl bg-slate-50 p-3">
+                  <div className="mb-2 flex justify-between text-xs text-slate-500">
+                    <span>Progresso visual</span>
+                    <span>{Math.round(((step + 1) / steps.length) * 100)}%</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-blue-700 transition-all"
+                      style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </section>
+              <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 p-5 sm:p-7">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-blue-700">
+                        Etapa {step + 1} de {steps.length}
+                      </p>
+                      <h2 className="mt-1 text-xl font-bold">{steps[step].label}</h2>
+                      <p className="mt-1 text-sm text-slate-500">{steps[step].hint}</p>
+                    </div>
+                    <span className="rounded-xl bg-blue-50 p-3 text-blue-700">
+                      <stepsIcon index={step} />
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-5 p-5 sm:p-7">
+                  {step === 0 && (
+                    <>
+                      <Field label="Ano letivo">
+                        <input value="2026" disabled className={inputClass} />
+                      </Field>
+                      <Field label="Curso *">
+                        <select
+                          value={form.course}
+                          onChange={(e) => updateForm("course", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option value="">Selecione o curso</option>
+                          <option>Desenvolvimento de Sistemas</option>
+                          <option>Administração</option>
+                          <option>Enfermagem</option>
+                          <option>Logística</option>
+                        </select>
+                      </Field>
+                      <Field label="É cotista?">
+                        <select
+                          value={form.cotista}
+                          onChange={(e) => {
+                            updateForm("cotista", e.target.value);
+                            if (e.target.value === "Não") updateForm("quota", "Não cotista");
+                          }}
+                          className={inputClass}
+                        >
+                          <option>Não</option>
+                          <option>Sim</option>
+                        </select>
+                      </Field>
+                      {form.cotista === "Sim" && (
+                        <Field label="Tipo de cota *">
+                          <select
+                            value={form.quota}
+                            onChange={(e) => updateForm("quota", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option value="Não cotista">Selecione</option>
+                            <option>Escola Pública</option>
+                            <option>Renda</option>
+                            <option>Vulnerabilidade</option>
+                            <option>PCD</option>
+                          </select>
+                        </Field>
+                      )}
+                      <p className="rounded-xl bg-blue-50 p-3 text-xs leading-5 text-blue-800">
+                        O número de matrícula será gerado no servidor após a validação e a aprovação
+                        das regras oficiais.
+                      </p>
+                    </>
+                  )}
+                  {step === 1 && (
+                    <>
+                      <Field label="Nome completo *">
+                        <input
+                          required
+                          value={form.student}
+                          onChange={(e) => updateForm("student", e.target.value)}
+                          placeholder="Nome completo do estudante"
+                          className={inputClass}
+                        />
+                      </Field>
+                      <Field label="CPF (opcional nesta etapa)">
+                        <input
+                          inputMode="numeric"
+                          autoComplete="off"
+                          value={form.cpf}
+                          onChange={(e) => {
+                            updateForm("cpf", formatCpf(e.target.value));
+                            setCpfError("");
+                          }}
+                          onBlur={() =>
+                            setCpfError(
+                              form.cpf.trim() && !isValidCpf(form.cpf)
+                                ? "CPF inválido. Confira os 11 dígitos."
+                                : "",
+                            )
+                          }
+                          placeholder="000.000.000-00"
+                          aria-invalid={Boolean(cpfError)}
+                          className={`${inputClass} ${cpfError ? "border-rose-400 focus:border-rose-400 focus:ring-rose-100" : ""}`}
+                        />
+                        {cpfError && (
+                          <p role="alert" className="mt-1 text-xs text-rose-700">
+                            {cpfError}
+                          </p>
+                        )}
+                        {form.cpf && isValidCpf(form.cpf) && (
+                          <p className="mt-1 text-xs text-emerald-700">
+                            Dígitos verificadores válidos. A duplicidade ainda será verificada no
+                            servidor.
+                          </p>
+                        )}
+                      </Field>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Data de nascimento">
+                          <input
+                            type="date"
+                            max={todayIso}
+                            value={form.birth}
+                            onChange={(e) => updateForm("birth", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Idade calculada">
+                          <input
+                            value={age !== null ? `${age} anos` : ""}
+                            readOnly
+                            placeholder="Calculada automaticamente"
+                            className={inputClass}
+                          />
+                        </Field>
+                      </div>
+                      <Field label="Estudante PCD?">
+                        <select
+                          value={form.pcd}
+                          onChange={(e) => updateForm("pcd", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option>Não</option>
+                          <option>Sim</option>
+                        </select>
+                      </Field>
+                      {form.pcd === "Sim" && (
+                        <Field label="Tipo de PCD">
+                          <input
+                            value={form.pcdType}
+                            onChange={(e) => updateForm("pcdType", e.target.value)}
+                            placeholder="Informar tipo, com acesso restrito"
+                            className={inputClass}
+                          />
+                        </Field>
+                      )}
+                      <Field label="Utiliza transporte escolar?">
+                        <select
+                          value={form.transport}
+                          onChange={(e) => updateForm("transport", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option>Não</option>
+                          <option>Sim</option>
+                        </select>
+                      </Field>
+                      {form.transport === "Sim" && (
+                        <Field label="Tipo de transporte">
+                          <select
+                            value={form.transportType}
+                            onChange={(e) => updateForm("transportType", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option value="">Selecione</option>
+                            <option>Ônibus</option>
+                            <option>Van</option>
+                            <option>Outro</option>
+                          </select>
+                        </Field>
+                      )}
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Nome social">
+                          <input
+                            value={form.socialName}
+                            onChange={(e) => updateForm("socialName", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="RG">
+                          <input
+                            value={form.rg}
+                            onChange={(e) => updateForm("rg", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Órgão expedidor">
+                          <input
+                            value={form.rgIssuer}
+                            onChange={(e) => updateForm("rgIssuer", e.target.value)}
+                            placeholder="Ex.: SDS/PE"
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Naturalidade">
+                          <input
+                            value={form.birthplace}
+                            onChange={(e) => updateForm("birthplace", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Sexo">
+                          <select
+                            value={form.sex}
+                            onChange={(e) => updateForm("sex", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option value="">Não informado</option>
+                            <option>Feminino</option>
+                            <option>Masculino</option>
+                            <option>Outro</option>
+                            <option>Prefere não informar</option>
+                          </select>
+                        </Field>
+                        <Field label="Estado civil">
+                          <select
+                            value={form.maritalStatus}
+                            onChange={(e) => updateForm("maritalStatus", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option value="">Não informado</option>
+                            <option>Solteiro(a)</option>
+                            <option>Casado(a)</option>
+                            <option>Divorciado(a)</option>
+                            <option>Viúvo(a)</option>
+                            <option>União estável</option>
+                          </select>
+                        </Field>
+                        <Field label="Telefone">
+                          <input
+                            inputMode="tel"
+                            value={form.phone}
+                            onChange={(e) => updateForm("phone", formatPhone(e.target.value))}
+                            placeholder="(00) 00000-0000"
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="E-mail">
+                          <input
+                            type="email"
+                            value={form.email}
+                            onChange={(e) => updateForm("email", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Endereço">
+                          <input
+                            value={form.address}
+                            onChange={(e) => updateForm("address", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Bairro">
+                          <input
+                            value={form.neighborhood}
+                            onChange={(e) => updateForm("neighborhood", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Cidade">
+                          <input
+                            value={form.city}
+                            onChange={(e) => updateForm("city", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="UF">
+                          <select
+                            value={form.state}
+                            onChange={(e) => updateForm("state", e.target.value)}
+                            className={inputClass}
+                          >
+                            {[
+                              "AC",
+                              "AL",
+                              "AP",
+                              "AM",
+                              "BA",
+                              "CE",
+                              "DF",
+                              "ES",
+                              "GO",
+                              "MA",
+                              "MT",
+                              "MS",
+                              "MG",
+                              "PA",
+                              "PB",
+                              "PR",
+                              "PE",
+                              "PI",
+                              "RJ",
+                              "RN",
+                              "RS",
+                              "RO",
+                              "RR",
+                              "SC",
+                              "SP",
+                              "SE",
+                              "TO",
+                            ].map((uf) => (
+                              <option key={uf}>{uf}</option>
+                            ))}
+                          </select>
+                        </Field>
+                        <Field label="CEP">
+                          <input
+                            inputMode="numeric"
+                            value={form.cep}
+                            onChange={(e) => updateForm("cep", formatCep(e.target.value))}
+                            placeholder="00000-000"
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Raça/cor">
+                          <select
+                            value={form.race}
+                            onChange={(e) => updateForm("race", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option value="">Não informado</option>
+                            <option>Branca</option>
+                            <option>Preta</option>
+                            <option>Parda</option>
+                            <option>Amarela</option>
+                            <option>Indígena</option>
+                            <option>Prefere não informar</option>
+                          </select>
+                        </Field>
+                        <Field label="Escola de origem">
+                          <input
+                            value={form.schoolOrigin}
+                            onChange={(e) => updateForm("schoolOrigin", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Tamanho da farda/camisa">
+                          <select
+                            value={form.shirtSize}
+                            onChange={(e) => updateForm("shirtSize", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option value="">Selecione</option>
+                            {["PP", "P", "M", "G", "GG", "XGG"].map((size) => (
+                              <option key={size}>{size}</option>
+                            ))}
+                          </select>
+                        </Field>
+                        <Field label="Recebe Bolsa Família?">
+                          <select
+                            value={form.bolsaFamilia}
+                            onChange={(e) => updateForm("bolsaFamilia", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option>Não</option>
+                            <option>Sim</option>
+                          </select>
+                        </Field>
+                      </div>
+                    </>
+                  )}
+                  {step === 2 && (
+                    <>
+                      <p className="text-sm leading-6 text-slate-600">
+                        Informe os dados de filiação conforme o formulário oficial. Cada vínculo
+                        permite marcar quando a informação não se aplica.
+                      </p>
+                      <Field label="Nome da mãe">
+                        <input
+                          value={form.mother}
+                          onChange={(e) => updateForm("mother", e.target.value)}
+                          placeholder="Nome completo"
+                          className={inputClass}
+                        />
+                      </Field>
+                      <Field label="Situação da mãe">
+                        <select
+                          value={form.motherStatus}
+                          onChange={(e) => updateForm("motherStatus", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option>Informado</option>
+                          <option>Não informado</option>
+                          <option>Falecido(a)</option>
+                          <option>Não se aplica</option>
+                        </select>
+                      </Field>
+                      <Field label="Nome do pai">
+                        <input
+                          value={form.father}
+                          onChange={(e) => updateForm("father", e.target.value)}
+                          placeholder="Nome completo"
+                          className={inputClass}
+                        />
+                      </Field>
+                      <Field label="Situação do pai">
+                        <select
+                          value={form.fatherStatus}
+                          onChange={(e) => updateForm("fatherStatus", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option>Informado</option>
+                          <option>Não informado</option>
+                          <option>Falecido(a)</option>
+                          <option>Não se aplica</option>
+                        </select>
+                      </Field>
+                    </>
+                  )}
+                  {step === 3 && (
+                    <>
+                      <Field label="Responsável legal *">
+                        <input
+                          required
+                          value={form.guardian}
+                          onChange={(e) => updateForm("guardian", e.target.value)}
+                          placeholder="Nome completo do responsável selecionado"
+                          className={inputClass}
+                        />
+                      </Field>
+                      <Field label="Vínculo com o estudante *">
+                        <select
+                          required
+                          value={form.guardianRelation}
+                          onChange={(e) => updateForm("guardianRelation", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option value="">Selecione</option>
+                          <option>Mãe</option>
+                          <option>Pai</option>
+                          <option>Outro responsável legal</option>
+                        </select>
+                      </Field>
+                      <Field label="CPF do responsável">
+                        <input
+                          inputMode="numeric"
+                          value={form.guardianCpf}
+                          onChange={(e) => updateForm("guardianCpf", formatCpf(e.target.value))}
+                          placeholder="000.000.000-00"
+                          className={inputClass}
+                        />
+                      </Field>
+                      <p className="rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+                        O sistema não presumirá que a mãe é a responsável. Os documentos utilizarão
+                        o responsável legal escolhido.
+                      </p>
+                    </>
+                  )}
+                  {step === 4 && (
+                    <>
+                      <Field label="Possui seguro de saúde?">
+                        <select
+                          value={form.healthInsurance}
+                          onChange={(e) => updateForm("healthInsurance", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option>Não</option>
+                          <option>Sim</option>
+                        </select>
+                      </Field>
+                      <Field label="Possui alergia medicamentosa?">
+                        <select
+                          value={form.allergy}
+                          onChange={(e) => updateForm("allergy", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option>Não</option>
+                          <option>Sim</option>
+                        </select>
+                      </Field>
+                      {form.allergy === "Sim" && (
+                        <Field label="Tipo de alergia">
+                          <input
+                            value={form.allergyDetails}
+                            onChange={(e) => updateForm("allergyDetails", e.target.value)}
+                            placeholder="Informação de saúde — acesso restrito"
+                            className={inputClass}
+                          />
+                        </Field>
+                      )}
+                      <Field label="Utiliza medicação controlada?">
+                        <select
+                          value={form.medication}
+                          onChange={(e) => updateForm("medication", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option>Não</option>
+                          <option>Sim</option>
+                        </select>
+                      </Field>
+                      {form.medication === "Sim" && (
+                        <Field label="Nome da medicação">
+                          <input
+                            value={form.medicationDetails}
+                            onChange={(e) => updateForm("medicationDetails", e.target.value)}
+                            placeholder="Informação de saúde — acesso restrito"
+                            className={inputClass}
+                          />
+                        </Field>
+                      )}
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Hospital credenciado">
+                          <input
+                            value={form.hospital}
+                            onChange={(e) => updateForm("hospital", e.target.value)}
+                            placeholder="Se houver seguro"
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Hospital indicado pela família">
+                          <input
+                            value={form.familyHospital}
+                            onChange={(e) => updateForm("familyHospital", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Tipo sanguíneo">
+                          <select
+                            value={form.bloodType}
+                            onChange={(e) => updateForm("bloodType", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option value="">Não informado</option>
+                            {["A", "B", "AB", "O"].map((type) => (
+                              <option key={type}>{type}</option>
+                            ))}
+                          </select>
+                        </Field>
+                        <Field label="Fator RH">
+                          <select
+                            value={form.rhFactor}
+                            onChange={(e) => updateForm("rhFactor", e.target.value)}
+                            className={inputClass}
+                          >
+                            <option value="">Não informado</option>
+                            <option>Positivo (+)</option>
+                            <option>Negativo (-)</option>
+                          </select>
+                        </Field>
+                        <Field label="Nome da pessoa de emergência">
+                          <input
+                            value={form.emergencyName}
+                            onChange={(e) => updateForm("emergencyName", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Telefone de emergência">
+                          <input
+                            inputMode="tel"
+                            value={form.emergencyContact}
+                            onChange={(e) =>
+                              updateForm("emergencyContact", formatPhone(e.target.value))
+                            }
+                            placeholder="(00) 00000-0000"
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Parentesco">
+                          <input
+                            value={form.emergencyRelation}
+                            onChange={(e) => updateForm("emergencyRelation", e.target.value)}
+                            className={inputClass}
+                          />
+                        </Field>
+                      </div>
+                      <Field label="Há outro dado de saúde a informar à escola?">
+                        <select
+                          value={form.healthNotes}
+                          onChange={(e) => updateForm("healthNotes", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option>Não</option>
+                          <option>Sim</option>
+                        </select>
+                      </Field>
+                      {form.healthNotes === "Sim" && (
+                        <Field label="Descrição do dado de saúde">
+                          <textarea
+                            value={form.healthNotesDetails}
+                            onChange={(e) => updateForm("healthNotesDetails", e.target.value)}
+                            rows={3}
+                            className={inputClass}
+                            placeholder="Informação sensível; será protegida no backend"
+                          />
+                        </Field>
+                      )}
+                      <p className="rounded-xl bg-rose-50 p-3 text-xs leading-5 text-rose-800">
+                        Dados de saúde são sensíveis. Esta tela não transmite nem armazena
+                        informações nesta fase.
+                      </p>
+                    </>
+                  )}
+                  {step === 5 && (
+                    <>
+                      <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                        <Upload size={25} className="mx-auto text-slate-400" />
+                        <p className="mt-3 text-sm font-semibold">Selecionar fotos e documentos</p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Seleção local de arquivos para validar a interface. Nada é enviado nem
+                          armazenado no servidor.
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          multiple
+                          capture="environment"
+                          onChange={(e) =>
+                            setSelectedFiles(
+                              Array.from(e.target.files ?? []).map((file) => file.name),
+                            )
+                          }
+                          className="mx-auto mt-4 block max-w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-blue-800"
+                        />
+                        {selectedFiles.length > 0 && (
+                          <p className="mt-3 text-xs font-semibold text-blue-800">
+                            {selectedFiles.length} arquivo(s) selecionado(s):{" "}
+                            {selectedFiles.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                      <div className="mb-3 flex items-center justify-between text-xs text-slate-500">
+                        <span>Documentação obrigatória concluída</span>
+                        <span>
+                          {
+                            documentItems.filter(
+                              (doc) =>
+                                doc.required &&
+                                ["Entregue", "Conferido"].includes(documentStatus[doc.name]),
+                            ).length
+                          }
+                          /{documentItems.filter((doc) => doc.required).length}
+                        </span>
+                      </div>
+                      <div className="mb-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          className="h-full rounded-full bg-blue-700 transition-all"
+                          style={{
+                            width: `${(documentItems.filter((doc) => doc.required && ["Entregue", "Conferido"].includes(documentStatus[doc.name])).length / Math.max(documentItems.filter((doc) => doc.required).length, 1)) * 100}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        {documentItems.map((doc, i) => (
+                          <div
+                            key={doc.name}
+                            className="flex flex-col gap-3 rounded-xl border border-slate-100 px-3 py-3 sm:flex-row sm:items-center"
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500">
+                              {i + 1}
+                            </span>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-slate-700">{doc.name}</p>
+                              <p
+                                className={`mt-1 text-xs ${doc.required ? "text-slate-500" : "text-slate-400"}`}
+                              >
+                                {doc.required
+                                  ? "Obrigatório nesta configuração"
+                                  : "Não obrigatório para a cota selecionada"}
+                              </p>
+                            </div>
+                            <select
+                              aria-label={`Status: ${doc.name}`}
+                              value={
+                                documentStatus[doc.name] ??
+                                (doc.required ? "Pendente" : "Não se aplica")
+                              }
+                              onChange={(e) =>
+                                setDocumentStatus((current) => ({
+                                  ...current,
+                                  [doc.name]: e.target.value,
+                                }))
+                              }
+                              className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs"
+                            >
+                              <option>Pendente</option>
+                              <option>Entregue</option>
+                              <option>Conferido</option>
+                              <option>Recusado</option>
+                              <option>Não se aplica</option>
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {step === 6 && (
+                    <>
+                      <div className="rounded-xl border border-slate-200 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                          Resumo da matrícula (prévia local)
+                        </p>
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                          <Summary label="Estudante" value={form.student || "Não informado"} />
+                          <Summary label="Curso" value={form.course || "Não selecionado"} />
+                          <Summary
+                            label="Cota"
+                            value={form.cotista === "Sim" ? form.quota : "Não cotista"}
+                          />
+                          <Summary
+                            label="Idade"
+                            value={age !== null ? `${age} anos` : "Não informada"}
+                          />
+                          <Summary
+                            label="Responsável legal"
+                            value={form.guardian || "Não informado"}
+                          />
+                          <Summary
+                            label="Documentos concluídos"
+                            value={`${completedDocuments}/${documentItems.length}`}
+                          />
+                          <Summary
+                            label="Pendências obrigatórias"
+                            value={String(pendingDocuments.length)}
+                          />
+                        </div>
+                      </div>
+                      <label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-sm leading-5 text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={form.confirmed}
+                          onChange={(e) => updateForm("confirmed", e.target.checked)}
+                          className="mt-1 h-4 w-4 accent-blue-700"
+                        />
+                        Confirmo que os dados desta prévia foram revisados. Esta confirmação não
+                        conclui uma matrícula real.
+                      </label>
+                      <p className="text-xs leading-5 text-slate-500">
+                        Antes de ativar a conclusão, serão validados os campos obrigatórios, CPF
+                        duplicado, documentos condicionais e as permissões no servidor. Pendências
+                        obrigatórias nesta prévia: {pendingDocuments.length}.
+                      </p>
+                    </>
+                  )}
+                </div>
+                <div className="flex flex-col-reverse justify-between gap-3 border-t border-slate-100 p-5 sm:flex-row sm:p-7">
+                  <button
+                    onClick={() => (step === 0 ? setSection("dashboard") : setStep(step - 1))}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                  >
+                    <ChevronLeft size={17} />
+                    {step === 0 ? "Cancelar" : "Voltar"}
+                  </button>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <button
+                      onClick={() =>
+                        setNotice(
+                          "Rascunho não salvo: a persistência será habilitada somente após autenticação e revisão do banco.",
+                        )
+                      }
+                      className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Salvar rascunho
+                    </button>
+                    {step < steps.length - 1 ? (
+                      <button
+                        onClick={() => {
+                          if (validateCurrentStep()) setStep(step + 1);
+                        }}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+                      >
+                        Próxima etapa <ChevronRight size={17} />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (!form.confirmed) {
+                            setNotice(
+                              "Marque a confirmação da revisão para validar o fluxo demonstrativo.",
+                            );
+                            return;
+                          }
+                          setNotice(
+                            "Revisão demonstrada. Matrícula não concluída: falta conectar o backend seguro.",
+                          );
+                        }}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+                      >
+                        Validar revisão <Check size={17} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
+
+          {section === "documentos" && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+              <div className="flex items-start gap-3">
+                <span className="rounded-xl bg-blue-50 p-3 text-blue-700">
+                  <FileText size={21} />
+                </span>
+                <div>
+                  <h2 className="text-xl font-bold">Central de documentação</h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-500">
+                    A especificação prevê conferência, status, prazos, armazenamento privado e
+                    geração dos oito documentos oficiais a partir do modelo “Ficha Ok 2026”.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 grid gap-3 md:grid-cols-2">
+                {[
+                  "Ficha de matrícula",
+                  "Observações",
+                  "Documentação para matrícula",
+                  "Comprovante de matrícula",
+                  "Ficha de saúde",
+                  "Concessão de imagem e som da voz",
+                  "Resumo de contato",
+                  "Termo de compromisso educacional",
+                ].map((name, i) => (
+                  <div
+                    key={name}
+                    className="flex items-center gap-3 rounded-xl border border-slate-200 p-4"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600">
+                      {i + 1}
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold">{name}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Modelo oficial · integração pendente
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                      Pendente
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
+                <p className="flex items-center gap-2 text-sm font-semibold text-blue-900">
+                  <CircleHelp size={17} />
+                  Preservação do modelo original
+                </p>
+                <p className="mt-1 text-sm leading-6 text-blue-800">
+                  A integração deverá criar uma cópia do Google Docs configurado, preencher
+                  marcadores únicos e nunca editar ou substituir o arquivo “Ficha Ok 2026”.
+                </p>
+              </div>
+            </section>
+          )}
+
+          {section === "configuracoes" && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+              <h2 className="text-xl font-bold">Configurações administrativas</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Pontos que precisam ser confirmados antes de fixar regras de negócio.
+              </p>
+              <div className="mt-6 space-y-3">
+                {[
+                  {
+                    name: "Formato do número de matrícula",
+                    desc: "Definir padrão e unicidade no servidor.",
+                  },
+                  {
+                    name: "Pasta de destino do Google Drive",
+                    desc: "Configurar ID e credenciais em ambiente seguro.",
+                  },
+                  {
+                    name: "Documentos que bloqueiam a conclusão",
+                    desc: "Definir regra por tipo de matrícula.",
+                  },
+                  {
+                    name: "Prazo da Ficha 18",
+                    desc: "Definir se pode ser entregue posteriormente.",
+                  },
+                  {
+                    name: "Obrigatoriedade do termo de imagem",
+                    desc: "Confirmar política institucional.",
+                  },
+                  {
+                    name: "Formato dos arquivos gerados",
+                    desc: "Pacote único ou documentos separados.",
+                  },
+                  {
+                    name: "Permissão de visualização",
+                    desc: "Restringir acesso aos documentos gerados.",
+                  },
+                  {
+                    name: "Campo 3.7.3 do formulário",
+                    desc: "Identificar o título ausente no formulário oficial.",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.name}
+                    className="flex items-start gap-3 rounded-xl border border-slate-100 p-4"
+                  >
+                    <SlidersHorizontal size={18} className="mt-0.5 text-slate-400" />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold">{item.name}</p>
+                      <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
+                    </div>
+                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                      A confirmar
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() =>
+                  setNotice(
+                    "Configurações registradas como itens de revisão; nenhuma regra foi aplicada ao banco.",
+                  )
+                }
+                className="mt-5 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Marcar revisão da lista
+              </button>
+            </section>
+          )}
+          <footer className="mt-8 flex flex-col gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+            <span>Escola Técnica Estadual Maria José Vasconcelos · Sistema de Matrícula 2026</span>
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck size={13} />
+              Protótipo sem dados reais e sem persistência
+            </span>
+          </footer>
+        </div>
+      </main>
+    </div>
+  );
 }
 
-const inputClass = "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50";
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50";
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block space-y-2"><span className="text-sm font-semibold text-slate-700">{label}</span>{children}</label>;
+  return (
+    <label className="block space-y-2">
+      <span className="text-sm font-semibold text-slate-700">{label}</span>
+      {children}
+    </label>
+  );
 }
 function Summary({ label, value }: { label: string; value: string }) {
-  return <div><p className="text-xs text-slate-500">{label}</p><p className="mt-1 break-words text-sm font-semibold text-slate-800">{value}</p></div>;
+  return (
+    <div>
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className="mt-1 break-words text-sm font-semibold text-slate-800">{value}</p>
+    </div>
+  );
 }
 function stepsIcon({ index }: { index: number }) {
   const Icon = steps[index].icon;
-  return <Icon size={20}/>;
+  return <Icon size={20} />;
 }

@@ -9,7 +9,9 @@ export function isValidCpf(value: string): boolean {
 
   const digits = cpf.split("").map(Number);
   const calculateDigit = (length: number) => {
-    const sum = digits.slice(0, length).reduce((total, digit, index) => total + digit * (length + 1 - index), 0);
+    const sum = digits
+      .slice(0, length)
+      .reduce((total, digit, index) => total + digit * (length + 1 - index), 0);
     const remainder = (sum * 10) % 11;
     return remainder === 10 ? 0 : remainder;
   };
@@ -27,7 +29,8 @@ export function calculateAge(birthDate: string, today = new Date()): number | nu
   if (
     today.getMonth() < birth.getMonth() ||
     (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
-  ) years--;
+  )
+    years--;
 
   return years >= 0 ? years : null;
 }
