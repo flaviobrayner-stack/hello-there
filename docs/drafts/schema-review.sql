@@ -355,6 +355,47 @@ grant insert, update, delete on public.courses, public.document_rules,
 -- 8) Não colocar este arquivo em supabase/migrations até aprovação formal.
 
 
+-- Validação dos dígitos verificadores de CPF. Função interna do rascunho:
+-- não deve ser exposta como endpoint nem receber grants diretos.
+create or replace function public.is_valid_cpf(p_cpf text)
+returns boolean
+language plpgsql
+immutable
+strict
+set search_path = ''
+as $
+declare
+  v_digits text := regexp_replace(p_cpf, '[^0-9]', '', 'g');
+  v_sum integer := 0;
+  v_remainder integer;
+  v_digit integer;
+  i integer;
+begin
+  if length(v_digits) <> 11 or v_digits = repeat(substr(v_digits, 1, 1), 11) then
+    return false;
+  end if;
+
+  for i in 1..9 loop
+    v_sum := v_sum + substring(v_digits from i for 1)::integer * (11 - i);
+  end loop;
+  v_remainder := (v_sum * 10) % 11;
+  if v_remainder = 10 then v_remainder := 0; end if;
+  if v_remainder <> substring(v_digits from 10 for 1)::integer then
+    return false;
+  end if;
+
+  v_sum := 0;
+  for i in 1..10 loop
+    v_sum := v_sum + substring(v_digits from i for 1)::integer * (12 - i);
+  end loop;
+  v_remainder := (v_sum * 10) % 11;
+  if v_remainder = 10 then v_remainder := 0; end if;
+  v_digit := substring(v_digits from 11 for 1)::integer;
+  return v_remainder = v_digit;
+end;
+$;
+revoke all on function public.is_valid_cpf(text) from public, anon, authenticated;
+
 -- ============================================================================
 -- PROPOSTA DE RPC TRANSACIONAL (AINDA NÃO APROVADA / NÃO EXECUTAR)
 -- Esta função é chamada pelo endpoint POST /api/enrollments. Revisar com DBA
@@ -440,8 +481,8 @@ begin
     regexp_replace(coalesce(p_student->>'cpf', ''), '[^0-9]', '', 'g'),
     ''
   );
-  if v_cpf_digits is not null and length(v_cpf_digits) <> 11 then
-    raise exception using errcode = '22023', message = 'invalid_cpf_format';
+  if v_cpf_digits is not null and not public.is_valid_cpf(v_cpf_digits) then
+    raise exception using errcode = '22023', message = 'invalid_cpf';
   end if;
 
   -- CPF identifica a pessoa; a matrícula é independente por ano letivo.
@@ -482,6 +523,16 @@ begin
 
   if v_student_id is null then
     raise exception using errcode = 'P0001', message = 'student_identity_resolution_failed';
+  end if;
+
+  -- Evita vincular matrícula ao CPF de outra pessoa por erro de digitação.
+  -- Mudança legítima de nome deve passar por procedimento de correção auditado.
+  if v_cpf_digits is not null and exists (
+    select 1 from public.students s
+    where s.id = v_student_id
+      and lower(btrim(s.full_name)) <> lower(btrim(p_student->>'fullName'))
+  ) then
+    raise exception using errcode = '22023', message = 'student_identity_conflict';
   end if;
 
   insert into public.enrollments (
