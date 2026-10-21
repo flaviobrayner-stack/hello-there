@@ -54,7 +54,7 @@ export function jsonError(message: string, status: number, code: string): Respon
 export async function authenticateStaff(
   request: Request,
 ): Promise<
-  | { ok: true; staff: AuthenticatedStaff; config: NonNullable<ReturnType<typeof backendConfig>> }
+  | { ok: true; staff: AuthenticatedStaff; config: NonNullable<ReturnType<typeof getBackendConfig>> }
   | { ok: false; response: Response }
 > {
   const config = getBackendConfig();
