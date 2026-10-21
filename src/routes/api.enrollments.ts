@@ -82,7 +82,7 @@ export const Route = createFileRoute("/api/enrollments")({
         // storage paths, document contents, or complete CPF values here.
         const query = new URLSearchParams({
           select:
-            "id,protocol,academic_year,status,created_at,course:courses(name),student:students(full_name)",
+            "id,protocol,academic_year,status,created_at,quota_type,course:courses(name),student:students(full_name)",
           order: "created_at.desc",
           limit: "50",
         });
