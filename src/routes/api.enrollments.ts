@@ -23,7 +23,11 @@ const studentSchema = z
     email: z.string().trim().email().max(254).optional(),
     address: z.string().trim().max(240).optional(),
     city: z.string().trim().max(120).optional(),
-    state: z.string().trim().regex(/^[A-Za-z]{2}$/).optional(),
+    state: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z]{2}$/)
+      .optional(),
     cep: z.string().trim().max(10).optional(),
     raceColor: z.string().trim().max(60).optional(),
     pcd: z.boolean().optional(),
@@ -41,7 +45,10 @@ const studentSchema = z
 
     if (student.birthDate) {
       const parsed = new Date(`${student.birthDate}T00:00:00.000Z`);
-      if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== student.birthDate) {
+      if (
+        Number.isNaN(parsed.getTime()) ||
+        parsed.toISOString().slice(0, 10) !== student.birthDate
+      ) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["birthDate"],
@@ -108,7 +115,11 @@ export const Route = createFileRoute("/api/enrollments")({
 
         const contentLength = Number(request.headers.get("content-length") ?? "0");
         if (Number.isFinite(contentLength) && contentLength > 16_384) {
-          return jsonError("Os dados enviados excedem o limite permitido.", 413, "PAYLOAD_TOO_LARGE");
+          return jsonError(
+            "Os dados enviados excedem o limite permitido.",
+            413,
+            "PAYLOAD_TOO_LARGE",
+          );
         }
 
         let payload: unknown;

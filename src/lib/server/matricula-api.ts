@@ -17,8 +17,7 @@ type AuthenticatedStaff = {
   profile: StaffProfile;
 };
 
-const API_DISABLED_MESSAGE =
-  "O backend de matrículas ainda não foi habilitado para este ambiente.";
+const API_DISABLED_MESSAGE = "O backend de matrículas ainda não foi habilitado para este ambiente.";
 
 function backendConfig() {
   const enabled =
@@ -52,7 +51,9 @@ export function jsonError(message: string, status: number, code: string): Respon
   );
 }
 
-export async function authenticateStaff(request: Request): Promise<
+export async function authenticateStaff(
+  request: Request,
+): Promise<
   | { ok: true; staff: AuthenticatedStaff; config: NonNullable<ReturnType<typeof backendConfig>> }
   | { ok: false; response: Response }
 > {
@@ -116,7 +117,11 @@ export async function authenticateStaff(request: Request): Promise<
     if (!profileResponse.ok) {
       return {
         ok: false,
-        response: jsonError("Não foi possível verificar as permissões da conta.", 403, "PROFILE_CHECK_FAILED"),
+        response: jsonError(
+          "Não foi possível verificar as permissões da conta.",
+          403,
+          "PROFILE_CHECK_FAILED",
+        ),
       };
     }
 
@@ -130,7 +135,11 @@ export async function authenticateStaff(request: Request): Promise<
     ) {
       return {
         ok: false,
-        response: jsonError("Conta sem autorização para acessar o sistema.", 403, "STAFF_ACCESS_DENIED"),
+        response: jsonError(
+          "Conta sem autorização para acessar o sistema.",
+          403,
+          "STAFF_ACCESS_DENIED",
+        ),
       };
     }
 
