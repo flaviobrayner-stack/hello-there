@@ -1,0 +1,32 @@
+name: Checks
+
+on:
+  push:
+    branches:
+      - main
+      - feature/sistema-matricula-2026
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Unit tests
+        run: bun run test
+      - name: Lint
+        run: bun run lint
+      - name: Production build
+        run: bun run build
