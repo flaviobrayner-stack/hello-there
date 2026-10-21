@@ -3,6 +3,7 @@
 ## Estado desta entrega
 - Protótipo de interface no branch `feature/sistema-matricula-2026`.
 - Não foi executada nenhuma migração de banco nem provisionado backend.
+- Nenhum dado real deve ser cadastrado: a validação de CPF e os estados documentais são locais e não substituem validação/duplicidade no servidor.
 - Os nomes e números do painel são exemplos fictícios. Alterações feitas no protótipo existem apenas no estado da sessão.
 - O modelo Google Docs “Ficha Ok 2026” é tratado como fonte oficial e não deve ser editado; a integração deve criar cópias.
 
@@ -19,10 +20,15 @@
 - Dashboard responsivo e navegação administrativa.
 - Lista de matrículas com busca, filtro de status e impressão/exportação do navegador.
 - Fluxo de cadastro de sete etapas: identificação, estudante, filiação, responsável legal, saúde, documentos e revisão.
-- Idade calculada a partir da data de nascimento; campos condicionais para cotas, PCD, transporte, saúde e emergência.
-- Lista de documentos, estados de entrega/conferência e seleção de arquivo demonstrativa.
-- Páginas de documentação, histórico de documentos gerados e configurações pendentes.
-- Avisos visíveis sobre ausência de backend e dados demonstrativos.
+- Dados pessoais ampliados: nome social, RG, naturalidade, contatos, endereço, raça/cor, escola de origem, farda e Bolsa Família.
+- Máscaras de CPF, telefone e CEP; validação local dos dígitos verificadores do CPF; cálculo de idade por data civil e bloqueio de data futura.
+- Campos condicionais para cota, PCD, transporte, alergia, medicação e informações adicionais de saúde.
+- Checklist documental por tipo de cota, status local, indicador de progresso e resumo de pendências obrigatórias.
+- Seleção local de fotos/PDFs para testar a experiência; os arquivos não são enviados nem persistidos.
+- Navegação entre etapas com validação dos campos essenciais e dados controlados preservados durante a sessão.
+- Páginas de documentação e configurações pendentes; aviso explícito sobre ausência de backend e dados demonstrativos.
+- Testes unitários para CPF, idade e máscaras em `src/lib/enrollment-validation.test.ts`.
+- Workflow GitHub Actions em `.github/workflows/checks.yml`: testes, lint e build passaram no run [39624547987](https://github.com/flaviobrayner-stack/hello-there/actions/runs/39624547987).
 
 ## Modelo de dados proposto — para revisão, não executar ainda
 1. `profiles`: id (FK auth.users), nome, email, papel (admin/operador), ativo, timestamps.
