@@ -326,8 +326,12 @@ create policy app_settings_admin_only on public.app_settings
   with check (public.current_active_role() = 'admin');
 
 -- Privilégios explícitos de referência. Nenhum acesso concedido a anon.
-revoke all on all tables in schema public from anon, authenticated;
-revoke all on all sequences in schema public from anon, authenticated;
+-- Revogar somente nas tabelas deste rascunho, sem alterar objetos preexistentes
+-- de terceiros no schema public.
+revoke all on public.profiles, public.courses, public.students, public.enrollments,
+  public.parents_guardians, public.health_records, public.documents,
+  public.generated_documents, public.audit_logs, public.document_rules,
+  public.app_settings from anon, authenticated;
 grant usage on schema public to authenticated;
 grant select on public.profiles, public.courses, public.students, public.enrollments,
   public.parents_guardians, public.health_records, public.documents,
