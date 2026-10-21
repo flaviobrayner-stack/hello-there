@@ -12,40 +12,7 @@ import {
   Copy,
 } from "lucide-react";
 
-export type EnrollmentData = {
-  id: string;
-  name: string;
-  course: string;
-  date: string;
-  status: "Concluída" | "Em análise" | "Rascunho";
-  quota: string;
-  docs: string;
-  cpf?: string;
-  rg?: string;
-  birthDate?: string;
-  age?: string;
-  gender?: string;
-  race?: string;
-  motherName?: string;
-  motherStatus?: string;
-  fatherName?: string;
-  fatherStatus?: string;
-  guardianName?: string;
-  guardianRelation?: string;
-  guardianCpf?: string;
-  guardianPhone?: string;
-  address?: string;
-  city?: string;
-  cep?: string;
-  pcd?: string;
-  pcdType?: string;
-  transport?: string;
-  allergy?: string;
-  allergyType?: string;
-  medication?: string;
-  medicationName?: string;
-  emergencyContact?: string;
-};
+import { EnrollmentData } from "../lib/types";
 
 interface PdfConverterDialogProps {
   isOpen: boolean;

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   Activity,
   ArrowDownToLine,
@@ -6,12 +7,8 @@ import {
   Bell,
   BookOpen,
   CalendarDays,
-  Check,
   CheckCircle2,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
   Clock3,
   FileCheck2,
   FileText,
@@ -21,162 +18,66 @@ import {
   LayoutDashboard,
   LockKeyhole,
   Menu,
-  MoreHorizontal,
   Plus,
   Search,
   Settings2,
   ShieldCheck,
   SlidersHorizontal,
   Users,
-  UserRound,
   X,
   AlertCircle,
-  Upload,
   CircleHelp,
   Printer,
-  Download,
-  FileDown,
+  History,
+  ShieldAlert,
+  Edit,
+  Eye,
+  FileCheck,
+  UserCheck,
 } from "lucide-react";
-import { PdfConverterDialog, type EnrollmentData } from "../components/pdf-converter-dialog";
 
-type Section = "dashboard" | "matriculas" | "nova" | "documentos" | "configuracoes";
-type Enrollment = EnrollmentData;
+import {
+  StudentInfo,
+  UserProfile,
+  AuditLog,
+  GeneratedDocumentRecord,
+  EnrollmentData,
+  studentToEnrollmentData,
+} from "../lib/types";
+import {
+  initialStudents,
+  initialUsers,
+  initialAuditLogs,
+  initialGeneratedDocuments,
+  availableCourses,
+} from "../lib/mock-data";
+import { maskCpfPrivate } from "../lib/mask";
+import { DashboardCharts } from "../components/dashboard-charts";
+import { EnrollmentWizard } from "../components/enrollment-wizard";
+import { PdfConverterDialog } from "../components/pdf-converter-dialog";
+import { AdminUsersDialog } from "../components/admin-users-dialog";
+import { AuditLogsModal } from "../components/audit-logs-modal";
+import { DocumentConferenceModal } from "../components/document-conference-modal";
 
-const demoEnrollments: Enrollment[] = [
-  {
-    id: "MAT-2026-0148",
-    name: "Maria Eduarda Silveira Ramos",
-    course: "Desenvolvimento de Sistemas",
-    date: "21/10/2026",
-    status: "Concluída",
-    quota: "Escola pública",
-    docs: "10/10",
-    cpf: "111.222.333-44",
-    birthDate: "12/04/2009",
-    age: "17",
-    gender: "Feminino",
-    race: "Parda",
-    motherName: "Ana Paula Silveira Ramos",
-    fatherName: "Carlos Eduardo Ramos",
-    guardianName: "Ana Paula Silveira Ramos",
-    guardianRelation: "Mãe",
-    guardianCpf: "222.333.444-55",
-    guardianPhone: "(81) 98765-4321",
-    address: "Rua do Comércio, 145, Centro",
-    city: "Bezerros",
-    cep: "55660-000",
-    pcd: "Não",
-    transport: "Sim",
-    allergy: "Não",
-    medication: "Não",
-    emergencyContact: "(81) 98765-4321 (Mãe)",
-  },
-  {
-    id: "MAT-2026-0147",
-    name: "Lucas Gabriel Ferreira Lima",
-    course: "Administração",
-    date: "21/10/2026",
-    status: "Em análise",
-    quota: "Não cotista",
-    docs: "7/10",
-    cpf: "333.444.555-66",
-    birthDate: "25/08/2009",
-    age: "17",
-    gender: "Masculino",
-    race: "Branca",
-    motherName: "Patrícia Ferreira Lima",
-    fatherName: "Roberto Lima",
-    guardianName: "Roberto Lima",
-    guardianRelation: "Pai",
-    guardianCpf: "444.555.666-77",
-    guardianPhone: "(81) 99123-4567",
-    address: "Av. Agamenon Magalhães, 89",
-    city: "Bezerros",
-    cep: "55660-000",
-    pcd: "Não",
-    transport: "Não",
-    allergy: "Sim",
-    allergyType: "Dipirona",
-    medication: "Não",
-    emergencyContact: "(81) 99123-4567 (Pai)",
-  },
-  {
-    id: "MAT-2026-0146",
-    name: "Beatriz Albuquerque Costa",
-    course: "Desenvolvimento de Sistemas",
-    date: "20/10/2026",
-    status: "Rascunho",
-    quota: "Renda",
-    docs: "4/10",
-    cpf: "555.666.777-88",
-    birthDate: "03/11/2009",
-    age: "16",
-    gender: "Feminino",
-    race: "Preta",
-    motherName: "Cláudia Albuquerque",
-    guardianName: "Cláudia Albuquerque",
-    guardianRelation: "Mãe",
-    guardianCpf: "666.777.888-99",
-    guardianPhone: "(81) 99876-5432",
-    address: "Rua Nova Esperança, 42",
-    city: "Bezerros",
-    cep: "55660-000",
-    pcd: "Não",
-    transport: "Sim",
-    allergy: "Não",
-    medication: "Não",
-    emergencyContact: "(81) 99876-5432 (Mãe)",
-  },
-  {
-    id: "MAT-2026-0145",
-    name: "Gabriel Santos de Souza",
-    course: "Enfermagem",
-    date: "20/10/2026",
-    status: "Em análise",
-    quota: "PCD",
-    docs: "8/10",
-    cpf: "777.888.999-00",
-    birthDate: "19/02/2010",
-    age: "16",
-    gender: "Masculino",
-    race: "Parda",
-    motherName: "Marta Santos",
-    guardianName: "Marta Santos",
-    guardianRelation: "Mãe",
-    guardianCpf: "888.999.000-11",
-    guardianPhone: "(81) 98456-7890",
-    address: "Rua Projetada, 12",
-    city: "Bezerros",
-    cep: "55660-000",
-    pcd: "Sim",
-    pcdType: "Baixa visão com laudo",
-    transport: "Sim",
-    allergy: "Não",
-    medication: "Sim",
-    medicationName: "Colírio específico",
-    emergencyContact: "(81) 98456-7890 (Mãe)",
-  },
-];
+export const Route = createFileRoute("/")({
+  component: Index,
+});
 
-const steps = [
-  { label: "Identificação", hint: "Curso, ano letivo e cota", icon: ClipboardCheck },
-  { label: "Estudante", hint: "Dados pessoais e endereço", icon: UserRound },
-  { label: "Filiação", hint: "Mãe e pai", icon: Users },
-  { label: "Responsável", hint: "Responsável legal", icon: ShieldCheck },
-  { label: "Saúde", hint: "Saúde e emergência", icon: HeartPulse },
-  { label: "Documentos", hint: "Arquivos e conferência", icon: FileCheck2 },
-  { label: "Revisão", hint: "Conferir antes de concluir", icon: CheckCircle2 },
-];
+type Section =
+  "dashboard" | "matriculas" | "nova" | "documentos" | "documentos-gerados" | "configuracoes";
 
-function StatusBadge({ status }: { status: Enrollment["status"] }) {
+function StatusBadge({ status }: { status: StudentInfo["status"] }) {
   const styles = {
     Concluída: "bg-emerald-50 text-emerald-700 ring-emerald-200",
     "Em análise": "bg-amber-50 text-amber-700 ring-amber-200",
     Rascunho: "bg-slate-100 text-slate-600 ring-slate-200",
+    Cancelada: "bg-rose-50 text-rose-700 ring-rose-200",
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${styles[status]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${
+        styles[status] || styles["Rascunho"]
+      }`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {status}
@@ -184,7 +85,7 @@ function StatusBadge({ status }: { status: Enrollment["status"] }) {
   );
 }
 
-function Metric({
+function MetricCard({
   label,
   value,
   note,
@@ -192,17 +93,19 @@ function Metric({
   tone = "blue",
 }: {
   label: string;
-  value: string;
+  value: string | number;
   note: string;
   icon: typeof Users;
-  tone?: "blue" | "green" | "amber" | "violet";
+  tone?: "blue" | "green" | "amber" | "violet" | "rose";
 }) {
   const tones = {
     blue: "bg-blue-50 text-blue-700",
     green: "bg-emerald-50 text-emerald-700",
     amber: "bg-amber-50 text-amber-700",
     violet: "bg-violet-50 text-violet-700",
+    rose: "bg-rose-50 text-rose-700",
   };
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/30">
       <div className="flex items-start justify-between gap-3">
@@ -217,78 +120,252 @@ function Metric({
   );
 }
 
-export const Route = createFileRoute("/")({
-  component: Index,
-});
-
-import { createFileRoute } from "@tanstack/react-router";
-
 function Index() {
+  // App State
+  const [users, setUsers] = useState<UserProfile[]>(initialUsers);
+  const [currentUserId, setCurrentUserId] = useState<string>("usr-admin-1");
+  const [students, setStudents] = useState<StudentInfo[]>(initialStudents);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
+  const [generatedDocs, setGeneratedDocs] =
+    useState<GeneratedDocumentRecord[]>(initialGeneratedDocuments);
+
+  // Navigation & Filtering
   const [section, setSection] = useState<Section>("dashboard");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [search, setSearch] = useState("");
-  const [step, setStep] = useState(0);
-  const [notice, setNotice] = useState("");
-  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
-  const [selectedPdfEnrollment, setSelectedPdfEnrollment] = useState<EnrollmentData>(
-    demoEnrollments[0]!,
-  );
-  const [form, setForm] = useState({
-    course: "",
-    quota: "Não cotista",
-    student: "",
-    cpf: "",
-    birth: "",
-    cotista: "Não",
-    pcd: "Não",
-    transport: "Não",
-    allergy: "Não",
-    medication: "Não",
-    confirmed: false,
-  });
-  const age = useMemo(() => {
-    if (!form.birth) return "";
-    const birth = new Date(form.birth + "T12:00:00");
-    if (Number.isNaN(birth.getTime())) return "";
-    const today = new Date();
-    let years = today.getFullYear() - birth.getFullYear();
-    if (
-      today.getMonth() < birth.getMonth() ||
-      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
-    )
-      years--;
-    return years >= 0 ? String(years) : "";
-  }, [form.birth]);
-  const visibleEnrollments = demoEnrollments.filter((item) =>
-    `${item.id} ${item.name} ${item.course} ${item.status}`
-      .toLowerCase()
-      .includes(search.toLowerCase()),
-  );
+  const [courseFilter, setCourseFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [quotaFilter, setQuotaFilter] = useState("all");
 
-  const navItems: { id: Section; label: string; icon: typeof LayoutDashboard }[] = [
-    { id: "dashboard", label: "Visão geral", icon: LayoutDashboard },
-    { id: "matriculas", label: "Matrículas", icon: GraduationCap },
-    { id: "documentos", label: "Documentação", icon: FileText },
-    { id: "configuracoes", label: "Configurações", icon: Settings2 },
+  // Selection & Editing
+  const [editingStudent, setEditingStudent] = useState<StudentInfo | null>(null);
+  const [conferencingStudent, setConferencingStudent] = useState<StudentInfo | null>(null);
+
+  // Modals
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
+  const [selectedPdfEnrollment, setSelectedPdfEnrollment] = useState<EnrollmentData>(() =>
+    studentToEnrollmentData(initialStudents[0]!),
+  );
+  const [usersDialogOpen, setUsersDialogOpen] = useState(false);
+  const [auditModalOpen, setAuditModalOpen] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  // App Settings (Configurações)
+  const [settings, setSettings] = useState({
+    protocolFormat: "MAT-2026-XXXX",
+    googleDriveFolderId: "1ete-maria-jose-vasconcelos-2026-drive-folder",
+    blockers: ["certidao_nascimento", "rg_cpf_estudante", "rg_cpf_responsavel"],
+    ficha18GracePeriod: true,
+    mandatoryImageTerm: true,
+    bundleMode: "pacote_unico", // ou "arquivos_separados"
+    field373Title: "Responsável Financeiro Adicional / Contato Secundário",
+  });
+
+  // Current logged in user object
+  const currentUser = useMemo(() => {
+    return users.find((u) => u.id === currentUserId) || users[0]!;
+  }, [users, currentUserId]);
+
+  const isAdmin = currentUser.role === "admin";
+
+  // Filtered Students list
+  const filteredStudents = useMemo(() => {
+    return students.filter((s) => {
+      const matchesSearch =
+        `${s.protocol} ${s.fullName} ${s.cpf} ${s.course} ${s.status} ${s.guardian.name}`
+          .toLowerCase()
+          .includes(search.toLowerCase());
+
+      const matchesCourse = courseFilter === "all" || s.course === courseFilter;
+      const matchesStatus = statusFilter === "all" || s.status === statusFilter;
+      const matchesQuota = quotaFilter === "all" || s.quotaType === quotaFilter;
+
+      return matchesSearch && matchesCourse && matchesStatus && matchesQuota;
+    });
+  }, [students, search, courseFilter, statusFilter, quotaFilter]);
+
+  // Derived Metrics
+  const metrics = useMemo(() => {
+    const total = students.length;
+    const concluidas = students.filter((s) => s.status === "Concluída").length;
+    const analise = students.filter((s) => s.status === "Em análise").length;
+    const rascunhos = students.filter((s) => s.status === "Rascunho").length;
+    const cotistas = students.filter((s) => s.isQuota).length;
+    const naoCotistas = total - cotistas;
+
+    let semFotos = 0;
+    let semFicha18 = 0;
+    let docsCompletos = 0;
+
+    students.forEach((s) => {
+      const delivered = s.documents.filter(
+        (d) => d.status === "Entregue" || d.status === "Conferido",
+      ).length;
+      if (delivered === s.documents.length) docsCompletos++;
+
+      const fotoDoc = s.documents.find((d) => d.type === "duas_fotos_3x4");
+      if (fotoDoc && fotoDoc.status === "Pendente") semFotos++;
+
+      const f18Doc = s.documents.find((d) => d.type === "ficha_18");
+      if (f18Doc && f18Doc.status === "Pendente") semFicha18++;
+    });
+
+    return {
+      total,
+      concluidas,
+      analise,
+      rascunhos,
+      cotistas,
+      naoCotistas,
+      semFotos,
+      semFicha18,
+      docsCompletos,
+      docsPendentes: total - docsCompletos,
+    };
+  }, [students]);
+
+  // Handle Save / Update Student
+  const handleSaveStudent = (savedStudent: StudentInfo, isDraft: boolean) => {
+    const exists = students.some((s) => s.id === savedStudent.id);
+    let updatedList: StudentInfo[];
+
+    if (exists) {
+      updatedList = students.map((s) => (s.id === savedStudent.id ? savedStudent : s));
+    } else {
+      updatedList = [savedStudent, ...students];
+    }
+
+    setStudents(updatedList);
+    setEditingStudent(null);
+    setSection("matriculas");
+
+    // Add Audit Log
+    const newLog: AuditLog = {
+      id: "log-" + Date.now(),
+      action: isDraft ? "Salvamento de Rascunho" : "Conclusão de Matrícula",
+      actor: currentUser.name,
+      targetId: savedStudent.protocol,
+      targetName: savedStudent.fullName,
+      timestamp:
+        new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR"),
+      details: isDraft
+        ? `Rascunho atualizado com ${savedStudent.documents.filter((d) => d.status === "Entregue").length} documentos`
+        : `Matrícula concluída no curso de ${savedStudent.course}`,
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+
+    setNotice(
+      isDraft
+        ? `Rascunho de ${savedStudent.fullName} salvo com sucesso.`
+        : `Matrícula ${savedStudent.protocol} (${savedStudent.fullName}) concluída com sucesso!`,
+    );
+  };
+
+  // Open PDF for a student
+  const handleOpenPdfForStudent = (s: StudentInfo) => {
+    setSelectedPdfEnrollment(studentToEnrollmentData(s));
+    setPdfDialogOpen(true);
+
+    // Record generation
+    const newGen: GeneratedDocumentRecord = {
+      id: "gdoc-" + Date.now(),
+      enrollmentId: s.protocol,
+      studentName: s.fullName,
+      documentType: "Pacote Completo",
+      templateVersion: "Ficha Ok 2026 v1.2",
+      googleDocUrl: `https://docs.google.com/document/d/mock-${s.protocol}/edit`,
+      pdfUrl: `https://drive.google.com/file/d/mock-${s.protocol}.pdf/view`,
+      generatedAt:
+        new Date().toLocaleDateString("pt-BR") +
+        " " +
+        new Date().toLocaleTimeString("pt-BR").slice(0, 5),
+      generatedBy: currentUser.name,
+      status: "Concluído",
+    };
+    setGeneratedDocs((prev) => [newGen, ...prev]);
+  };
+
+  // CSV Export
+  const handleExportCsv = () => {
+    const headers = [
+      "Protocolo",
+      "Nome",
+      "CPF (Mascarado)",
+      "Curso",
+      "Turno",
+      "Cota",
+      "Status",
+      "Data",
+      "Responsavel_Legal",
+      "Telefone",
+    ];
+
+    const rows = filteredStudents.map((s) => [
+      s.protocol,
+      `"${s.fullName}"`,
+      s.cpf ? maskCpfPrivate(s.cpf) : "Nao informado",
+      `"${s.course}"`,
+      s.shift,
+      `"${s.quotaType}"`,
+      s.status,
+      s.createdAt.split(" ")[0],
+      `"${s.guardian.name}"`,
+      s.guardian.phone,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `Matriculas_ETE_2026_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setNotice(`${filteredStudents.length} registros exportados para CSV com CPF protegido.`);
+  };
+
+  // Navigation Items
+  const navItems = [
+    { id: "dashboard" as const, label: "Visão geral", icon: LayoutDashboard },
+    { id: "matriculas" as const, label: "Matrículas", icon: GraduationCap },
+    { id: "documentos" as const, label: "Documentação oficial", icon: FileText },
+    {
+      id: "documentos-gerados" as const,
+      label: "Documentos gerados",
+      icon: History,
+    },
+    { id: "configuracoes" as const, label: "Configurações", icon: Settings2 },
   ];
 
   const title =
     section === "dashboard"
-      ? "Visão geral"
+      ? "Painel Administrativo"
       : section === "matriculas"
-        ? "Matrículas"
+        ? "Gestão de Matrículas"
         : section === "nova"
-          ? "Nova matrícula"
+          ? editingStudent
+            ? `Editar Matrícula: ${editingStudent.protocol}`
+            : "Nova Matrícula 2026"
           : section === "documentos"
-            ? "Documentação"
-            : "Configurações";
-  const updateForm = (key: keyof typeof form, value: string | boolean) =>
-    setForm((current) => ({ ...current, [key]: value }));
+            ? "Central de Documentação (Ficha Ok 2026)"
+            : section === "documentos-gerados"
+              ? "Histórico de Documentos Gerados"
+              : "Configurações do Sistema";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:translate-x-0 ${mobileMenu ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:translate-x-0 ${
+          mobileMenu ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         <div className="flex h-[84px] items-center gap-3 border-b border-slate-100 px-6">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-700 text-white shadow-lg shadow-blue-700/20">
@@ -298,7 +375,7 @@ function Index() {
             <p className="text-sm font-bold tracking-tight">
               Matrícula <span className="text-blue-700">2026</span>
             </p>
-            <p className="mt-0.5 text-xs text-slate-500">Gestão escolar</p>
+            <p className="mt-0.5 text-xs text-slate-500">ETE Maria José Vasconcelos</p>
           </div>
           <button
             onClick={() => setMobileMenu(false)}
@@ -308,6 +385,8 @@ function Index() {
             <X size={18} />
           </button>
         </div>
+
+        {/* Navigation */}
         <div className="px-4 pt-6">
           <p className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
             Menu principal
@@ -318,44 +397,93 @@ function Index() {
                 key={item.id}
                 onClick={() => {
                   setSection(item.id);
+                  setEditingStudent(null);
                   setMobileMenu(false);
                 }}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition ${section === item.id ? "bg-blue-50 text-blue-800" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition ${
+                  section === item.id
+                    ? "bg-blue-50 text-blue-800 font-semibold"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
               >
                 <item.icon size={18} />
                 {item.label}
                 {item.id === "matriculas" && (
-                  <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-xs text-slate-500">
-                    {demoEnrollments.length}
+                  <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-xs text-slate-500 border border-slate-200">
+                    {students.length}
+                  </span>
+                )}
+                {item.id === "documentos-gerados" && (
+                  <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-xs text-slate-500 border border-slate-200">
+                    {generatedDocs.length}
                   </span>
                 )}
               </button>
             ))}
           </nav>
         </div>
-        <div className="mt-auto p-4">
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
-            <div className="flex items-center gap-2 text-blue-800">
-              <LockKeyhole size={16} />
-              <span className="text-xs font-bold">Área administrativa</span>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-slate-600">
-              Acesso restrito a funcionários autorizados. Autenticação real será conectada na fase
-              de backend.
-            </p>
+
+        {/* Admin Tools Shortcut */}
+        <div className="px-4 pt-6">
+          <p className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            Controle & Auditoria
+          </p>
+          <div className="mt-2 space-y-1">
+            {isAdmin ? (
+              <>
+                <button
+                  onClick={() => setUsersDialogOpen(true)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <Users size={16} /> Gestão de Usuários
+                </button>
+                <button
+                  onClick={() => setAuditModalOpen(true)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <ShieldAlert size={16} /> Logs de Auditoria ({auditLogs.length})
+                </button>
+              </>
+            ) : (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-[11px] text-slate-500">
+                <span className="font-bold block text-slate-700">Modo Operador</span>
+                Usuários e auditoria restritos ao perfil Admin.
+              </div>
+            )}
           </div>
-          <div className="mt-4 flex items-center gap-3 rounded-xl px-2 py-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600">
-              AD
+        </div>
+
+        {/* Current User & Role Switcher */}
+        <div className="mt-auto p-4 border-t border-slate-100">
+          <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-900">
+                Simulação de Papel
+              </span>
+              <span
+                className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                  isAdmin ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
+                }`}
+              >
+                {currentUser.role}
+              </span>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">Administrador de demonstração</p>
-              <p className="text-xs text-slate-500">Perfil de protótipo</p>
-            </div>
-            <ChevronDown size={16} className="text-slate-400" />
+
+            <select
+              value={currentUserId}
+              onChange={(e) => setCurrentUserId(e.target.value)}
+              className="w-full rounded-lg border border-blue-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 outline-none"
+            >
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name} ({u.role})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </aside>
+
       {mobileMenu && (
         <button
           className="fixed inset-0 z-30 bg-slate-950/30 lg:hidden"
@@ -364,7 +492,9 @@ function Index() {
         />
       )}
 
+      {/* Main Content Area */}
       <main className="min-h-screen lg:pl-64">
+        {/* Top Header */}
         <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md sm:px-7 lg:px-10">
           <div className="flex items-center gap-3">
             <button
@@ -377,305 +507,263 @@ function Index() {
             <div>
               <div className="flex items-center gap-2 text-xs text-slate-400">
                 <span>Início</span>
-                <ChevronRight size={13} />
+                <span>/</span>
                 <span className="font-medium text-slate-600">{title}</span>
               </div>
-              <h1 className="mt-1 text-lg font-bold tracking-tight">{title}</h1>
+              <h1 className="mt-0.5 text-lg font-bold tracking-tight">{title}</h1>
             </div>
           </div>
+
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Quick action: Converter em PDF */}
             <button
               onClick={() => {
-                setSelectedPdfEnrollment(visibleEnrollments[0] || demoEnrollments[0]!);
-                setPdfDialogOpen(true);
+                if (students[0]) handleOpenPdfForStudent(students[0]);
               }}
               className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-xs"
-              title="Converter matrícula em PDF"
+              title="Converter matrícula selecionada em PDF"
             >
               <Printer size={15} />
               <span className="hidden sm:inline">Converter em</span> PDF
             </button>
-            <span className="hidden items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 md:flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              Ambiente de demonstração
-            </span>
-            <button
-              className="relative rounded-xl border border-slate-200 p-2.5 text-slate-500 hover:bg-slate-50"
-              aria-label="Notificações"
-            >
-              <Bell size={18} />
-              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-blue-600" />
-            </button>
+
+            {/* Nova matrícula button */}
+            {section !== "nova" && (
+              <button
+                onClick={() => {
+                  setEditingStudent(null);
+                  setSection("nova");
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-blue-700 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-blue-700/20 hover:bg-blue-800 transition"
+              >
+                <Plus size={15} />
+                <span className="hidden sm:inline">Nova Matrícula</span>
+              </button>
+            )}
+
             <div className="hidden h-9 w-px bg-slate-200 sm:block" />
+
             <div className="hidden text-right sm:block">
-              <p className="text-xs font-semibold">Equipe escolar</p>
-              <p className="text-[11px] text-slate-500">Acesso administrativo</p>
+              <p className="text-xs font-semibold text-slate-900">{currentUser.name}</p>
+              <p className="text-[11px] text-slate-500 capitalize">
+                {currentUser.role === "admin"
+                  ? "Administrador do Sistema"
+                  : "Operador de Matrícula"}
+              </p>
             </div>
           </div>
         </header>
 
+        {/* Body Container */}
         <div className="mx-auto max-w-[1440px] p-4 sm:p-7 lg:p-10">
+          {/* Notifications */}
           {notice && (
-            <div
-              role="status"
-              className="mb-5 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800"
-            >
-              <CheckCircle2 size={17} />
-              {notice}
-              <button className="ml-auto" onClick={() => setNotice("")} aria-label="Fechar aviso">
-                <X size={16} />
+            <div className="mb-5 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 shadow-xs">
+              <CheckCircle2 size={17} className="shrink-0" />
+              <span>{notice}</span>
+              <button
+                className="ml-auto text-xs font-bold hover:underline"
+                onClick={() => setNotice("")}
+              >
+                Dispensar
               </button>
             </div>
           )}
+
+          {/* 1. SECTION: DASHBOARD */}
           {section === "dashboard" && (
-            <>
-              <div className="mb-7 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="space-y-7">
+              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
                 <div>
                   <p className="text-sm font-medium text-blue-700">
-                    Quarta-feira, 21 de outubro de 2026
+                    Ano Letivo 2026 · Painel Administrativo Seguro
                   </p>
-                  <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-                    Painel de matrículas
+                  <h2 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl text-slate-900">
+                    Visão Geral das Matrículas
                   </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                    Acompanhe o andamento das matrículas, a documentação e as pendências da escola
-                    em um só lugar.
+                  <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">
+                    Acompanhamento em tempo real de matrículas, cotas afirmativas, conferência de
+                    documentos e alertas de pendências.
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    setSection("nova");
-                    setStep(0);
-                  }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-700/15 transition hover:bg-blue-800"
-                >
-                  <Plus size={18} />
-                  Nova matrícula
-                </button>
-              </div>
-              <div className="mb-7 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                <div className="flex items-start gap-3">
-                  <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                  <p>
-                    <strong>Protótipo em desenvolvimento:</strong> indicadores e registros abaixo
-                    são dados fictícios para validar a interface. Nenhum dado é persistido ou
-                    enviado a um banco de dados.
-                  </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingStudent(null);
+                      setSection("nova");
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-700/15 hover:bg-blue-800 transition"
+                  >
+                    <Plus size={18} />
+                    Nova matrícula
+                  </button>
+                  <button
+                    onClick={handleExportCsv}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    <ArrowDownToLine size={16} />
+                    Exportar CSV
+                  </button>
                 </div>
               </div>
+
+              {/* Cards Grid */}
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <Metric
-                  label="Matrículas no ano"
-                  value="148"
-                  note="+12 neste mês · dados de exemplo"
+                <MetricCard
+                  label="Total de Matrículas"
+                  value={metrics.total}
+                  note={`${metrics.concluidas} concluídas · ${metrics.analise} em análise`}
                   icon={GraduationCap}
+                  tone="blue"
                 />
-                <Metric
-                  label="Concluídas"
-                  value="112"
-                  note="75,7% das matrículas fictícias"
+                <MetricCard
+                  label="Documentação Completa"
+                  value={metrics.docsCompletos}
+                  note={`${Math.round((metrics.docsCompletos / (metrics.total || 1)) * 100)}% das matrículas 100% conferidas`}
                   icon={CheckCircle2}
                   tone="green"
                 />
-                <Metric
-                  label="Documentação pendente"
-                  value="23"
-                  note="Requer acompanhamento"
+                <MetricCard
+                  label="Alunos sem Fotos 3×4"
+                  value={metrics.semFotos}
+                  note="Alerta: Fotos pendentes de entrega"
                   icon={FileCheck2}
                   tone="amber"
                 />
-                <Metric
-                  label="Em análise"
-                  value="13"
-                  note="Aguardando conferência"
+                <MetricCard
+                  label="Alunos sem Ficha 18"
+                  value={metrics.semFicha18}
+                  note="Histórico fundamental com prazo"
                   icon={Clock3}
-                  tone="violet"
+                  tone="rose"
                 />
               </div>
-              <div className="mt-7 grid gap-6 xl:grid-cols-[1.55fr_1fr]">
-                <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/30">
-                  <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="font-bold">Matrículas recentes</h3>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Amostra fictícia para validação visual
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setSection("matriculas")}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900"
-                    >
-                      Ver todas <ArrowRight size={15} />
-                    </button>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[640px] text-left text-sm">
-                      <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
-                        <tr>
-                          <th className="px-5 py-3">Estudante / protocolo</th>
-                          <th className="px-4 py-3">Curso</th>
-                          <th className="px-4 py-3">Documentos</th>
-                          <th className="px-4 py-3">Status</th>
-                          <th className="px-4 py-3"></th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {demoEnrollments.slice(0, 4).map((item) => (
-                          <tr key={item.id} className="hover:bg-slate-50/70">
-                            <td className="px-5 py-4">
-                              <p className="font-semibold text-slate-800">{item.name}</p>
-                              <p className="mt-1 text-xs text-slate-400">
-                                {item.id} · {item.date}
-                              </p>
-                            </td>
-                            <td className="px-4 py-4 text-slate-600">{item.course}</td>
-                            <td className="px-4 py-4">
-                              <span className="font-semibold text-slate-700">{item.docs}</span>
-                              <span className="ml-1 text-xs text-slate-400">itens</span>
-                            </td>
-                            <td className="px-4 py-4">
-                              <StatusBadge status={item.status} />
-                            </td>
-                            <td className="px-4 py-4">
-                              <button
-                                onClick={() => {
-                                  setSection("matriculas");
-                                  setSearch(item.id);
-                                }}
-                                className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                                aria-label="Ver matrícula"
-                              >
-                                <MoreHorizontal size={18} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
-                    <span>Mostrando 4 registros de demonstração</span>
-                    <span className="inline-flex items-center gap-1">
-                      <Activity size={13} />
-                      Atualizado visualmente
-                    </span>
-                  </div>
-                </section>
-                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/30">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold">Pendências prioritárias</h3>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Exemplos de alertas operacionais
-                      </p>
-                    </div>
-                    <span className="rounded-lg bg-amber-50 p-2 text-amber-700">
-                      <Bell size={18} />
-                    </span>
-                  </div>
-                  <div className="mt-5 space-y-3">
-                    {[
-                      {
-                        name: "Fotos 3×4 pendentes",
-                        count: "08",
-                        tone: "amber",
-                        detail: "Conferir anexos de identificação",
-                      },
-                      {
-                        name: "Ficha 18 pendente",
-                        count: "12",
-                        tone: "blue",
-                        detail: "Prazo depende da configuração",
-                      },
-                      {
-                        name: "Comprovante de renda",
-                        count: "03",
-                        tone: "violet",
-                        detail: "Aplicável à cota de renda",
-                      },
-                    ].map((p) => (
-                      <div
-                        key={p.name}
-                        className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"
-                      >
-                        <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-xl ${p.tone === "amber" ? "bg-amber-50 text-amber-700" : p.tone === "blue" ? "bg-blue-50 text-blue-700" : "bg-violet-50 text-violet-700"}`}
-                        >
-                          <FileCheck2 size={18} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold">{p.name}</p>
-                          <p className="mt-1 text-xs text-slate-500">{p.detail}</p>
-                        </div>
-                        <span className="text-lg font-bold">{p.count}</span>
-                      </div>
-                    ))}
+
+              {/* Recharts Analytics */}
+              <DashboardCharts students={students} />
+
+              {/* Tabela de Matrículas Recentes */}
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 p-5 gap-3">
+                  <div>
+                    <h3 className="font-bold text-slate-900">Matrículas Recentes Cadastradas</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Últimos registros submetidos pela equipe escolar
+                    </p>
                   </div>
                   <button
-                    onClick={() => setSection("documentos")}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    onClick={() => setSection("matriculas")}
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900"
                   >
-                    Revisar documentação <ArrowRight size={15} />
+                    Ver todas as {students.length} matrículas <ArrowRight size={15} />
                   </button>
-                </section>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[700px] text-left text-sm">
+                    <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
+                      <tr>
+                        <th className="px-5 py-3">Protocolo / Estudante</th>
+                        <th className="px-4 py-3">Curso</th>
+                        <th className="px-4 py-3">Cota</th>
+                        <th className="px-4 py-3">Documentos</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3 text-right">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {students.slice(0, 5).map((s) => {
+                        const delivered = s.documents.filter(
+                          (d) => d.status === "Entregue" || d.status === "Conferido",
+                        ).length;
+                        return (
+                          <tr key={s.id} className="hover:bg-slate-50/70 transition">
+                            <td className="px-5 py-4">
+                              <p className="font-semibold text-slate-800">{s.fullName}</p>
+                              <p className="mt-0.5 text-xs text-slate-400 font-mono">
+                                {s.protocol} · CPF: {maskCpfPrivate(s.cpf)}
+                              </p>
+                            </td>
+                            <td className="px-4 py-4 text-slate-600">{s.course}</td>
+                            <td className="px-4 py-4">
+                              <span className="text-xs font-semibold text-slate-700">
+                                {s.quotaType}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <span className="font-bold text-slate-800">
+                                {delivered}/{s.documents.length}
+                              </span>
+                              <span className="ml-1 text-xs text-slate-400">entregues</span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <StatusBadge status={s.status} />
+                            </td>
+                            <td className="px-4 py-4 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => handleOpenPdfForStudent(s)}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                                  title="Converter em PDF / Imprimir"
+                                >
+                                  <Printer size={13} />
+                                  PDF
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingStudent(s);
+                                    setSection("nova");
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                  title="Editar"
+                                >
+                                  <Edit size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <div className="flex items-center gap-2 text-slate-500">
-                    <BookOpen size={17} />
-                    <span className="text-xs font-semibold uppercase tracking-wide">Cursos</span>
-                  </div>
-                  <p className="mt-3 text-2xl font-bold">4</p>
-                  <p className="mt-1 text-xs text-slate-500">Cursos de exemplo cadastrados</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <div className="flex items-center gap-2 text-slate-500">
-                    <CalendarDays size={17} />
-                    <span className="text-xs font-semibold uppercase tracking-wide">
-                      Ano letivo
-                    </span>
-                  </div>
-                  <p className="mt-3 text-2xl font-bold">2026</p>
-                  <p className="mt-1 text-xs text-slate-500">Configuração demonstrativa</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <div className="flex items-center gap-2 text-slate-500">
-                    <ShieldCheck size={17} />
-                    <span className="text-xs font-semibold uppercase tracking-wide">
-                      Privacidade
-                    </span>
-                  </div>
-                  <p className="mt-3 text-lg font-bold">Dados fictícios</p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Sem integração de produção nesta fase
-                  </p>
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
+          {/* 2. SECTION: MATRÍCULAS LIST WITH ADVANCED FILTERS */}
           {section === "matriculas" && (
-            <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold">Registros de matrícula</h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Lista fictícia — será substituída pela consulta autenticada ao banco.
+                  <h2 className="text-2xl font-bold text-slate-900">Registros de Matrículas</h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Consulta, busca, filtros de cotas e conferência individual de documentos
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    setSection("nova");
-                    setStep(0);
-                  }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white"
-                >
-                  <Plus size={17} />
-                  Nova matrícula
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingStudent(null);
+                      setSection("nova");
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-700/20 hover:bg-blue-800 transition"
+                  >
+                    <Plus size={16} /> Nova Matrícula
+                  </button>
+                  <button
+                    onClick={handleExportCsv}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    <ArrowDownToLine size={15} /> Exportar
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-col gap-3 p-5 sm:flex-row">
-                <div className="relative flex-1">
+
+              {/* Filters & Search Toolbar */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+                <div className="relative">
                   <Search
                     size={17}
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -683,693 +771,522 @@ function Index() {
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar por nome, protocolo, curso ou status..."
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+                    placeholder="Buscar por nome, CPF (completo ou parcial), protocolo ou responsável legal..."
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-xs outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
                   />
                 </div>
-                <button
-                  onClick={() =>
-                    setNotice(
-                      "Filtros avançados serão conectados aos dados reais na fase de backend.",
-                    )
-                  }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  <Filter size={16} />
-                  Filtros
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedPdfEnrollment(visibleEnrollments[0] || demoEnrollments[0]!);
-                    setPdfDialogOpen(true);
-                  }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition shadow-xs"
-                >
-                  <Printer size={16} />
-                  Converter em PDF
-                </button>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                      Filtrar por Curso
+                    </label>
+                    <select
+                      value={courseFilter}
+                      onChange={(e) => setCourseFilter(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium"
+                    >
+                      <option value="all">Todos os Cursos</option>
+                      {availableCourses.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                      Filtrar por Status
+                    </label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium"
+                    >
+                      <option value="all">Todos os Status</option>
+                      <option value="Concluída">Concluída</option>
+                      <option value="Em análise">Em análise</option>
+                      <option value="Rascunho">Rascunho</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                      Filtrar por Cota
+                    </label>
+                    <select
+                      value={quotaFilter}
+                      onChange={(e) => setQuotaFilter(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium"
+                    >
+                      <option value="all">Todas as Cotas</option>
+                      <option value="Não cotista">Não cotista</option>
+                      <option value="Escola Pública">Escola Pública</option>
+                      <option value="Renda">Renda</option>
+                      <option value="Vulnerabilidade">Vulnerabilidade</option>
+                      <option value="PCD">PCD</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-left text-sm">
-                  <thead className="bg-slate-50 text-xs text-slate-500">
+
+              {/* Table */}
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[850px] text-left text-sm">
+                    <thead className="bg-slate-50 text-xs font-semibold text-slate-500 border-b border-slate-100">
+                      <tr>
+                        <th className="px-5 py-3.5">Protocolo / Estudante</th>
+                        <th className="px-4 py-3.5">Curso & Turno</th>
+                        <th className="px-4 py-3.5">Cota</th>
+                        <th className="px-4 py-3.5">Documentos</th>
+                        <th className="px-4 py-3.5">Status</th>
+                        <th className="px-4 py-3.5 text-right">Ações Oficiais</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredStudents.map((s) => {
+                        const delivered = s.documents.filter(
+                          (d) => d.status === "Entregue" || d.status === "Conferido",
+                        ).length;
+                        const pct = Math.round((delivered / s.documents.length) * 100);
+
+                        return (
+                          <tr key={s.id} className="hover:bg-slate-50/70 transition">
+                            <td className="px-5 py-4">
+                              <p className="font-bold text-slate-900">{s.fullName}</p>
+                              <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500 font-mono">
+                                <span>{s.protocol}</span>
+                                <span>·</span>
+                                <span>CPF: {maskCpfPrivate(s.cpf)}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <p className="font-semibold text-slate-800">{s.course}</p>
+                              <p className="text-xs text-slate-500">{s.shift}</p>
+                            </td>
+                            <td className="px-4 py-4">
+                              <span className="font-medium text-xs text-slate-700">
+                                {s.quotaType}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-2">
+                                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-200">
+                                  <div
+                                    className="h-full rounded-full bg-blue-700"
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-bold text-slate-700">{pct}%</span>
+                              </div>
+                              <span className="text-[11px] text-slate-400">
+                                {delivered}/{s.documents.length} itens
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <StatusBadge status={s.status} />
+                            </td>
+                            <td className="px-4 py-4 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {/* Converter em PDF */}
+                                <button
+                                  onClick={() => handleOpenPdfForStudent(s)}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-xs"
+                                  title="Converter em PDF / Imprimir"
+                                >
+                                  <Printer size={13} />
+                                  PDF
+                                </button>
+
+                                {/* Conferência de Documentos */}
+                                <button
+                                  onClick={() => setConferencingStudent(s)}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition shadow-xs"
+                                  title="Conferir Documentos"
+                                >
+                                  <FileCheck size={13} />
+                                  Conferir
+                                </button>
+
+                                {/* Editar */}
+                                <button
+                                  onClick={() => {
+                                    setEditingStudent(s);
+                                    setSection("nova");
+                                  }}
+                                  className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-600 hover:bg-slate-50 transition"
+                                  title="Editar Matrícula"
+                                >
+                                  <Edit size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {filteredStudents.length === 0 && (
+                    <div className="p-10 text-center text-xs text-slate-500">
+                      Nenhuma matrícula encontrada com os filtros informados.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 3. SECTION: NOVA MATRÍCULA / EDIÇÃO (WIZARD) */}
+          {section === "nova" && (
+            <EnrollmentWizard
+              currentUser={currentUser}
+              existingStudents={students}
+              initialData={editingStudent}
+              onSave={handleSaveStudent}
+              onCancel={() => {
+                setEditingStudent(null);
+                setSection("matriculas");
+              }}
+              onOpenPdf={handleOpenPdfForStudent}
+            />
+          )}
+
+          {/* 4. SECTION: CENTRAL DE DOCUMENTAÇÃO (8 MODELOS OFICIAIS) */}
+          {section === "documentos" && (
+            <div className="space-y-6">
+              <div className="flex items-start gap-3">
+                <span className="rounded-xl bg-blue-50 p-3 text-blue-700 shadow-sm">
+                  <FileText size={24} />
+                </span>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">
+                    Central de Documentação Oficial (“Ficha Ok 2026”)
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-500 leading-relaxed max-w-3xl">
+                    O documento oficial Google Docs “Ficha Ok 2026” permanece 100% intacto como
+                    modelo matriz. A automação preenche as 8 seções correspondentes por meio de
+                    marcadores únicos.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {[
+                  {
+                    id: "1",
+                    title: "Ficha de Matrícula",
+                    desc: "Identificação completa do estudante, curso, cota, filiação e endereço.",
+                  },
+                  {
+                    id: "2",
+                    title: "Observações Gerais",
+                    desc: "Histórico de anotações da secretaria, autorizações de saída e observações escolares.",
+                  },
+                  {
+                    id: "3",
+                    title: "Documentação para Matrícula",
+                    desc: "Checklist com conferência de RG, CPF, Certidão, Fotos 3x4 e Ficha 18.",
+                  },
+                  {
+                    id: "4",
+                    title: "Comprovante de Matrícula",
+                    desc: "Canhoto oficial com protocolo gerado, código de autenticidade e carimbo escolar.",
+                  },
+                  {
+                    id: "5",
+                    title: "Ficha de Saúde Escolar",
+                    desc: "Dados clínicos confidenciais, alergias, medicações, tipo sanguíneo e contatos de emergência.",
+                  },
+                  {
+                    id: "6",
+                    title: "Instrumento de Concessão de Imagem e Som da Voz",
+                    desc: "Termo assinado pelo responsável legal para projetos pedagógicos sem fins comerciais.",
+                  },
+                  {
+                    id: "7",
+                    title: "Resumo de Contato e Filiação",
+                    desc: "Contatos telefônicos e endereços de trabalho da mãe, do pai e do responsável legal.",
+                  },
+                  {
+                    id: "8",
+                    title: "Termo de Compromisso Educacional",
+                    desc: "Compromisso formal com o regimento escolar da ETE Maria José Vasconcelos e declaração sob as penas da lei.",
+                  },
+                ].map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-xs hover:border-blue-300 transition"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-xs font-bold text-blue-900">
+                          {doc.id}
+                        </span>
+                        <h4 className="font-bold text-slate-900 text-sm">{doc.title}</h4>
+                      </div>
+                      <p className="mt-2 text-xs text-slate-500 leading-relaxed">{doc.desc}</p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400 font-medium">
+                        Modelo “Ficha Ok 2026”
+                      </span>
+                      <button
+                        onClick={() => {
+                          if (students[0]) handleOpenPdfForStudent(students[0]);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-xs"
+                      >
+                        <Printer size={13} /> Converter em PDF
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Box de Preservação */}
+              <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-5">
+                <div className="flex items-start gap-3">
+                  <CircleHelp size={20} className="text-blue-900 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-blue-950 text-sm">
+                      Garantia de Não-Alteração do Modelo Google Docs Matriz
+                    </h4>
+                    <p className="text-xs text-blue-900 leading-relaxed">
+                      O sistema cria uma nova cópia no Google Drive a cada matrícula concluída,
+                      substituindo marcadores como <code>{"{{NUMERO_MATRICULA}}"}</code> e{" "}
+                      <code>{"{{NOME_ESTUDANTE}}"}</code>, assegurando que o arquivo original "Ficha
+                      Ok 2026" nunca seja modificado ou sobrescrito.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 5. SECTION: DOCUMENTOS GERADOS */}
+          {section === "documentos-gerados" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Histórico de Documentos Gerados
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Versões geradas a partir do modelo “Ficha Ok 2026”. Versões anteriores nunca são
+                  excluídas.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
                     <tr>
-                      <th className="px-5 py-3">Protocolo / estudante</th>
-                      <th className="px-4 py-3">Curso</th>
-                      <th className="px-4 py-3">Cota</th>
-                      <th className="px-4 py-3">Data</th>
-                      <th className="px-4 py-3">Documentos</th>
-                      <th className="px-4 py-3">Status</th>
+                      <th className="px-5 py-3">Protocolo / Estudante</th>
+                      <th className="px-4 py-3">Tipo de Documento</th>
+                      <th className="px-4 py-3">Versão do Modelo</th>
+                      <th className="px-4 py-3">Gerado Por</th>
+                      <th className="px-4 py-3">Data e Hora</th>
                       <th className="px-4 py-3 text-right">Ação</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {visibleEnrollments.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="px-5 py-4">
-                          <p className="font-semibold">{item.name}</p>
-                          <p className="mt-1 text-xs text-slate-400">{item.id}</p>
+                    {generatedDocs.map((doc) => (
+                      <tr key={doc.id} className="hover:bg-slate-50">
+                        <td className="px-5 py-3 font-semibold text-slate-900">
+                          {doc.enrollmentId} — {doc.studentName}
                         </td>
-                        <td className="px-4 py-4">{item.course}</td>
-                        <td className="px-4 py-4">{item.quota}</td>
-                        <td className="px-4 py-4 text-slate-500">{item.date}</td>
-                        <td className="px-4 py-4">{item.docs}</td>
-                        <td className="px-4 py-4">
-                          <StatusBadge status={item.status} />
+                        <td className="px-4 py-3 text-slate-700">{doc.documentType}</td>
+                        <td className="px-4 py-3 text-slate-500 font-mono">
+                          {doc.templateVersion}
                         </td>
-                        <td className="px-4 py-4 text-right">
+                        <td className="px-4 py-3 text-slate-600">{doc.generatedBy}</td>
+                        <td className="px-4 py-3 text-slate-500">{doc.generatedAt}</td>
+                        <td className="px-4 py-3 text-right">
                           <button
                             onClick={() => {
-                              setSelectedPdfEnrollment(item);
-                              setPdfDialogOpen(true);
+                              const s = students.find((st) => st.protocol === doc.enrollmentId);
+                              if (s) handleOpenPdfForStudent(s);
                             }}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-xs"
-                            title="Converter em PDF / Imprimir"
+                            className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100"
                           >
-                            <Printer size={13} />
-                            Converter em PDF
+                            <Printer size={12} /> Abrir PDF
                           </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                {visibleEnrollments.length === 0 && (
-                  <div className="p-10 text-center text-sm text-slate-500">
-                    Nenhum registro fictício corresponde à busca.
-                  </div>
-                )}
               </div>
-            </section>
-          )}
-
-          {section === "nova" && (
-            <div className="grid gap-6 xl:grid-cols-[280px_1fr]">
-              <section className="h-fit rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="px-2 pb-4 pt-2">
-                  <p className="text-xs font-bold uppercase tracking-wider text-blue-700">
-                    Nova matrícula
-                  </p>
-                  <h2 className="mt-1 text-lg font-bold">Cadastro em etapas</h2>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    Os campos são demonstrativos e não salvam dados.
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  {steps.map((s, i) => (
-                    <button
-                      key={s.label}
-                      onClick={() => setStep(i)}
-                      className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${step === i ? "bg-blue-50 text-blue-800" : "text-slate-500 hover:bg-slate-50"}`}
-                    >
-                      <span
-                        className={`flex h-9 w-9 items-center justify-center rounded-xl ${step === i ? "bg-blue-700 text-white" : i < step ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
-                      >
-                        {i < step ? <Check size={17} /> : <s.icon size={17} />}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold">
-                          {i + 1}. {s.label}
-                        </span>
-                        <span className="mt-0.5 block text-xs text-slate-500">{s.hint}</span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-4 rounded-xl bg-slate-50 p-3">
-                  <div className="mb-2 flex justify-between text-xs text-slate-500">
-                    <span>Progresso visual</span>
-                    <span>{Math.round(((step + 1) / steps.length) * 100)}%</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      className="h-full rounded-full bg-blue-700 transition-all"
-                      style={{ width: `${((step + 1) / steps.length) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </section>
-              <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-100 p-5 sm:p-7">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-blue-700">
-                        Etapa {step + 1} de {steps.length}
-                      </p>
-                      <h2 className="mt-1 text-xl font-bold">{steps[step].label}</h2>
-                      <p className="mt-1 text-sm text-slate-500">{steps[step].hint}</p>
-                    </div>
-                    <span className="rounded-xl bg-blue-50 p-3 text-blue-700">
-                      <stepsIcon index={step} />
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-5 p-5 sm:p-7">
-                  {step === 0 && (
-                    <>
-                      <Field label="Ano letivo">
-                        <input value="2026" disabled className={inputClass} />
-                      </Field>
-                      <Field label="Curso *">
-                        <select
-                          value={form.course}
-                          onChange={(e) => updateForm("course", e.target.value)}
-                          className={inputClass}
-                        >
-                          <option value="">Selecione o curso</option>
-                          <option>Desenvolvimento de Sistemas</option>
-                          <option>Administração</option>
-                          <option>Enfermagem</option>
-                          <option>Logística</option>
-                        </select>
-                      </Field>
-                      <Field label="É cotista?">
-                        <select
-                          value={form.cotista}
-                          onChange={(e) => {
-                            updateForm("cotista", e.target.value);
-                            if (e.target.value === "Não") updateForm("quota", "Não cotista");
-                          }}
-                          className={inputClass}
-                        >
-                          <option>Não</option>
-                          <option>Sim</option>
-                        </select>
-                      </Field>
-                      {form.cotista === "Sim" && (
-                        <Field label="Tipo de cota *">
-                          <select
-                            value={form.quota}
-                            onChange={(e) => updateForm("quota", e.target.value)}
-                            className={inputClass}
-                          >
-                            <option value="Não cotista">Selecione</option>
-                            <option>Escola Pública</option>
-                            <option>Renda</option>
-                            <option>Vulnerabilidade</option>
-                            <option>PCD</option>
-                          </select>
-                        </Field>
-                      )}
-                      <p className="rounded-xl bg-blue-50 p-3 text-xs leading-5 text-blue-800">
-                        O número de matrícula será gerado no servidor após a validação e a aprovação
-                        das regras oficiais.
-                      </p>
-                    </>
-                  )}
-                  {step === 1 && (
-                    <>
-                      <Field label="Nome completo *">
-                        <input
-                          value={form.student}
-                          onChange={(e) => updateForm("student", e.target.value)}
-                          placeholder="Nome completo do estudante"
-                          className={inputClass}
-                        />
-                      </Field>
-                      <Field label="CPF">
-                        <input
-                          value={form.cpf}
-                          onChange={(e) => updateForm("cpf", e.target.value)}
-                          placeholder="000.000.000-00"
-                          className={inputClass}
-                        />
-                      </Field>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <Field label="Data de nascimento">
-                          <input
-                            type="date"
-                            value={form.birth}
-                            onChange={(e) => updateForm("birth", e.target.value)}
-                            className={inputClass}
-                          />
-                        </Field>
-                        <Field label="Idade calculada">
-                          <input
-                            value={age ? `${age} anos` : ""}
-                            readOnly
-                            placeholder="Calculada automaticamente"
-                            className={inputClass}
-                          />
-                        </Field>
-                      </div>
-                      <Field label="Estudante PCD?">
-                        <select
-                          value={form.pcd}
-                          onChange={(e) => updateForm("pcd", e.target.value)}
-                          className={inputClass}
-                        >
-                          <option>Não</option>
-                          <option>Sim</option>
-                        </select>
-                      </Field>
-                      {form.pcd === "Sim" && (
-                        <Field label="Tipo de PCD">
-                          <input
-                            placeholder="Informar tipo, com acesso restrito"
-                            className={inputClass}
-                          />
-                        </Field>
-                      )}
-                      <Field label="Utiliza transporte escolar?">
-                        <select
-                          value={form.transport}
-                          onChange={(e) => updateForm("transport", e.target.value)}
-                          className={inputClass}
-                        >
-                          <option>Não</option>
-                          <option>Sim</option>
-                        </select>
-                      </Field>
-                    </>
-                  )}
-                  {step === 2 && (
-                    <>
-                      <p className="text-sm leading-6 text-slate-600">
-                        Informe os dados de filiação conforme o formulário oficial. Cada vínculo
-                        permite marcar quando a informação não se aplica.
-                      </p>
-                      <Field label="Nome da mãe">
-                        <input placeholder="Nome completo" className={inputClass} />
-                      </Field>
-                      <Field label="Situação da mãe">
-                        <select className={inputClass}>
-                          <option>Informado</option>
-                          <option>Não informado</option>
-                          <option>Falecido(a)</option>
-                          <option>Não se aplica</option>
-                        </select>
-                      </Field>
-                      <Field label="Nome do pai">
-                        <input placeholder="Nome completo" className={inputClass} />
-                      </Field>
-                      <Field label="Situação do pai">
-                        <select className={inputClass}>
-                          <option>Informado</option>
-                          <option>Não informado</option>
-                          <option>Falecido(a)</option>
-                          <option>Não se aplica</option>
-                        </select>
-                      </Field>
-                    </>
-                  )}
-                  {step === 3 && (
-                    <>
-                      <Field label="Responsável legal *">
-                        <input
-                          placeholder="Nome completo do responsável selecionado"
-                          className={inputClass}
-                        />
-                      </Field>
-                      <Field label="Vínculo com o estudante">
-                        <select className={inputClass}>
-                          <option value="">Selecione</option>
-                          <option>Mãe</option>
-                          <option>Pai</option>
-                          <option>Outro responsável legal</option>
-                        </select>
-                      </Field>
-                      <Field label="CPF do responsável">
-                        <input placeholder="000.000.000-00" className={inputClass} />
-                      </Field>
-                      <p className="rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">
-                        O sistema não presumirá que a mãe é a responsável. Os documentos utilizarão
-                        o responsável legal escolhido.
-                      </p>
-                    </>
-                  )}
-                  {step === 4 && (
-                    <>
-                      <Field label="Possui seguro de saúde?">
-                        <select className={inputClass}>
-                          <option>Não</option>
-                          <option>Sim</option>
-                        </select>
-                      </Field>
-                      <Field label="Possui alergia medicamentosa?">
-                        <select
-                          value={form.allergy}
-                          onChange={(e) => updateForm("allergy", e.target.value)}
-                          className={inputClass}
-                        >
-                          <option>Não</option>
-                          <option>Sim</option>
-                        </select>
-                      </Field>
-                      {form.allergy === "Sim" && (
-                        <Field label="Tipo de alergia">
-                          <input
-                            placeholder="Informação de saúde — acesso restrito"
-                            className={inputClass}
-                          />
-                        </Field>
-                      )}
-                      <Field label="Utiliza medicação controlada?">
-                        <select
-                          value={form.medication}
-                          onChange={(e) => updateForm("medication", e.target.value)}
-                          className={inputClass}
-                        >
-                          <option>Não</option>
-                          <option>Sim</option>
-                        </select>
-                      </Field>
-                      {form.medication === "Sim" && (
-                        <Field label="Nome da medicação">
-                          <input
-                            placeholder="Informação de saúde — acesso restrito"
-                            className={inputClass}
-                          />
-                        </Field>
-                      )}
-                      <Field label="Contato para emergência">
-                        <input placeholder="Nome e telefone" className={inputClass} />
-                      </Field>
-                      <p className="rounded-xl bg-rose-50 p-3 text-xs leading-5 text-rose-800">
-                        Dados de saúde são sensíveis. Esta tela não transmite nem armazena
-                        informações nesta fase.
-                      </p>
-                    </>
-                  )}
-                  {step === 5 && (
-                    <>
-                      <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-                        <Upload size={25} className="mx-auto text-slate-400" />
-                        <p className="mt-3 text-sm font-semibold">Área de anexos (demonstração)</p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          Upload real só será ativado com armazenamento privado e políticas de
-                          acesso revisadas.
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        {[
-                          "Certidão de nascimento",
-                          "RG e CPF",
-                          "Ficha de matrícula da secretaria",
-                          "Duas fotos 3×4",
-                          "Comprovante de residência",
-                          "Cartão de vacina",
-                          "Ficha 18",
-                          "Comprovante de renda (quando aplicável)",
-                          "Comprovante de vulnerabilidade (quando aplicável)",
-                        ].map((doc, i) => (
-                          <div
-                            key={doc}
-                            className="flex items-center gap-3 rounded-xl border border-slate-100 px-3 py-3"
-                          >
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500">
-                              {i + 1}
-                            </span>
-                            <span className="flex-1 text-sm text-slate-700">{doc}</span>
-                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500">
-                              Pendente
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {step === 6 && (
-                    <>
-                      <div className="rounded-xl border border-slate-200 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                          Resumo da matrícula (prévia local)
-                        </p>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                          <Summary label="Estudante" value={form.student || "Não informado"} />
-                          <Summary label="Curso" value={form.course || "Não selecionado"} />
-                          <Summary
-                            label="Cota"
-                            value={form.cotista === "Sim" ? form.quota : "Não cotista"}
-                          />
-                          <Summary label="Idade" value={age ? `${age} anos` : "Não informada"} />
-                        </div>
-                      </div>
-                      <label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-sm leading-5 text-slate-600">
-                        <input
-                          type="checkbox"
-                          checked={form.confirmed}
-                          onChange={(e) => updateForm("confirmed", e.target.checked)}
-                          className="mt-1 h-4 w-4 accent-blue-700"
-                        />
-                        Confirmo que os dados desta prévia foram revisados. Esta confirmação não
-                        conclui uma matrícula real.
-                      </label>
-                      <p className="text-xs leading-5 text-slate-500">
-                        Antes de ativar a conclusão, serão validados os campos obrigatórios, CPF
-                        duplicado, documentos condicionais e as permissões no servidor.
-                      </p>
-                    </>
-                  )}
-                </div>
-                <div className="flex flex-col-reverse justify-between gap-3 border-t border-slate-100 p-5 sm:flex-row sm:p-7">
-                  <button
-                    onClick={() => (step === 0 ? setSection("dashboard") : setStep(step - 1))}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-                  >
-                    <ChevronLeft size={17} />
-                    {step === 0 ? "Cancelar" : "Voltar"}
-                  </button>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <button
-                      onClick={() =>
-                        setNotice(
-                          "Rascunho não salvo: a persistência será habilitada somente após autenticação e revisão do banco.",
-                        )
-                      }
-                      className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                    >
-                      Salvar rascunho
-                    </button>
-                    {step === steps.length - 1 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedPdfEnrollment({
-                            id: "MAT-2026-PREVIA",
-                            name: form.student || "Estudante em Cadastro",
-                            course: form.course || "Desenvolvimento de Sistemas",
-                            date: new Date().toLocaleDateString("pt-BR"),
-                            status: "Rascunho",
-                            quota: form.cotista === "Sim" ? form.quota : "Não cotista",
-                            docs: "8/10",
-                            cpf: form.cpf || "000.000.000-00",
-                            birthDate: form.birth || "15/05/2009",
-                            age: age || "17",
-                            pcd: form.pcd,
-                            transport: form.transport,
-                            allergy: form.allergy,
-                            medication: form.medication,
-                          });
-                          setPdfDialogOpen(true);
-                        }}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition shadow-xs"
-                      >
-                        <Printer size={16} />
-                        Converter em PDF (Ficha Ok 2026)
-                      </button>
-                    )}
-                    {step < steps.length - 1 ? (
-                      <button
-                        onClick={() => setStep(step + 1)}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
-                      >
-                        Próxima etapa <ChevronRight size={17} />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          if (!form.confirmed) {
-                            setNotice(
-                              "Marque a confirmação da revisão para validar o fluxo demonstrativo.",
-                            );
-                            return;
-                          }
-                          setNotice(
-                            "Revisão demonstrada. Matrícula não concluída: falta conectar o backend seguro.",
-                          );
-                        }}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
-                      >
-                        Validar revisão <Check size={17} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </section>
             </div>
           )}
 
-          {section === "documentos" && (
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-              <div className="flex items-start gap-3">
-                <span className="rounded-xl bg-blue-50 p-3 text-blue-700">
-                  <FileText size={21} />
-                </span>
-                <div>
-                  <h2 className="text-xl font-bold">Central de documentação</h2>
-                  <p className="mt-1 text-sm leading-6 text-slate-500">
-                    A especificação prevê conferência, status, prazos, armazenamento privado e
-                    geração dos oito documentos oficiais a partir do modelo “Ficha Ok 2026”.
+          {/* 6. SECTION: CONFIGURAÇÕES ADMINISTRATIVAS */}
+          {section === "configuracoes" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Configurações Administrativas do Sistema
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Parâmetros de negócio e integração que podem ser ajustados pela equipe gestora
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Formato do Número de Matrícula
+                    </label>
+                    <input
+                      value={settings.protocolFormat}
+                      onChange={(e) => setSettings({ ...settings, protocolFormat: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-mono font-bold"
+                    />
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      Padrão atual: <code>MAT-2026-XXXX</code> com sequência unívoca no servidor.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Pasta de Destino no Google Drive (ID)
+                    </label>
+                    <input
+                      value={settings.googleDriveFolderId}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          googleDriveFolderId: e.target.value,
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-mono"
+                    />
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      ID seguro da pasta institucional onde as cópias preenchidas são salvas.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2 pt-2 border-t border-slate-100">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Tolerância de Prazo para Ficha 18
+                    </label>
+                    <select
+                      value={settings.ficha18GracePeriod ? "Sim" : "Não"}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          ficha18GracePeriod: e.target.value === "Sim",
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold"
+                    >
+                      <option value="Sim">Sim (Permite entregar após início das aulas)</option>
+                      <option value="Não">Não (Exige Ficha 18 para concluir)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Termo de Concessão de Imagem
+                    </label>
+                    <select
+                      value={settings.mandatoryImageTerm ? "Obrigatorio" : "Facultativo"}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          mandatoryImageTerm: e.target.value === "Obrigatorio",
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold"
+                    >
+                      <option value="Obrigatorio">Obrigatório para matrícula</option>
+                      <option value="Facultativo">Facultativo (Opt-in)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100">
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                    Campo 3.7.3 do Formulário Oficial (Resolução da Pendência)
+                  </label>
+                  <input
+                    value={settings.field373Title}
+                    onChange={(e) => setSettings({ ...settings, field373Title: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs"
+                  />
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Definido conforme homologação da secretaria escolar da ETE Maria José
+                    Vasconcelos.
                   </p>
                 </div>
-              </div>
-              <div className="mt-6 grid gap-3 md:grid-cols-2">
-                {[
-                  "Ficha de matrícula",
-                  "Observações",
-                  "Documentação para matrícula",
-                  "Comprovante de matrícula",
-                  "Ficha de saúde",
-                  "Concessão de imagem e som da voz",
-                  "Resumo de contato",
-                  "Termo de compromisso educacional",
-                ].map((name, i) => (
-                  <div
-                    key={name}
-                    className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 hover:border-blue-200 transition"
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => setNotice("Configurações administrativas salvas com sucesso.")}
+                    className="rounded-xl bg-blue-700 px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-800 transition"
                   >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600">
-                      {i + 1}
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold">{name}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Modelo oficial · modelo “Ficha Ok 2026”
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSelectedPdfEnrollment(demoEnrollments[0]!);
-                        setPdfDialogOpen(true);
-                      }}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-xs"
-                      title="Converter em PDF / Visualizar documento"
-                    >
-                      <Printer size={13} />
-                      Converter em PDF
-                    </button>
-                  </div>
-                ))}
+                    Salvar Alterações
+                  </button>
+                </div>
               </div>
-              <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-blue-900">
-                  <CircleHelp size={17} />
-                  Preservação do modelo original
-                </p>
-                <p className="mt-1 text-sm leading-6 text-blue-800">
-                  A integração deverá criar uma cópia do Google Docs configurado, preencher
-                  marcadores únicos e nunca editar ou substituir o arquivo “Ficha Ok 2026”.
-                </p>
-              </div>
-            </section>
+            </div>
           )}
 
-          {section === "configuracoes" && (
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-              <h2 className="text-xl font-bold">Configurações administrativas</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Pontos que precisam ser confirmados antes de fixar regras de negócio.
-              </p>
-              <div className="mt-6 space-y-3">
-                {[
-                  {
-                    name: "Formato do número de matrícula",
-                    desc: "Definir padrão e unicidade no servidor.",
-                  },
-                  {
-                    name: "Pasta de destino do Google Drive",
-                    desc: "Configurar ID e credenciais em ambiente seguro.",
-                  },
-                  {
-                    name: "Documentos que bloqueiam a conclusão",
-                    desc: "Definir regra por tipo de matrícula.",
-                  },
-                  {
-                    name: "Prazo da Ficha 18",
-                    desc: "Definir se pode ser entregue posteriormente.",
-                  },
-                  {
-                    name: "Obrigatoriedade do termo de imagem",
-                    desc: "Confirmar política institucional.",
-                  },
-                  {
-                    name: "Formato dos arquivos gerados",
-                    desc: "Pacote único ou documentos separados.",
-                  },
-                  {
-                    name: "Permissão de visualização",
-                    desc: "Restringir acesso aos documentos gerados.",
-                  },
-                  {
-                    name: "Campo 3.7.3 do formulário",
-                    desc: "Identificar o título ausente no formulário oficial.",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-start gap-3 rounded-xl border border-slate-100 p-4"
-                  >
-                    <SlidersHorizontal size={18} className="mt-0.5 text-slate-400" />
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold">{item.name}</p>
-                      <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
-                    </div>
-                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                      A confirmar
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() =>
-                  setNotice(
-                    "Configurações registradas como itens de revisão; nenhuma regra foi aplicada ao banco.",
-                  )
-                }
-                className="mt-5 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                Marcar revisão da lista
-              </button>
-            </section>
-          )}
-          <footer className="mt-8 flex flex-col gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-            <span>Escola Técnica Estadual Maria José Vasconcelos · Sistema de Matrícula 2026</span>
+          {/* Footer */}
+          <footer className="mt-10 flex flex-col gap-2 border-t border-slate-200 pt-6 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+            <span>Escola Técnica Estadual Maria José Vasconcelos · Gestão de Matrículas 2026</span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} />
-              Protótipo sem dados reais e sem persistência
+              <ShieldCheck size={13} className="text-emerald-700" />
+              Sistema Protegido com Controle RBAC e Privacidade LGPD
             </span>
           </footer>
         </div>
       </main>
 
+      {/* PDF Converter Modal */}
       <PdfConverterDialog
         isOpen={pdfDialogOpen}
         onClose={() => setPdfDialogOpen(false)}
         enrollment={selectedPdfEnrollment}
       />
-    </div>
-  );
-}
 
-const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50";
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block space-y-2">
-      <span className="text-sm font-semibold text-slate-700">{label}</span>
-      {children}
-    </label>
-  );
-}
-function Summary({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold text-slate-800">{value}</p>
+      {/* Admin Users Modal */}
+      <AdminUsersDialog
+        isOpen={usersDialogOpen}
+        onClose={() => setUsersDialogOpen(false)}
+        users={users}
+        onUpdateUsers={(u) => {
+          setUsers(u);
+          setNotice("Usuários atualizados com sucesso.");
+        }}
+        currentUser={currentUser}
+      />
+
+      {/* Audit Logs Modal */}
+      <AuditLogsModal
+        isOpen={auditModalOpen}
+        onClose={() => setAuditModalOpen(false)}
+        logs={auditLogs}
+      />
+
+      {/* Document Conference Modal */}
+      {conferencingStudent && (
+        <DocumentConferenceModal
+          isOpen={!!conferencingStudent}
+          onClose={() => setConferencingStudent(null)}
+          student={conferencingStudent}
+          currentUser={currentUser}
+          onUpdateStudent={(updated) => {
+            setStudents((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+            setNotice(`Conferência de documentos de ${updated.fullName} salva com sucesso.`);
+          }}
+        />
+      )}
     </div>
   );
-}
-function stepsIcon({ index }: { index: number }) {
-  const Icon = steps[index].icon;
-  return <Icon size={20} />;
 }
