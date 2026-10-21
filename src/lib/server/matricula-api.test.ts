@@ -46,7 +46,6 @@ describe("matricula API safety gates", () => {
   });
 });
 
-
 describe("session cookie and origin guards", () => {
   it("reads an encoded HttpOnly session cookie", () => {
     const request = new Request("https://school.example/api/auth/session", {

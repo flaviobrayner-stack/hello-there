@@ -63,7 +63,11 @@ export const Route = createFileRoute("/api/auth/login")({
 
           if (!upstream.ok) {
             // Same response for unknown user and incorrect password.
-            return jsonError("Não foi possível autenticar com essas credenciais.", 401, "LOGIN_FAILED");
+            return jsonError(
+              "Não foi possível autenticar com essas credenciais.",
+              401,
+              "LOGIN_FAILED",
+            );
           }
 
           const session = (await upstream.json()) as {
@@ -71,7 +75,11 @@ export const Route = createFileRoute("/api/auth/login")({
             expires_in?: unknown;
           };
           if (typeof session.access_token !== "string" || !session.access_token) {
-            return jsonError("Serviço de autenticação retornou uma sessão inválida.", 502, "INVALID_AUTH_RESPONSE");
+            return jsonError(
+              "Serviço de autenticação retornou uma sessão inválida.",
+              502,
+              "INVALID_AUTH_RESPONSE",
+            );
           }
 
           const verificationRequest = new Request(request.url, {
@@ -96,7 +104,11 @@ export const Route = createFileRoute("/api/auth/login")({
           );
           return response;
         } catch {
-          return jsonError("Serviço de autenticação indisponível.", 503, "AUTH_SERVICE_UNAVAILABLE");
+          return jsonError(
+            "Serviço de autenticação indisponível.",
+            503,
+            "AUTH_SERVICE_UNAVAILABLE",
+          );
         }
       },
     },
