@@ -214,8 +214,17 @@ as $$
   where p.id = auth.uid() and p.active = true
   limit 1
 $$;
+revoke all on function public.current_active_role() from public;
+revoke all on function public.current_active_role() from anon;
+grant execute on function public.current_active_role() to authenticated;
 
--- RLS e policies abaixo são propostas iniciais, não aprovadas.
+
+
+-- RLS e policies abaixo são propostas de revisão, ainda NÃO aprovadas.
+-- Operadores ficam limitados às matrículas que criaram até decisão institucional
+-- formal sobre escopo por equipe/curso. Dados médicos são exclusivos de admin.
+-- Escritas operacionais passam por RPCs/servidor com validação; sem DML genérico.
+
 alter table public.profiles enable row level security;
 alter table public.courses enable row level security;
 alter table public.students enable row level security;
@@ -231,78 +240,77 @@ alter table public.app_settings enable row level security;
 create policy profiles_read_self_or_admin on public.profiles
   for select to authenticated
   using (id = auth.uid() or public.current_active_role() = 'admin');
-create policy profiles_admin_manage on public.profiles
-  for all to authenticated
-  using (public.current_active_role() = 'admin')
-  with check (public.current_active_role() = 'admin');
 
-create policy courses_read_authenticated on public.courses
+create policy courses_read_active_staff on public.courses
   for select to authenticated
-  using (public.current_active_role() in ('admin', 'operador'));
+  using (active = true and public.current_active_role() in ('admin', 'operador'));
 create policy courses_admin_manage on public.courses
   for all to authenticated
   using (public.current_active_role() = 'admin')
   with check (public.current_active_role() = 'admin');
 
-create policy students_staff_read on public.students
+create policy students_admin_read on public.students
   for select to authenticated
-  using (public.current_active_role() in ('admin', 'operador'));
-create policy students_staff_insert on public.students
-  for insert to authenticated
-  with check (public.current_active_role() in ('admin', 'operador'));
-create policy students_staff_update on public.students
-  for update to authenticated
-  using (public.current_active_role() in ('admin', 'operador'))
-  with check (public.current_active_role() in ('admin', 'operador'));
-
-create policy enrollments_staff_read on public.enrollments
+  using (public.current_active_role() = 'admin');
+create policy students_operator_read_own_enrollments on public.students
   for select to authenticated
-  using (public.current_active_role() in ('admin', 'operador'));
-create policy enrollments_staff_insert on public.enrollments
-  for insert to authenticated
-  with check (
-    public.current_active_role() in ('admin', 'operador')
-    and created_by = auth.uid()
+  using (
+    public.current_active_role() = 'operador'
+    and exists (select 1 from public.enrollments e
+      where e.student_id = students.id and e.created_by = auth.uid())
   );
-create policy enrollments_staff_update on public.enrollments
-  for update to authenticated
-  using (public.current_active_role() in ('admin', 'operador'))
-  with check (public.current_active_role() in ('admin', 'operador'));
 
-create policy parents_staff_access on public.parents_guardians
+create policy enrollments_admin_read on public.enrollments
+  for select to authenticated
+  using (public.current_active_role() = 'admin');
+create policy enrollments_operator_read_own on public.enrollments
+  for select to authenticated
+  using (public.current_active_role() = 'operador' and created_by = auth.uid());
+
+create policy parents_admin_all on public.parents_guardians
   for all to authenticated
-  using (public.current_active_role() in ('admin', 'operador'))
-  with check (public.current_active_role() in ('admin', 'operador'));
+  using (public.current_active_role() = 'admin')
+  with check (public.current_active_role() = 'admin');
+create policy parents_operator_own_read on public.parents_guardians
+  for select to authenticated
+  using (
+    public.current_active_role() = 'operador'
+    and exists (select 1 from public.enrollments e
+      where e.id = parents_guardians.enrollment_id and e.created_by = auth.uid())
+  );
 
--- Política conservadora: somente admin até aprovação explícita de acesso
--- de operadores aos dados médicos e definição de escopo por matrícula.
 create policy health_admin_only on public.health_records
   for all to authenticated
   using (public.current_active_role() = 'admin')
   with check (public.current_active_role() = 'admin');
 
-create policy documents_staff_read on public.documents
+create policy documents_admin_all on public.documents
+  for all to authenticated
+  using (public.current_active_role() = 'admin')
+  with check (public.current_active_role() = 'admin');
+create policy documents_operator_own_read on public.documents
   for select to authenticated
-  using (public.current_active_role() in ('admin', 'operador'));
-create policy documents_staff_insert on public.documents
-  for insert to authenticated
-  with check (public.current_active_role() in ('admin', 'operador'));
-create policy documents_staff_update on public.documents
-  for update to authenticated
-  using (public.current_active_role() in ('admin', 'operador'))
-  with check (public.current_active_role() in ('admin', 'operador'));
+  using (
+    public.current_active_role() = 'operador'
+    and exists (select 1 from public.enrollments e
+      where e.id = documents.enrollment_id and e.created_by = auth.uid())
+  );
 
-create policy generated_docs_staff_read on public.generated_documents
+create policy generated_docs_admin_all on public.generated_documents
+  for all to authenticated
+  using (public.current_active_role() = 'admin')
+  with check (public.current_active_role() = 'admin');
+create policy generated_docs_operator_own_read on public.generated_documents
   for select to authenticated
-  using (public.current_active_role() in ('admin', 'operador'));
-create policy generated_docs_staff_insert on public.generated_documents
-  for insert to authenticated
-  with check (public.current_active_role() in ('admin', 'operador'));
+  using (
+    public.current_active_role() = 'operador'
+    and exists (select 1 from public.enrollments e
+      where e.id = generated_documents.enrollment_id and e.created_by = auth.uid())
+  );
 
 create policy audit_logs_admin_read on public.audit_logs
   for select to authenticated
   using (public.current_active_role() = 'admin');
--- Inserção de auditoria deve ocorrer via função/servidor confiável, não cliente livre.
 
 create policy document_rules_staff_read on public.document_rules
   for select to authenticated
@@ -316,6 +324,21 @@ create policy app_settings_admin_only on public.app_settings
   for all to authenticated
   using (public.current_active_role() = 'admin')
   with check (public.current_active_role() = 'admin');
+
+-- Privilégios explícitos de referência. Nenhum acesso concedido a anon.
+revoke all on all tables in schema public from anon, authenticated;
+revoke all on all sequences in schema public from anon, authenticated;
+grant usage on schema public to authenticated;
+grant select on public.profiles, public.courses, public.students, public.enrollments,
+  public.parents_guardians, public.health_records, public.documents,
+  public.generated_documents, public.audit_logs, public.document_rules,
+  public.app_settings to authenticated;
+-- Escrita direta apenas em tabelas de configuração, sob policies de admin.
+grant insert, update, delete on public.courses, public.document_rules,
+  public.app_settings to authenticated;
+-- Sem DML direto em dados pessoais, matrículas, saúde, documentos, auditoria
+-- ou sequência. Essas operações exigem RPCs específicas e auditadas.
+-- O GRANT EXECUTE da RPC de matrícula fica desligado até revisão formal.
 
 -- Ainda requer revisão:
 -- 1) REVOKE/GRANT explícitos por role/schema/table/function.
@@ -360,6 +383,7 @@ declare
   v_enrollment_id uuid;
   v_protocol text;
   v_next_number bigint;
+  v_cpf_digits text;
 begin
   if v_user_id is null then
     raise exception using errcode = '42501', message = 'authentication_required';
@@ -406,25 +430,53 @@ begin
 
   v_protocol := 'MAT-' || p_academic_year::text || '-' || lpad(v_next_number::text, 6, '0');
 
-  insert into public.students (
-    full_name, social_name, cpf_digits, rg, birth_date, phone, email,
-    address, city, state, cep_digits, race_color, pcd, previous_school
-  ) values (
-    trim(p_student->>'fullName'),
-    nullif(trim(p_student->>'socialName'), ''),
-    nullif(regexp_replace(coalesce(p_student->>'cpf', ''), '\\D', '', 'g'), ''),
-    nullif(trim(p_student->>'rg'), ''),
-    nullif(p_student->>'birthDate', '')::date,
-    nullif(trim(p_student->>'phone'), ''),
-    nullif(trim(p_student->>'email'), ''),
-    nullif(trim(p_student->>'address'), ''),
-    nullif(trim(p_student->>'city'), ''),
-    nullif(upper(trim(p_student->>'state')), ''),
-    nullif(regexp_replace(coalesce(p_student->>'cep', ''), '\\D', '', 'g'), ''),
-    nullif(trim(p_student->>'raceColor'), ''),
-    coalesce((p_student->>'pcd')::boolean, false),
-    nullif(trim(p_student->>'previousSchool'), '')
-  ) returning id into v_student_id;
+  v_cpf_digits := nullif(
+    regexp_replace(coalesce(p_student->>'cpf', ''), '[^0-9]', '', 'g'),
+    ''
+  );
+  if v_cpf_digits is not null and length(v_cpf_digits) <> 11 then
+    raise exception using errcode = '22023', message = 'invalid_cpf_format';
+  end if;
+
+  -- CPF identifica a pessoa; a matrícula é independente por ano letivo.
+  -- Reutilizar registro existente sem sobrescrever dados pessoais silenciosamente.
+  if v_cpf_digits is not null then
+    select s.id into v_student_id
+    from public.students s where s.cpf_digits = v_cpf_digits limit 1;
+  end if;
+
+  if v_student_id is null then
+    insert into public.students (
+      full_name, social_name, cpf_digits, rg, birth_date, phone, email,
+      address, city, state, cep_digits, race_color, pcd, previous_school
+    ) values (
+      trim(p_student->>'fullName'),
+      nullif(trim(p_student->>'socialName'), ''),
+      v_cpf_digits,
+      nullif(trim(p_student->>'rg'), ''),
+      nullif(p_student->>'birthDate', '')::date,
+      nullif(trim(p_student->>'phone'), ''),
+      nullif(trim(p_student->>'email'), ''),
+      nullif(trim(p_student->>'address'), ''),
+      nullif(upper(trim(p_student->>'state')), ''),
+      nullif(regexp_replace(coalesce(p_student->>'cep', ''), '[^0-9]', '', 'g'), ''),
+      nullif(trim(p_student->>'raceColor'), ''),
+      coalesce((p_student->>'pcd')::boolean, false),
+      nullif(trim(p_student->>'previousSchool'), '')
+    )
+    on conflict (cpf_digits) where cpf_digits is not null do nothing
+    returning id into v_student_id;
+
+    -- Resolve concorrência: outra transação pode ter inserido o CPF primeiro.
+    if v_student_id is null and v_cpf_digits is not null then
+      select s.id into v_student_id
+      from public.students s where s.cpf_digits = v_cpf_digits limit 1;
+    end if;
+  end if;
+
+  if v_student_id is null then
+    raise exception using errcode = 'P0001', message = 'student_identity_resolution_failed';
+  end if;
 
   insert into public.enrollments (
     protocol, academic_year, student_id, course_id, created_by,
@@ -456,9 +508,14 @@ $$;
 -- EXECUTE a anon/public; somente authenticated após revisão de segurança.
 revoke all on function public.create_enrollment_transaction(jsonb, uuid, integer, boolean, text) from public;
 revoke all on function public.create_enrollment_transaction(jsonb, uuid, integer, boolean, text) from anon;
--- GRANT EXECUTE ... TO authenticated só deve entrar na migration aprovada.
+-- GRANT EXECUTE ON FUNCTION public.create_enrollment_transaction(jsonb, uuid, integer, boolean, text) TO authenticated;
+-- Só habilitar após aprovação formal e testes de autorização.
 
--- Atenção: esta proposta cria um registro de estudante por matrícula. A política
--- de deduplicação por CPF e a rematrícula precisam ser decididas antes de uso real.
--- A função também precisa de testes de duplicidade, payload malformado, rollback,
--- permissões do owner SECURITY DEFINER e grants/revokes do schema.
+-- A proposta reutiliza estudante por CPF normalizado e mantém matrículas separadas
+-- por ano letivo. CPF ausente ainda permite criar estudante sem chave de deduplicação.
+-- PENDENTE: validar dígitos verificadores do CPF no servidor; definir fluxo auditado
+-- de correção de CPF e reconciliação manual quando CPF estiver ausente/incorreto.
+-- A função ainda precisa de testes de payload malformado, rollback, concorrência,
+-- owner SECURITY DEFINER, grants/revokes e leitura por operador/admin.
+-- O payload inicial ainda não grava todos os campos nem responsáveis; não conectar
+-- o formulário real a esta RPC até completar e revisar o contrato.
