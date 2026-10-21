@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { authenticateStaff, jsonError } from "../lib/server/matricula-api";
+import { authenticateStaff } from "../lib/server/matricula-api";
 
 export const Route = createFileRoute("/api/auth/session")({
   server: {
