@@ -11,7 +11,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   validate:
@@ -27,15 +27,6 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Format changed files
         run: bunx prettier --write src/routes/index.tsx src/routes/__root.tsx src/lib/enrollment-validation.ts src/lib/enrollment-validation.test.ts src/routes/api.courses.ts src/routes/api.enrollments.ts src/routes/api.auth.login.ts src/routes/api.auth.session.ts src/routes/api.auth.logout.ts src/lib/server/matricula-api.ts src/lib/server/matricula-api.test.ts
-      - name: Commit formatting when needed
-        run: |
-          if ! git diff --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add src/routes/index.tsx src/routes/__root.tsx src/lib/enrollment-validation.ts src/lib/enrollment-validation.test.ts src/routes/api.courses.ts src/routes/api.enrollments.ts src/routes/api.auth.login.ts src/routes/api.auth.session.ts src/routes/api.auth.logout.ts src/lib/server/matricula-api.ts src/lib/server/matricula-api.test.ts
-            git commit -m "style: format enrollment implementation"
-            git push
-          fi
       - name: Unit tests
         run: bun run test
       - name: Lint
