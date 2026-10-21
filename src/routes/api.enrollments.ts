@@ -1,11 +1,67 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 
+import { isValidCpf } from "../lib/enrollment-validation";
 import {
   authenticateStaff,
   jsonError,
   safeRestFailure,
   staffRestRequest,
 } from "../lib/server/matricula-api";
+
+const studentSchema = z
+  .object({
+    fullName: z.string().trim().min(3).max(160),
+    socialName: z.string().trim().max(160).optional(),
+    cpf: z.string().trim().max(14).optional(),
+    rg: z.string().trim().max(40).optional(),
+    birthDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    phone: z.string().trim().max(30).optional(),
+    email: z.string().trim().email().max(254).optional(),
+    address: z.string().trim().max(240).optional(),
+    city: z.string().trim().max(120).optional(),
+    state: z.string().trim().regex(/^[A-Za-z]{2}$/).optional(),
+    cep: z.string().trim().max(10).optional(),
+    raceColor: z.string().trim().max(60).optional(),
+    pcd: z.boolean().optional(),
+    previousSchool: z.string().trim().max(180).optional(),
+  })
+  .strict()
+  .superRefine((student, context) => {
+    if (student.cpf && !isValidCpf(student.cpf)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["cpf"],
+        message: "CPF inválido.",
+      });
+    }
+
+    if (student.birthDate) {
+      const parsed = new Date(`${student.birthDate}T00:00:00.000Z`);
+      if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== student.birthDate) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["birthDate"],
+          message: "Data de nascimento inválida.",
+        });
+      }
+    }
+  });
+
+const createEnrollmentSchema = z
+  .object({
+    courseId: z.string().uuid(),
+    academicYear: z.number().int().min(2020).max(2100).default(2026),
+    quotaType: z
+      .enum(["escola_publica", "renda", "vulnerabilidade", "pcd"])
+      .nullable()
+      .default(null),
+    student: studentSchema,
+  })
+  .strict();
 
 export const Route = createFileRoute("/api/enrollments")({
   server: {
@@ -45,13 +101,65 @@ export const Route = createFileRoute("/api/enrollments")({
         const auth = await authenticateStaff(request);
         if (!auth.ok) return auth.response;
 
-        // Creation must be one transaction (student + enrollment + protocol +
-        // audit). It remains closed until the reviewed RPC/migration and
-        // authorization tests exist; separate REST inserts could leave orphans.
-        return jsonError(
-          "A criação de matrículas será habilitada após a função transacional e suas políticas serem revisadas.",
-          501,
-          "TRANSACTIONAL_CREATE_NOT_READY",
+        const contentType = request.headers.get("content-type") ?? "";
+        if (!contentType.toLowerCase().includes("application/json")) {
+          return jsonError("Envie os dados em formato JSON.", 415, "UNSUPPORTED_MEDIA_TYPE");
+        }
+
+        const contentLength = Number(request.headers.get("content-length") ?? "0");
+        if (Number.isFinite(contentLength) && contentLength > 16_384) {
+          return jsonError("Os dados enviados excedem o limite permitido.", 413, "PAYLOAD_TOO_LARGE");
+        }
+
+        let payload: unknown;
+        try {
+          payload = await request.json();
+        } catch {
+          return jsonError("Corpo JSON inválido.", 400, "INVALID_JSON");
+        }
+
+        const parsed = createEnrollmentSchema.safeParse(payload);
+        if (!parsed.success) {
+          return jsonError(
+            "Confira os campos da matrícula e tente novamente.",
+            400,
+            "VALIDATION_FAILED",
+          );
+        }
+
+        const { student, courseId, academicYear, quotaType } = parsed.data;
+        const upstream = await staffRestRequest(
+          auth.config,
+          auth.staff.accessToken,
+          "rpc/create_enrollment_transaction",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              p_student: student,
+              p_course_id: courseId,
+              p_academic_year: academicYear,
+              p_is_quota: quotaType !== null,
+              p_quota_type: quotaType,
+            }),
+          },
+        );
+
+        if (!upstream.ok) return safeRestFailure(upstream);
+
+        const created = (await upstream.json()) as unknown;
+        if (
+          created === null ||
+          typeof created !== "object" ||
+          !("id" in created) ||
+          !("protocol" in created)
+        ) {
+          return jsonError("Resposta inválida ao criar matrícula.", 502, "INVALID_CREATE_RESPONSE");
+        }
+
+        return Response.json(
+          { data: created },
+          { status: 201, headers: { "cache-control": "no-store" } },
         );
       },
     },
