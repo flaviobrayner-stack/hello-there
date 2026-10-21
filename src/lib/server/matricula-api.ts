@@ -57,7 +57,7 @@ export async function authenticateStaff(request: Request): Promise<
   | {
       ok: true;
       staff: AuthenticatedStaff;
-      config: NonNullable<ReturnType<typeof backendConfig>>;
+      config: NonNullable<ReturnType<typeof getBackendConfig>>;
     }
   | { ok: false; response: Response }
 > {
@@ -159,7 +159,7 @@ export async function authenticateStaff(request: Request): Promise<
 
 /** Generic PostgREST request that always forwards the verified user's JWT. */
 export async function staffRestRequest(
-  config: NonNullable<ReturnType<typeof backendConfig>>,
+  config: NonNullable<ReturnType<typeof getBackendConfig>>,
   accessToken: string,
   path: string,
   init: RequestInit = {},
