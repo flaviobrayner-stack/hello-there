@@ -88,3 +88,10 @@ Este registro transforma as dúvidas técnicas em decisões objetivas. As recome
 - Decisões aprovadas / exceções: _pendente_
 
 Até o preenchimento e a aprovação deste registro, todas as opções permanecem propostas. A interface de matrícula deve continuar sendo tratada como demonstração e não deve receber dados reais.
+
+
+## 8. Revisão técnica do schema (proposta, ainda não aprovada)
+
+Foi criada a revisão complementar [Fase 2 — revisão técnica do schema e da segurança](./FASE-2-REVISAO-SCHEMA-SEGURANCA.md). Ela propõe separar a identidade do estudante das matrículas anuais, reutilizar estudante por CPF normalizado, limitar operadores às próprias matrículas até decisão institucional e manter dados de saúde acessíveis somente ao admin nesta etapa.
+
+Essa revisão **não substitui as decisões institucionais** listadas acima e não autoriza executar SQL. A RPC ainda não cobre todos os campos do formulário, a validação de dígitos do CPF precisa ser completada, o primeiro administrador precisa de provisionamento controlado e os testes RLS devem ocorrer em Supabase de desenvolvimento antes de qualquer migration definitiva.
