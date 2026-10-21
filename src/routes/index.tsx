@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   calculateAge,
   formatCep,
@@ -27,6 +27,7 @@ import {
   HeartPulse,
   LayoutDashboard,
   LockKeyhole,
+  LogOut,
   Menu,
   MoreHorizontal,
   Plus,
@@ -43,6 +44,7 @@ import {
 } from "lucide-react";
 
 type Section = "dashboard" | "matriculas" | "nova" | "documentos" | "configuracoes";
+type StaffSession = { id: string; role: "admin" | "operador" };
 type Enrollment = {
   id: string;
   name: string;
@@ -158,6 +160,195 @@ export const Route = createFileRoute("/")({
 import { createFileRoute } from "@tanstack/react-router";
 
 function Index() {
+  const [authStatus, setAuthStatus] = useState<"checking" | "signed-out" | "signed-in">("checking");
+  const [authSession, setAuthSession] = useState<StaffSession | null>(null);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authMessage, setAuthMessage] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/auth/session", {
+      credentials: "same-origin",
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (response.ok) {
+          const payload = (await response.json()) as { data?: StaffSession };
+          if (
+            payload.data?.id &&
+            (payload.data.role === "admin" || payload.data.role === "operador")
+          ) {
+            setAuthSession(payload.data);
+            setAuthStatus("signed-in");
+            return;
+          }
+        }
+        if (response.status === 503) {
+          setAuthMessage(
+            "O backend ainda está bloqueado para revisão. Configure o ambiente e aprove as políticas antes de habilitar o acesso.",
+          );
+        }
+        setAuthStatus("signed-out");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setAuthMessage("Não foi possível verificar a sessão. Confira a conexão e tente novamente.");
+          setAuthStatus("signed-out");
+        }
+      });
+    return () => controller.abort();
+  }, []);
+
+  async function submitLogin(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (authBusy) return;
+    setAuthBusy(true);
+    setAuthMessage("");
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: authEmail.trim(), password: authPassword }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        data?: StaffSession;
+        error?: string;
+      };
+      if (
+        !response.ok ||
+        !payload.data?.id ||
+        (payload.data.role !== "admin" && payload.data.role !== "operador")
+      ) {
+        setAuthMessage(payload.error ?? "Não foi possível entrar. Verifique a configuração e as credenciais.");
+        return;
+      }
+      setAuthSession(payload.data);
+      setAuthStatus("signed-in");
+      setAuthPassword("");
+      setAuthMessage("");
+    } catch {
+      setAuthMessage("Falha de conexão ao tentar entrar. Tente novamente.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function signOut() {
+    setAuthBusy(true);
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        setAuthMessage("Não foi possível encerrar a sessão. Tente novamente.");
+        return;
+      }
+      setAuthSession(null);
+      setAuthStatus("signed-out");
+      setAuthEmail("");
+      setAuthPassword("");
+      setAuthMessage("");
+    } catch {
+      setAuthMessage("Falha de conexão ao encerrar a sessão.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  if (authStatus === "checking") {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 shadow-sm">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-blue-700 border-t-transparent" />
+          Verificando sessão institucional…
+        </div>
+      </main>
+    );
+  }
+
+  if (authStatus !== "signed-in" || !authSession) {
+    return (
+      <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 py-10">
+        <div className="absolute inset-x-0 top-0 h-2 bg-blue-700" />
+        <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-blue-100/70 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 bottom-8 h-72 w-72 rounded-full bg-indigo-100/70 blur-3xl" />
+        <section className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/50 sm:p-9">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 text-white shadow-lg shadow-blue-700/20">
+            <GraduationCap size={30} />
+          </div>
+          <div className="mt-5 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Acesso institucional</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Sistema de Matrícula 2026</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-500">Escola Técnica Estadual Maria José Vasconcelos</p>
+          </div>
+          <form className="mt-8 space-y-5" onSubmit={(event) => void submitLogin(event)}>
+            <label className="block space-y-2">
+              <span className="text-sm font-semibold text-slate-700">E-mail institucional</span>
+              <input
+                type="email"
+                autoComplete="username"
+                required
+                maxLength={254}
+                value={authEmail}
+                onChange={(event) => setAuthEmail(event.target.value)}
+                className={inputClass}
+                placeholder="nome@escola.edu.br"
+                disabled={authBusy}
+              />
+            </label>
+            <label className="block space-y-2">
+              <span className="text-sm font-semibold text-slate-700">Senha</span>
+              <input
+                type="password"
+                autoComplete="current-password"
+                required
+                maxLength={1024}
+                value={authPassword}
+                onChange={(event) => setAuthPassword(event.target.value)}
+                className={inputClass}
+                placeholder="Digite sua senha"
+                disabled={authBusy}
+              />
+            </label>
+            {authMessage && (
+              <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-5 text-amber-900">
+                {authMessage}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={authBusy}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <LockKeyhole size={17} />
+              {authBusy ? "Aguarde…" : "Entrar no sistema"}
+            </button>
+          </form>
+          <p className="mt-6 text-center text-xs leading-5 text-slate-400">
+            Acesso restrito a colaboradores com perfil institucional ativo. Nunca compartilhe sua senha.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  return <AdminApp authSession={authSession} onSignOut={() => void signOut()} />;
+}
+
+function AdminApp({
+  authSession,
+  onSignOut,
+}: {
+  authSession: StaffSession;
+  onSignOut: () => void;
+}) {
   const [section, setSection] = useState<Section>("dashboard");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [search, setSearch] = useState("");
@@ -409,8 +600,19 @@ function Index() {
             <div className="hidden h-9 w-px bg-slate-200 sm:block" />
             <div className="hidden text-right sm:block">
               <p className="text-xs font-semibold">Equipe escolar</p>
-              <p className="text-[11px] text-slate-500">Acesso administrativo</p>
+              <p className="text-[11px] text-slate-500">
+                Perfil: {authSession.role === "admin" ? "Administrador" : "Operador"}
+              </p>
             </div>
+            <button
+              type="button"
+              onClick={onSignOut}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+              aria-label="Sair do sistema"
+            >
+              <LogOut size={15} />
+              <span className="hidden sm:inline">Sair</span>
+            </button>
           </div>
         </header>
 
