@@ -369,7 +369,7 @@ begin
   from public.profiles p
   where p.id = v_user_id and p.active = true;
 
-  if v_role not in ('admin', 'operador') then
+  if v_role is null or v_role not in ('admin', 'operador') then
     raise exception using errcode = '42501', message = 'staff_access_denied';
   end if;
 
