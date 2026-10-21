@@ -3,6 +3,8 @@
 ## Estado desta entrega
 - Protótipo de interface no branch `feature/sistema-matricula-2026`.
 - Não foi executada nenhuma migração de banco nem provisionado backend.
+- O rascunho SQL para schema e RLS está em `docs/drafts/schema-review.sql`, fora da pasta de migrations e explicitamente marcado como não executável antes de revisão.
+- CI (testes unitários, lint e build de produção) passou em https://github.com/flaviobrayner-stack/hello-there/actions/runs/39624908589.
 - Nenhum dado real deve ser cadastrado: a validação de CPF e os estados documentais são locais e não substituem validação/duplicidade no servidor.
 - Os nomes e números do painel são exemplos fictícios. Alterações feitas no protótipo existem apenas no estado da sessão.
 - O modelo Google Docs “Ficha Ok 2026” é tratado como fonte oficial e não deve ser editado; a integração deve criar cópias.
