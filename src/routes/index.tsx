@@ -195,7 +195,9 @@ function Index() {
       })
       .catch(() => {
         if (!controller.signal.aborted) {
-          setAuthMessage("Não foi possível verificar a sessão. Confira a conexão e tente novamente.");
+          setAuthMessage(
+            "Não foi possível verificar a sessão. Confira a conexão e tente novamente.",
+          );
           setAuthStatus("signed-out");
         }
       });
@@ -224,7 +226,9 @@ function Index() {
         !payload.data?.id ||
         (payload.data.role !== "admin" && payload.data.role !== "operador")
       ) {
-        setAuthMessage(payload.error ?? "Não foi possível entrar. Verifique a configuração e as credenciais.");
+        setAuthMessage(
+          payload.error ?? "Não foi possível entrar. Verifique a configuração e as credenciais.",
+        );
         return;
       }
       setAuthSession(payload.data);
@@ -284,9 +288,15 @@ function Index() {
             <GraduationCap size={30} />
           </div>
           <div className="mt-5 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Acesso institucional</p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Sistema de Matrícula 2026</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-500">Escola Técnica Estadual Maria José Vasconcelos</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">
+              Acesso institucional
+            </p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+              Sistema de Matrícula 2026
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Escola Técnica Estadual Maria José Vasconcelos
+            </p>
           </div>
           <form className="mt-8 space-y-5" onSubmit={(event) => void submitLogin(event)}>
             <label className="block space-y-2">
@@ -318,7 +328,10 @@ function Index() {
               />
             </label>
             {authMessage && (
-              <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-5 text-amber-900">
+              <div
+                role="alert"
+                className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-5 text-amber-900"
+              >
                 {authMessage}
               </div>
             )}
@@ -332,7 +345,8 @@ function Index() {
             </button>
           </form>
           <p className="mt-6 text-center text-xs leading-5 text-slate-400">
-            Acesso restrito a colaboradores com perfil institucional ativo. Nunca compartilhe sua senha.
+            Acesso restrito a colaboradores com perfil institucional ativo. Nunca compartilhe sua
+            senha.
           </p>
         </section>
       </main>
