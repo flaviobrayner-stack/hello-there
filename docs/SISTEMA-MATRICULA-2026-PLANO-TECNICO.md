@@ -79,6 +79,9 @@ Referências oficiais para a implementação futura:
 
 ### Fase 1 — concluída parcialmente nesta branch
 - Substituir placeholder por dashboard e protótipo de fluxo de matrícula.
+- Expandir campos do formulário com base na especificação e implementar validações locais testadas de CPF, idade, telefone e CEP.
+- Adicionar checklist documental condicional, estados de demonstração, progresso e seleção local de anexos sem upload.
+- Adicionar CI para testes, lint e build; execução de validação registrada com sucesso: https://github.com/flaviobrayner-stack/hello-there/actions/runs/39624547987.
 - Usar somente registros fictícios claramente identificados.
 - Registrar desenho técnico e pontos de revisão.
 - Não conectar backend nem executar migração.
