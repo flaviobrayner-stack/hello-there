@@ -39,7 +39,7 @@ Os dois últimos flags devem permanecer `false` até a instituição aprovar as 
 - Revisar e transformar `docs/drafts/schema-review.sql` em migration aprovada, incluindo grants explícitos da RPC somente para `authenticated`.
 - Ajustar RLS para o escopo real dos operadores; as policies no rascunho são preliminares e amplas demais para uso real sem revisão.
 - Criar cursos e perfis de colaboradores por processo administrativo seguro.
-- A tela de login já foi integrada aos endpoints de sessão/login/logout e o painel fica protegido por sessão institucional. O painel e a lista de matrículas ainda usam dados de demonstração; substituir por dados reais e estados vazios antes de habilitar o backend.
+- A tela de login já foi integrada aos endpoints de sessão/login/logout e o painel fica protegido por sessão institucional. O painel e a lista agora consultam GET /api/enrollments, mostram estado de carregamento/erro/vazio e calculam os indicadores de matrícula a partir da resposta. O formulário de nova matrícula, cursos e documentação ainda precisam ser conectados antes do uso operacional.
 - Definir deduplicação de CPF/rematrícula e regras documentais antes de cadastrar estudantes reais.
 - Testar duplicidade, rollback, concorrência, contas desativadas, acesso fora do escopo, campos privilegiados e dados de saúde.
 
@@ -63,7 +63,7 @@ Não habilitar os flags nem usar dados reais até concluir a revisão de `docs/F
 ## Validação automatizada mais recente
 
 - GitHub Actions: execução de validação após a integração da tela de login.
-- Testes unitários: aprovados.
+- Testes unitários: aprovados após a conexão da lista à API.
 - ESLint: aprovado.
 - Build de produção: aprovado.
 - A execução anterior falhou antes dos testes porque o workflow tentava fazer `git push` a partir de checkout detached. O workflow foi corrigido para não tentar fazer commits automáticos durante a validação.
