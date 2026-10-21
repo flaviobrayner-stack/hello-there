@@ -32,7 +32,7 @@ jobs:
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add src/routes/index.tsx src/routes/__root.tsx src/lib/enrollment-validation.ts src/lib/enrollment-validation.test.ts src/routes/api.courses.ts src/routes/api.enrollments.ts src/lib/server/matricula-api.ts src/lib/server/matricula-api.test.ts
+            git add src/routes/index.tsx src/routes/__root.tsx src/lib/enrollment-validation.ts src/lib/enrollment-validation.test.ts src/routes/api.courses.ts src/routes/api.enrollments.ts src/routes/api.auth.login.ts src/routes/api.auth.session.ts src/routes/api.auth.logout.ts src/lib/server/matricula-api.ts src/lib/server/matricula-api.test.ts
             git commit -m "style: format enrollment implementation"
             git push
           fi
