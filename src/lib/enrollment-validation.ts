@@ -20,7 +20,8 @@ export function isValidCpf(value: string): boolean {
 export function calculateAge(birthDate: string, today = new Date()): number | null {
   if (!birthDate) return null;
   const birth = new Date(`${birthDate}T12:00:00`);
-  if (Number.isNaN(birth.getTime()) || birth > today) return null;
+  const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12);
+  if (Number.isNaN(birth.getTime()) || birth > currentDate) return null;
 
   let years = today.getFullYear() - birth.getFullYear();
   if (
