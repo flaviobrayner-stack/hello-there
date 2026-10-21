@@ -38,7 +38,7 @@ Recomendação para decisão da escola: tratar `students` como a pessoa e `enrol
 - Se encontrar a pessoa, a proposta reutiliza o registro sem sobrescrever silenciosamente dados pessoais já existentes.
 - O índice único parcial impede duplicidade mesmo em requisições concorrentes.
 - CPF vazio ainda permite um cadastro sem chave de deduplicação; isso requer conferência manual e auditoria.
-- **Ainda pendente:** validar dígitos verificadores do CPF no servidor, criar fluxo seguro para correção de CPF e decidir como reconciliar registros legados/duplicados.
+- **No rascunho:** foi adicionada uma função para validar os dígitos verificadores do CPF no servidor. Ainda precisa de testes de casos válidos/inválidos e concorrência; também falta criar fluxo seguro para correção de CPF e decidir como reconciliar registros legados/duplicados.
 - Não tratar apenas a consulta prévia do frontend como proteção contra duplicidade.
 
 ### Acesso e RLS
@@ -74,7 +74,7 @@ O SQL de provisionamento ainda não está incluído como migration executável: 
 2. A regra de cota PCD e a consistência com os dados PCD do estudante precisam de validação no servidor.
 3. O estado `rascunho`, conclusão, cancelamento, edição e transições de status precisam de RPCs específicas e regras institucionais aprovadas.
 4. O protocolo `MAT-AAAA-000001` é apenas candidato; formato final ainda pendente.
-5. Falta validação de dígitos verificadores do CPF no servidor.
+5. A validação dos dígitos verificadores do CPF está esboçada no SQL, mas ainda precisa de testes automatizados e revisão independente.
 6. Falta definir como operadores podem editar dados de uma pessoa que possua matrículas criadas por equipes diferentes.
 7. Falta a política de retenção, correção, cancelamento e descarte de dados.
 8. Falta política e configuração de Storage privado, validação real do tipo/tamanho de arquivo e links temporários.
