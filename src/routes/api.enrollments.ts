@@ -6,6 +6,7 @@ import {
   authenticateStaff,
   jsonError,
   safeRestFailure,
+  sameOriginRequest,
   staffRestRequest,
 } from "../lib/server/matricula-api";
 
@@ -105,6 +106,10 @@ export const Route = createFileRoute("/api/enrollments")({
         );
       },
       POST: async ({ request }) => {
+        if (!sameOriginRequest(request)) {
+          return jsonError("Origem da solicitação não autorizada.", 403, "ORIGIN_NOT_ALLOWED");
+        }
+
         const auth = await authenticateStaff(request);
         if (!auth.ok) return auth.response;
 
