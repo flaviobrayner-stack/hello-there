@@ -15,6 +15,7 @@ describe("isValidCpf", () => {
 describe("calculateAge", () => {
   it("calculates age before the birthday", () => expect(calculateAge("2008-12-10", new Date("2026-10-21T12:00:00"))).toBe(17));
   it("calculates age on the birthday", () => expect(calculateAge("2008-10-21", new Date("2026-10-21T12:00:00"))).toBe(18));
+  it("handles today even before noon", () => expect(calculateAge("2008-10-21", new Date("2026-10-21T08:00:00"))).toBe(18));
   it("rejects a future birth date", () => expect(calculateAge("2030-01-01", new Date("2026-10-21T12:00:00"))).toBe(null));
 });
 
