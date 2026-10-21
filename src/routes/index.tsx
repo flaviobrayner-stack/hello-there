@@ -50,49 +50,10 @@ type Enrollment = {
   name: string;
   course: string;
   date: string;
-  status: "Concluída" | "Em análise" | "Rascunho";
+  status: "Concluída" | "Em análise" | "Rascunho" | "Cancelada";
   quota: string;
   docs: string;
 };
-
-const demoEnrollments: Enrollment[] = [
-  {
-    id: "MAT-2026-0148",
-    name: "Estudante de demonstração A",
-    course: "Desenvolvimento de Sistemas",
-    date: "21/10/2026",
-    status: "Concluída",
-    quota: "Escola pública",
-    docs: "10/10",
-  },
-  {
-    id: "MAT-2026-0147",
-    name: "Estudante de demonstração B",
-    course: "Administração",
-    date: "21/10/2026",
-    status: "Em análise",
-    quota: "Não cotista",
-    docs: "7/10",
-  },
-  {
-    id: "MAT-2026-0146",
-    name: "Estudante de demonstração C",
-    course: "Desenvolvimento de Sistemas",
-    date: "20/10/2026",
-    status: "Rascunho",
-    quota: "Renda",
-    docs: "4/10",
-  },
-  {
-    id: "MAT-2026-0145",
-    name: "Estudante de demonstração D",
-    course: "Enfermagem",
-    date: "20/10/2026",
-    status: "Em análise",
-    quota: "PCD",
-    docs: "8/10",
-  },
-];
 
 const steps = [
   { label: "Identificação", hint: "Curso, ano letivo e cota", icon: ClipboardCheck },
@@ -109,6 +70,7 @@ function StatusBadge({ status }: { status: Enrollment["status"] }) {
     Concluída: "bg-emerald-50 text-emerald-700 ring-emerald-200",
     "Em análise": "bg-amber-50 text-amber-700 ring-amber-200",
     Rascunho: "bg-slate-100 text-slate-600 ring-slate-200",
+    Cancelada: "bg-rose-50 text-rose-700 ring-rose-200",
   };
   return (
     <span
@@ -364,7 +326,85 @@ function AdminApp({
   onSignOut: () => void;
 }) {
   const [section, setSection] = useState<Section>("dashboard");
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [enrollmentsLoading, setEnrollmentsLoading] = useState(true);
+  const [enrollmentsError, setEnrollmentsError] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    async function loadEnrollments() {
+      try {
+        const response = await fetch("/api/enrollments", {
+          credentials: "same-origin",
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const payload = (await response.json().catch(() => ({}))) as {
+          data?: Array<{
+            id: string;
+            protocol?: string;
+            status?: string;
+            created_at?: string;
+            quota_type?: string | null;
+            course?: { name?: string } | Array<{ name?: string }> | null;
+            student?: { full_name?: string } | Array<{ full_name?: string }> | null;
+          }>;
+          error?: string;
+        };
+        if (!response.ok || !Array.isArray(payload.data)) {
+          throw new Error(payload.error ?? "Não foi possível carregar as matrículas.");
+        }
+
+        const relationValue = <T,>(value: T | T[] | null | undefined): T | undefined =>
+          Array.isArray(value) ? value[0] : value ?? undefined;
+        const statusLabels: Record<string, Enrollment["status"]> = {
+          concluida: "Concluída",
+          em_analise: "Em análise",
+          rascunho: "Rascunho",
+          cancelada: "Cancelada",
+        };
+        const quotaLabels: Record<string, string> = {
+          escola_publica: "Escola pública",
+          renda: "Renda",
+          vulnerabilidade: "Vulnerabilidade",
+          pcd: "PCD",
+        };
+        const mapped: Enrollment[] = payload.data.map((row) => {
+          const course = relationValue(row.course);
+          const student = relationValue(row.student);
+          const parsedDate = row.created_at ? new Date(row.created_at) : null;
+          const date =
+            parsedDate && !Number.isNaN(parsedDate.getTime())
+              ? new Intl.DateTimeFormat("pt-BR").format(parsedDate)
+              : "—";
+          return {
+            id: row.protocol || row.id,
+            name: student?.full_name || "Estudante",
+            course: course?.name || "—",
+            date,
+            status: statusLabels[row.status ?? ""] ?? "Rascunho",
+            quota: quotaLabels[row.quota_type ?? ""] ?? "Não cotista",
+            docs: "—",
+          };
+        });
+        if (!controller.signal.aborted) {
+          setEnrollments(mapped);
+          setEnrollmentsError("");
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setEnrollmentsError(
+            error instanceof Error ? error.message : "Falha ao carregar matrículas.",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) setEnrollmentsLoading(false);
+      }
+    }
+    void loadEnrollments();
+    return () => controller.abort();
+  }, []);
   const [search, setSearch] = useState("");
   const [step, setStep] = useState(0);
   const [notice, setNotice] = useState("");
@@ -425,11 +465,13 @@ function AdminApp({
   const age = calculateAge(form.birth);
   const now = new Date();
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const visibleEnrollments = demoEnrollments.filter((item) =>
+  const visibleEnrollments = enrollments.filter((item) =>
     `${item.id} ${item.name} ${item.course} ${item.status}`
       .toLowerCase()
       .includes(search.toLowerCase()),
   );
+  const completedEnrollments = enrollments.filter((item) => item.status === "Concluída").length;
+  const enrollmentsInReview = enrollments.filter((item) => item.status === "Em análise").length;
   const documentItems = [
     { name: "Certidão de nascimento", required: true },
     { name: "RG e CPF", required: true },
@@ -542,7 +584,7 @@ function AdminApp({
                 {item.label}
                 {item.id === "matriculas" && (
                   <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-xs text-slate-500">
-                    {demoEnrollments.length}
+                    {enrollments.length}
                   </span>
                 )}
               </button>
@@ -556,8 +598,7 @@ function AdminApp({
               <span className="text-xs font-bold">Área administrativa</span>
             </div>
             <p className="mt-2 text-xs leading-5 text-slate-600">
-              Acesso restrito a funcionários autorizados. Autenticação real será conectada na fase
-              de backend.
+              Acesso restrito a funcionários autorizados. A sessão institucional é verificada pelo backend.
             </p>
           </div>
           <div className="mt-4 flex items-center gap-3 rounded-xl px-2 py-2">
@@ -669,40 +710,43 @@ function AdminApp({
                   Nova matrícula
                 </button>
               </div>
-              <div className="mb-7 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                <div className="flex items-start gap-3">
+              {(enrollmentsError || enrollmentsLoading) && (
+                <div
+                  role={enrollmentsError ? "alert" : "status"}
+                  className="mb-7 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+                >
                   <AlertCircle size={18} className="mt-0.5 shrink-0" />
                   <p>
-                    <strong>Protótipo em desenvolvimento:</strong> indicadores e registros abaixo
-                    são dados fictícios para validar a interface. Nenhum dado é persistido ou
-                    enviado a um banco de dados.
+                    {enrollmentsLoading
+                      ? "Carregando matrículas do banco de dados…"
+                      : enrollmentsError}
                   </p>
                 </div>
-              </div>
+              )}
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <Metric
                   label="Matrículas no ano"
-                  value="148"
-                  note="+12 neste mês · dados de exemplo"
+                  value={String(enrollments.length)}
+                  note="Registros retornados pelo banco"
                   icon={GraduationCap}
                 />
                 <Metric
                   label="Concluídas"
-                  value="112"
-                  note="75,7% das matrículas fictícias"
+                  value={String(completedEnrollments)}
+                  note="Com status de conclusão"
                   icon={CheckCircle2}
                   tone="green"
                 />
                 <Metric
                   label="Documentação pendente"
-                  value="23"
-                  note="Requer acompanhamento"
+                  value="—"
+                  note="Integração documental pendente"
                   icon={FileCheck2}
                   tone="amber"
                 />
                 <Metric
                   label="Em análise"
-                  value="13"
+                  value={String(enrollmentsInReview)}
                   note="Aguardando conferência"
                   icon={Clock3}
                   tone="violet"
@@ -714,7 +758,7 @@ function AdminApp({
                     <div>
                       <h3 className="font-bold">Matrículas recentes</h3>
                       <p className="mt-1 text-xs text-slate-500">
-                        Amostra fictícia para validação visual
+                        Registros reais retornados pela API
                       </p>
                     </div>
                     <button
@@ -736,7 +780,7 @@ function AdminApp({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {demoEnrollments.slice(0, 4).map((item) => (
+                        {enrollments.slice(0, 4).map((item) => (
                           <tr key={item.id} className="hover:bg-slate-50/70">
                             <td className="px-5 py-4">
                               <p className="font-semibold text-slate-800">{item.name}</p>
@@ -766,6 +810,13 @@ function AdminApp({
                             </td>
                           </tr>
                         ))}
+                        {enrollments.length === 0 && !enrollmentsLoading && (
+                          <tr>
+                            <td colSpan={5} className="px-5 py-8 text-center text-sm text-slate-500">
+                              Nenhuma matrícula cadastrada ainda.
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -958,7 +1009,7 @@ function AdminApp({
                 </table>
                 {visibleEnrollments.length === 0 && (
                   <div className="p-10 text-center text-sm text-slate-500">
-                    Nenhum registro fictício corresponde à busca.
+                    Nenhuma matrícula corresponde à busca.
                   </div>
                 )}
               </div>
