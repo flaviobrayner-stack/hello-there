@@ -51,9 +51,7 @@ export function jsonError(message: string, status: number, code: string): Respon
   );
 }
 
-export async function authenticateStaff(
-  request: Request,
-): Promise<
+export async function authenticateStaff(request: Request): Promise<
   | {
       ok: true;
       staff: AuthenticatedStaff;
