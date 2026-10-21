@@ -4,7 +4,7 @@
 
 ## Código implementado
 
-- `src/lib/server/matricula-api.ts`: autenticação de token Supabase, verificação de perfil ativo, uso exclusivo da chave pública/anon no servidor e respostas sem detalhes internos.
+- `src/lib/server/matricula-api.ts`: autenticação Supabase, verificação de perfil ativo, cookie HttpOnly/SameSite=Strict, validação de origem nas operações mutáveis, uso exclusivo da chave anon e respostas sem detalhes internos. A sessão atual dura até uma hora; renovação de sessão ainda não foi implementada.\n- `src/routes/api.auth.login.ts`, `api.auth.session.ts` e `api.auth.logout.ts`: endpoints de login, verificação de sessão e logout; token não é devolvido ao JavaScript do navegador.
 - `src/routes/api.auth.login.ts`, `api.auth.session.ts` e `api.auth.logout.ts`: login por Supabase Auth, verificação de sessão e logout com cookie HttpOnly, SameSite=Strict; sem devolver token ao navegador.
 - `src/routes/api.enrollments.ts`: `GET /api/enrollments` com projeção explícita/paginação fixa e `POST /api/enrollments` com validação Zod, limite de corpo e chamada a RPC transacional.
 - `src/lib/server/matricula-api.test.ts`: testes dos bloqueios de ativação.
@@ -39,7 +39,7 @@ Os dois últimos flags devem permanecer `false` até a instituição aprovar as 
 - Revisar e transformar `docs/drafts/schema-review.sql` em migration aprovada, incluindo grants explícitos da RPC somente para `authenticated`.
 - Ajustar RLS para o escopo real dos operadores; as policies no rascunho são preliminares e amplas demais para uso real sem revisão.
 - Criar cursos e perfis de colaboradores por processo administrativo seguro.
-- Implementar a tela de login e sessão no frontend; os endpoints protegidos exigem token e a interface atual ainda é demonstrativa.
+- Integrar a tela de login e estado de sessão ao frontend; os endpoints de autenticação já existem, mas a interface atual ainda é demonstrativa.
 - Definir deduplicação de CPF/rematrícula e regras documentais antes de cadastrar estudantes reais.
 - Testar duplicidade, rollback, concorrência, contas desativadas, acesso fora do escopo, campos privilegiados e dados de saúde.
 
@@ -47,7 +47,7 @@ Os dois últimos flags devem permanecer `false` até a instituição aprovar as 
 
 | Endpoint | Estado |
 |---|---|
-| `GET /api/courses` | Implementado; exige token e perfil ativo |
+| `POST /api/auth/login` | Implementado; exige origem same-origin, perfil institucional ativo e define cookie HttpOnly |\n| `GET /api/auth/session` | Implementado; verifica cookie, sessão e perfil ativo |\n| `POST /api/auth/logout` | Implementado; valida origem e remove cookie |\n| `GET /api/courses` | Implementado; exige sessão e perfil ativo |
 | `GET /api/enrollments` | Implementado; exige token e RLS |
 | `POST /api/enrollments` | Implementado para chamar RPC transacional; depende da migration aprovada e do grant |
 | Upload de documentos | Não implementado; deve usar Storage privado e autorização de servidor |
@@ -55,6 +55,6 @@ Os dois últimos flags devem permanecer `false` até a instituição aprovar as 
 | Geração Google Docs/PDF | Não implementada |
 | Gestão de usuários | Não implementada |
 
-## Critério para habilitação
+Antes de produção, acrescentar limitação de tentativas no login, renovação/revogação de sessão e monitoramento de autenticação; a versão atual é uma base para ambiente de desenvolvimento.\n\n## Critério para habilitação
 
 Não habilitar os flags nem usar dados reais até concluir a revisão de `docs/FASE-2-DECISOES-PENDENTES.md`, validar as policies e testar em Supabase de desenvolvimento. Não executar este SQL de rascunho diretamente em produção.
