@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { authenticateStaff, backendDisabledResponse } from "./matricula-api";
+import {
+  authenticateStaff,
+  backendDisabledResponse,
+  getCookie,
+  sameOriginRequest,
+} from "./matricula-api";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -38,5 +43,37 @@ describe("matricula API safety gates", () => {
     const response = backendDisabledResponse();
     expect(response.status).toBe(503);
     expect(response.headers.get("cache-control")).toBe("no-store");
+  });
+});
+
+
+describe("session cookie and origin guards", () => {
+  it("reads an encoded HttpOnly session cookie", () => {
+    const request = new Request("https://school.example/api/auth/session", {
+      headers: { cookie: "other=1; matricula_access=token%2Evalue" },
+    });
+    expect(getCookie(request, "matricula_access")).toBe("token.value");
+  });
+
+  it("requires a matching Origin for state-changing requests", () => {
+    expect(
+      sameOriginRequest(
+        new Request("https://school.example/api/auth/logout", {
+          method: "POST",
+          headers: { origin: "https://school.example" },
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      sameOriginRequest(
+        new Request("https://school.example/api/auth/logout", {
+          method: "POST",
+          headers: { origin: "https://attacker.example" },
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      sameOriginRequest(new Request("https://school.example/api/auth/logout", { method: "POST" })),
+    ).toBe(false);
   });
 });
