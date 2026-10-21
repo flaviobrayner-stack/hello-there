@@ -4,7 +4,7 @@
 
 ## Código implementado
 
-- `src/lib/server/matricula-api.ts`: autenticação Supabase, verificação de perfil ativo, cookie HttpOnly/SameSite=Strict, validação de origem nas operações mutáveis, uso exclusivo da chave anon e respostas sem detalhes internos. A sessão atual dura até uma hora; renovação de sessão ainda não foi implementada.\n- `src/routes/api.auth.login.ts`, `api.auth.session.ts` e `api.auth.logout.ts`: endpoints de login, verificação de sessão e logout; token não é devolvido ao JavaScript do navegador.
+- `src/lib/server/matricula-api.ts`: autenticação Supabase, verificação de perfil ativo, cookie HttpOnly/SameSite=Strict, validação de origem nas operações mutáveis, uso exclusivo da chave publicável e respostas sem detalhes internos. A sessão atual dura até uma hora; renovação de sessão ainda não foi implementada.\n- `src/routes/api.auth.login.ts`, `api.auth.session.ts` e `api.auth.logout.ts`: endpoints de login, verificação de sessão e logout; token não é devolvido ao JavaScript do navegador.
 - `src/routes/api.auth.login.ts`, `api.auth.session.ts` e `api.auth.logout.ts`: login por Supabase Auth, verificação de sessão e logout com cookie HttpOnly, SameSite=Strict; sem devolver token ao navegador.
 - `src/routes/api.enrollments.ts`: `GET /api/enrollments` com projeção explícita/paginação fixa e `POST /api/enrollments` com validação Zod, limite de corpo e chamada a RPC transacional.
 - `src/lib/server/matricula-api.test.ts`: testes dos bloqueios de ativação.
@@ -25,17 +25,17 @@
 As rotas administrativas retornam HTTP 503 até que todas estas variáveis sejam configuradas no ambiente **de servidor**:
 
 - `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
+- `SUPABASE_PUBLISHABLE_KEY`
 - `MATRICULA_BACKEND_ENABLED=true`
 - `MATRICULA_ACCESS_POLICY_APPROVED=true`
 
 Os dois últimos flags devem permanecer `false` até a instituição aprovar as regras, a migration revisada estar aplicada em um projeto Supabase de desenvolvimento e os testes de autorização passarem. O arquivo `.env.example` mantém ambos desligados.
 
-**Não configurar credenciais em variáveis `VITE_*` e nunca usar a service-role key neste fluxo.** A chave anon é pública, mas a autorização depende de sessão válida e RLS. Segredos de integração devem ficar em ambiente seguro de servidor.
+**Não configurar credenciais em variáveis `VITE_*` e nunca usar a service-role key neste fluxo.** A chave publicável é pública, mas a autorização depende de sessão válida e RLS. Segredos de integração devem ficar em ambiente seguro de servidor.
 
 ## Dependências externas antes de usar
 
-- Criar/selecionar um projeto Supabase **de desenvolvimento** com autorização institucional.
+- Projeto Supabase de desenvolvimento criado pelo responsável; confirmar que ele é separado de produção e ainda não contém dados reais.
 - Revisar e transformar `docs/drafts/schema-review.sql` em migration aprovada, incluindo grants explícitos da RPC somente para `authenticated`.
 - Ajustar RLS para o escopo real dos operadores; as policies no rascunho são preliminares e amplas demais para uso real sem revisão.
 - Criar cursos e perfis de colaboradores por processo administrativo seguro.
