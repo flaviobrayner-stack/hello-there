@@ -1,6 +1,7 @@
 # Sistema de Matrícula 2026 — plano de implementação e revisão
 
 ## Estado desta entrega
+- Fase 2 preparada para revisão: `docs/FASE-2-REVISAO-BACKEND.md` detalha schema, matriz de permissões, rotas, Storage privado, integração Google Workspace e testes obrigatórios. Nenhuma migration foi executada.
 - Protótipo de interface no branch `feature/sistema-matricula-2026`.
 - Não foi executada nenhuma migração de banco nem provisionado backend.
 - O rascunho SQL para schema e RLS está em `docs/drafts/schema-review.sql`, fora da pasta de migrations e explicitamente marcado como não executável antes de revisão.
