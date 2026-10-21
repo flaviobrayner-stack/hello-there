@@ -326,3 +326,139 @@ create policy app_settings_admin_only on public.app_settings
 -- 6) Gerador server-side de protocolo e prevenção de CPF duplicado transacional.
 -- 7) Política de cancelamento/retention, LGPD, índices e testes de autorização.
 -- 8) Não colocar este arquivo em supabase/migrations até aprovação formal.
+
+
+-- ============================================================================
+-- PROPOSTA DE RPC TRANSACIONAL (AINDA NÃO APROVADA / NÃO EXECUTAR)
+-- Esta função é chamada pelo endpoint POST /api/enrollments. Revisar com DBA
+-- e responsável institucional antes de criar uma migration. A função limita os
+-- campos aceitos, gera protocolo no servidor e grava auditoria na mesma transação.
+-- ============================================================================
+create table public.enrollment_protocol_sequences (
+  academic_year integer primary key check (academic_year between 2020 and 2100),
+  last_number bigint not null default 0 check (last_number >= 0)
+);
+alter table public.enrollment_protocol_sequences enable row level security;
+-- Não criar policies de acesso direto para authenticated/anon nesta tabela.
+
+create or replace function public.create_enrollment_transaction(
+  p_student jsonb,
+  p_course_id uuid,
+  p_academic_year integer,
+  p_is_quota boolean,
+  p_quota_type text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_role text;
+  v_student_id uuid;
+  v_enrollment_id uuid;
+  v_protocol text;
+  v_next_number bigint;
+begin
+  if v_user_id is null then
+    raise exception using errcode = '42501', message = 'authentication_required';
+  end if;
+
+  select p.role into v_role
+  from public.profiles p
+  where p.id = v_user_id and p.active = true;
+
+  if v_role not in ('admin', 'operador') then
+    raise exception using errcode = '42501', message = 'staff_access_denied';
+  end if;
+
+  if p_academic_year < 2020 or p_academic_year > 2100 then
+    raise exception using errcode = '22023', message = 'invalid_academic_year';
+  end if;
+
+  if p_student is null or jsonb_typeof(p_student) <> 'object'
+     or length(trim(coalesce(p_student->>'fullName', ''))) < 3 then
+    raise exception using errcode = '22023', message = 'invalid_student_payload';
+  end if;
+
+  if p_is_quota is distinct from (p_quota_type is not null) then
+    raise exception using errcode = '22023', message = 'invalid_quota_configuration';
+  end if;
+
+  if p_quota_type is not null and p_quota_type not in
+     ('escola_publica', 'renda', 'vulnerabilidade', 'pcd') then
+    raise exception using errcode = '22023', message = 'invalid_quota_type';
+  end if;
+
+  if not exists (
+    select 1 from public.courses c where c.id = p_course_id and c.active = true
+  ) then
+    raise exception using errcode = '22023', message = 'course_not_available';
+  end if;
+
+  -- Protocolo sequencial e sem colisão sob concorrência, dentro da transação.
+  insert into public.enrollment_protocol_sequences (academic_year, last_number)
+  values (p_academic_year, 1)
+  on conflict (academic_year) do update
+    set last_number = public.enrollment_protocol_sequences.last_number + 1
+  returning last_number into v_next_number;
+
+  v_protocol := 'MAT-' || p_academic_year::text || '-' || lpad(v_next_number::text, 6, '0');
+
+  insert into public.students (
+    full_name, social_name, cpf_digits, rg, birth_date, phone, email,
+    address, city, state, cep_digits, race_color, pcd, previous_school
+  ) values (
+    trim(p_student->>'fullName'),
+    nullif(trim(p_student->>'socialName'), ''),
+    nullif(regexp_replace(coalesce(p_student->>'cpf', ''), '\\D', '', 'g'), ''),
+    nullif(trim(p_student->>'rg'), ''),
+    nullif(p_student->>'birthDate', '')::date,
+    nullif(trim(p_student->>'phone'), ''),
+    nullif(trim(p_student->>'email'), ''),
+    nullif(trim(p_student->>'address'), ''),
+    nullif(trim(p_student->>'city'), ''),
+    nullif(upper(trim(p_student->>'state')), ''),
+    nullif(regexp_replace(coalesce(p_student->>'cep', ''), '\\D', '', 'g'), ''),
+    nullif(trim(p_student->>'raceColor'), ''),
+    coalesce((p_student->>'pcd')::boolean, false),
+    nullif(trim(p_student->>'previousSchool'), '')
+  ) returning id into v_student_id;
+
+  insert into public.enrollments (
+    protocol, academic_year, student_id, course_id, created_by,
+    status, is_quota, quota_type
+  ) values (
+    v_protocol, p_academic_year, v_student_id, p_course_id, v_user_id,
+    'rascunho', p_is_quota, p_quota_type
+  ) returning id into v_enrollment_id;
+
+  insert into public.audit_logs (actor_id, action, entity_type, entity_id, metadata)
+  values (
+    v_user_id,
+    'enrollment.created',
+    'enrollment',
+    v_enrollment_id,
+    jsonb_build_object('academic_year', p_academic_year, 'status', 'rascunho')
+  );
+
+  return jsonb_build_object(
+    'id', v_enrollment_id,
+    'protocol', v_protocol,
+    'academic_year', p_academic_year,
+    'status', 'rascunho'
+  );
+end;
+$$;
+
+-- Revisar proprietário da função e privilégios antes de aplicar. Não conceder
+-- EXECUTE a anon/public; somente authenticated após revisão de segurança.
+revoke all on function public.create_enrollment_transaction(jsonb, uuid, integer, boolean, text) from public;
+revoke all on function public.create_enrollment_transaction(jsonb, uuid, integer, boolean, text) from anon;
+-- GRANT EXECUTE ... TO authenticated só deve entrar na migration aprovada.
+
+-- Atenção: esta proposta cria um registro de estudante por matrícula. A política
+-- de deduplicação por CPF e a rematrícula precisam ser decididas antes de uso real.
+-- A função também precisa de testes de duplicidade, payload malformado, rollback,
+-- permissões do owner SECURITY DEFINER e grants/revokes do schema.
