@@ -54,7 +54,11 @@ export function jsonError(message: string, status: number, code: string): Respon
 export async function authenticateStaff(
   request: Request,
 ): Promise<
-  | { ok: true; staff: AuthenticatedStaff; config: NonNullable<ReturnType<typeof getBackendConfig>> }
+  | {
+      ok: true;
+      staff: AuthenticatedStaff;
+      config: NonNullable<ReturnType<typeof getBackendConfig>>;
+    }
   | { ok: false; response: Response }
 > {
   const config = getBackendConfig();
@@ -186,7 +190,6 @@ export async function safeRestFailure(response: Response): Promise<Response> {
     status === 401 ? "INVALID_SESSION" : status === 403 ? "FORBIDDEN" : "DATA_SERVICE_ERROR",
   );
 }
-
 
 export function getCookie(request: Request, name: string): string | null {
   const cookieHeader = request.headers.get("cookie") ?? "";
