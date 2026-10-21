@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   authenticateStaff,
   backendDisabledResponse,
+  getBackendConfig,
   getCookie,
   sameOriginRequest,
 } from "./matricula-api";
@@ -23,6 +24,16 @@ describe("matricula API safety gates", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.response.status).toBe(503);
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("accepts the current publishable key while access policy is not approved", () => {
+    vi.stubEnv("MATRICULA_BACKEND_ENABLED", "true");
+    vi.stubEnv("MATRICULA_ACCESS_POLICY_APPROVED", "false");
+    vi.stubEnv("SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "sb_publishable_test");
+    vi.stubEnv("SUPABASE_ANON_KEY", "");
+
+    expect(getBackendConfig()).toBeNull();
   });
 
   it("does not enable the backend without explicit access-policy approval", async () => {
