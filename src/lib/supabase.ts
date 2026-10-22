@@ -409,6 +409,7 @@ export async function requestAdminSetup(email: string) {
   return data;
 }
 
+// Todas as ações privilegiadas de gestão de usuários são validadas no Edge Function.
 export async function manageStaffUser(
   session: SupabaseSession,
   action: "change-password" | "change-role" | "set-active",
