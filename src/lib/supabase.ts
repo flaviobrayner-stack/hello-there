@@ -135,3 +135,5 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
   if (!response.ok) throw new Error(data?.message || data?.details || data?.hint || `Falha ao gravar matrícula (${response.status})`);
   return data as { id: string; protocol: string; academic_year: number; status: string };
 }
+
+export async function pingAdminBootstrap() { return true; }
