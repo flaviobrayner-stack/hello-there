@@ -1542,7 +1542,7 @@ function Index() {
       {pdfDialogOpen && (() => {
         const selectedStudent = students.find((student) => student.protocol === selectedPdfEnrollment.id) || students[0];
         if (!selectedStudent) return null;
-        if (!authReady) {
+          if (!authReady) {
     return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">Verificando sessão segura…</div>;
   }
 
@@ -1599,6 +1599,7 @@ function Index() {
       </main>
     );
   }
+
 
   return (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 p-4">
