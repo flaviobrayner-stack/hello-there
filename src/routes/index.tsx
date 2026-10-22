@@ -54,7 +54,6 @@ import {
 import { maskCpfPrivate } from "../lib/mask";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
-import { PdfConverterDialog } from "../components/pdf-converter-dialog";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
 import { AuditLogsModal } from "../components/audit-logs-modal";
 import { DocumentConferenceModal } from "../components/document-conference-modal";
