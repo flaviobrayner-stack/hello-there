@@ -18,6 +18,10 @@ type Relation<T> = T | T[] | null | undefined;
 type HealthRow = {
   medication_allergy: boolean | null;
   allergy_details: string | null;
+  food_allergy: boolean | null;
+  food_allergy_details: string | null;
+  health_notes: boolean | null;
+  health_notes_details: string | null;
   controlled_medication: boolean | null;
   medication_details: string | null;
   emergency_name: string | null;
@@ -47,7 +51,7 @@ export const Route = createFileRoute("/api/health")({
         }
 
         const query = new URLSearchParams({
-          select: "medication_allergy,allergy_details,controlled_medication,medication_details,emergency_name,emergency_phone,emergency_relationship,enrollment:enrollments!inner(protocol,student:students!inner(full_name))",
+          select: "medication_allergy,allergy_details,food_allergy,food_allergy_details,health_notes,health_notes_details,controlled_medication,medication_details,emergency_name,emergency_phone,emergency_relationship,enrollment:enrollments!inner(protocol,student:students!inner(full_name))",
           "enrollment.student.full_name": `ilike.*${parsed.data}*`,
           order: "updated_at.desc",
           limit: "25",
@@ -73,6 +77,10 @@ export const Route = createFileRoute("/api/health")({
             studentName: student.full_name,
             medicationAllergy: row.medication_allergy,
             allergyDetails: row.allergy_details,
+            foodAllergy: row.food_allergy,
+            foodAllergyDetails: row.food_allergy_details,
+            healthNotes: row.health_notes,
+            healthNotesDetails: row.health_notes_details,
             controlledMedication: row.controlled_medication,
             medicationDetails: row.medication_details,
             emergencyName: row.emergency_name,
