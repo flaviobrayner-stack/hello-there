@@ -1,7 +1,7 @@
 import type { StudentInfo, UserProfile } from "./types";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || "https://oreeyfyidnhpkwnxubpw.supabase.co";
+const SUPABASE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) || "sb_publishable_r9HALBJWZKnLe_vy060umg_B9s7JKwA";
 const SESSION_KEY = "matricula2026.supabase.session";
 
 export interface SupabaseSession {
