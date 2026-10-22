@@ -81,6 +81,13 @@ export async function signIn(email: string, password: string): Promise<{ session
   }
 }
 
+export async function sendPasswordRecovery(email: string, redirectTo: string) {
+  await request("/auth/v1/recover", {
+    method: "POST",
+    body: JSON.stringify({ email: email.trim(), redirect_to: redirectTo }),
+  });
+}
+
 export async function signOut(session: SupabaseSession | null) {
   try { if (session) await request("/auth/v1/logout", { method: "POST" }, session.access_token); }
   finally { storeSession(null); }
