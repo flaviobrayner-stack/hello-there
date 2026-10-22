@@ -1,0 +1,35 @@
+name: Checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - feature/sistema-matricula-2026
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Format changed files
+        run: bunx prettier --write src/routes/index.tsx src/routes/__root.tsx src/lib/enrollment-validation.ts src/lib/enrollment-validation.test.ts src/routes/api.courses.ts src/routes/api.enrollments.ts src/routes/api.auth.login.ts src/routes/api.auth.session.ts src/routes/api.auth.logout.ts src/routes/api.health.ts src/lib/server/matricula-api.ts src/lib/server/matricula-api.test.ts
+      - name: Unit tests
+        run: bun run test
+      - name: Lint
+        run: bun run lint
+      - name: Production build
+        run: bun run build
