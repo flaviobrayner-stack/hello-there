@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Activity,
@@ -53,6 +53,7 @@ import {
   availableCourses,
 } from "../lib/mock-data";
 import { maskCpfPrivate } from "../lib/mask";
+import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, type SupabaseSession } from "../lib/supabase";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
@@ -199,6 +200,63 @@ function toEnrollmentDocumentPreviewData(s: StudentInfo): EnrollmentDocumentData
 }
 
 function Index() {
+  const [authSession, setAuthSession] = useState<SupabaseSession | null>(() => getStoredSession());
+  const [authReady, setAuthReady] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const session = getStoredSession();
+    if (!session) { setAuthReady(true); return; }
+    getProfile(session).then((profile) => {
+      if (cancelled) return;
+      setUsers([profile]); setCurrentUserId(profile.id); setStudents([]);
+    }).catch(async () => {
+      await signOut(session).catch(() => undefined);
+      if (!cancelled) setAuthSession(null);
+    }).finally(() => { if (!cancelled) setAuthReady(true); });
+    if (!authReady) {
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">Verificando sessão segura…</div>;
+  }
+
+  if (!authSession) {
+    return (
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
+        <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 text-white"><GraduationCap size={28} /></div>
+          <h1 className="text-center text-2xl font-bold text-slate-900">Sistema de Matrícula 2026</h1>
+          <p className="mt-2 text-center text-sm text-slate-500">Acesso restrito à equipe autorizada</p>
+          <form className="mt-6 space-y-4" onSubmit={async (event) => {
+            event.preventDefault(); setAuthBusy(true); setAuthError("");
+            try {
+              const result = await signIn(authEmail, authPassword);
+              setAuthSession(result.session); setUsers([result.profile]); setCurrentUserId(result.profile.id);
+              setStudents([]); setAuditLogs([]); setGeneratedDocs([]); setAuthPassword("");
+            } catch (error) {
+              setAuthError(error instanceof Error ? error.message : "Falha no login.");
+            } finally { setAuthBusy(false); }
+          }}>
+            <label className="block text-sm font-semibold text-slate-700">E-mail institucional
+              <input type="email" required autoComplete="username" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="nome@ete.pe.gov.br" />
+            </label>
+            <label className="block text-sm font-semibold text-slate-700">Senha
+              <input type="password" required autoComplete="current-password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Sua senha do sistema" />
+            </label>
+            {authError && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{authError}</p>}
+            <button disabled={authBusy} className="w-full rounded-xl bg-blue-700 px-4 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60">{authBusy ? "Validando acesso…" : "Entrar com segurança"}</button>
+          </form>
+          <p className="mt-4 text-xs leading-relaxed text-slate-500">Contas de demonstração foram desativadas nesta tela. Um administrador precisa criar o usuário no Supabase Auth e atribuir um perfil ativo em <code>public.profiles</code>.</p>
+        </section>
+      </main>
+    );
+  }
+
+  return () => { cancelled = true; };
+  }, []);
+
   // App State
   const [users, setUsers] = useState<UserProfile[]>(initialUsers);
   const [currentUserId, setCurrentUserId] = useState<string>("usr-admin-1");
@@ -305,7 +363,20 @@ function Index() {
   }, [students]);
 
   // Handle Save / Update Student
-  const handleSaveStudent = (savedStudent: StudentInfo, isDraft: boolean) => {
+  const handleSaveStudent = async (savedStudent: StudentInfo, isDraft: boolean) => {
+    if (!authSession) { setNotice("Entre com uma conta autorizada para gravar no banco."); return; }
+    if (!isDraft) {
+      setNotice("A gravação de rascunhos está conectada. A conclusão definitiva será habilitada após a rotina segura de mudança de status ser implantada no banco.");
+      return;
+    }
+    try {
+      setNotice("Gravando rascunho no Supabase…");
+      const result = await saveEnrollment(authSession, savedStudent);
+      savedStudent = { ...savedStudent, id: result.id, protocol: result.protocol, status: "Rascunho" };
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Não foi possível gravar no Supabase.");
+      return;
+    }
     const exists = students.some((s) => s.id === savedStudent.id);
     let updatedList: StudentInfo[];
 
