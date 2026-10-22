@@ -68,7 +68,7 @@ describe("authenticateStaff", () => {
       });
     }
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(String(fetchMock.mock.calls[0][0])).toBe(
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
       "https://project.supabase.co/auth/v1/user",
     );
   });

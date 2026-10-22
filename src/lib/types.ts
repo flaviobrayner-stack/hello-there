@@ -36,14 +36,14 @@ export interface DocumentItem {
   type: DocumentType;
   name: string;
   status: DocumentStatus;
-  fileName?: string;
-  fileSize?: string;
-  fileUrl?: string;
-  submittedAt?: string;
-  verifiedAt?: string;
-  verifiedBy?: string;
-  notes?: string;
-  deadline?: string;
+  fileName?: string | undefined;
+  fileSize?: string | undefined;
+  fileUrl?: string | undefined;
+  submittedAt?: string | undefined;
+  verifiedAt?: string | undefined;
+  verifiedBy?: string | undefined;
+  notes?: string | undefined;
+  deadline?: string | undefined;
   isMandatory: boolean;
   blocksCompletion: boolean;
 }

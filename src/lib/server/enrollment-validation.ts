@@ -84,6 +84,7 @@ export function isValidCpf(value: string): boolean {
 function isValidCalendarDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const [year, month, day] = value.split("-").map(Number);
+  if (year === undefined || month === undefined || day === undefined) return false;
   const date = new Date(Date.UTC(year, month - 1, day));
   const today = new Date();
   const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
@@ -108,30 +109,31 @@ export function validateEnrollmentPreflight(input: unknown): EnrollmentValidatio
 
   rejectUnknownKeys(input, TOP_LEVEL_KEYS, "", issues);
 
-  if (input.schema_version !== 1) {
+  if (input["schema_version"] !== 1) {
     addIssue(issues, "schema_version", "UNSUPPORTED_VERSION", "Versão do contrato não suportada.");
   }
 
   if (
-    typeof input.academic_year !== "number" ||
-    !Number.isInteger(input.academic_year) ||
-    input.academic_year < 2020 ||
-    input.academic_year > 2100
+    typeof input["academic_year"] !== "number" ||
+    !Number.isInteger(input["academic_year"]) ||
+    input["academic_year"] < 2020 ||
+    input["academic_year"] > 2100
   ) {
     addIssue(issues, "academic_year", "INVALID_YEAR", "Ano letivo inválido.");
   }
 
-  if (typeof input.course_id !== "string" || !UUID_RE.test(input.course_id)) {
+  if (typeof input["course_id"] !== "string" || !UUID_RE.test(input["course_id"])) {
     addIssue(issues, "course_id", "INVALID_COURSE_ID", "Identificador do curso inválido.");
   }
 
+  const quotaInput = input["quota"];
   let quota: EnrollmentPreflightPayload["quota"] | undefined;
-  if (!isRecord(input.quota)) {
+  if (!isRecord(quotaInput)) {
     addIssue(issues, "quota", "INVALID_OBJECT", "Informe a configuração da cota.");
   } else {
-    rejectUnknownKeys(input.quota, QUOTA_KEYS, "quota", issues);
-    const isQuota = input.quota.is_quota;
-    const quotaType = input.quota.quota_type;
+    rejectUnknownKeys(quotaInput, QUOTA_KEYS, "quota", issues);
+    const isQuota = quotaInput["is_quota"];
+    const quotaType = quotaInput["quota_type"];
     const allowedTypes = ["escola_publica", "renda", "vulnerabilidade", "pcd"];
     if (typeof isQuota !== "boolean") {
       addIssue(issues, "quota.is_quota", "INVALID_BOOLEAN", "Informe se a matrícula é por cota.");
@@ -156,34 +158,46 @@ export function validateEnrollmentPreflight(input: unknown): EnrollmentValidatio
     }
   }
 
+  const studentInput = input["student"];
   let student: EnrollmentPreflightPayload["student"] | undefined;
-  if (!isRecord(input.student)) {
+  if (!isRecord(studentInput)) {
     addIssue(issues, "student", "INVALID_OBJECT", "Informe os dados do estudante.");
   } else {
-    rejectUnknownKeys(input.student, STUDENT_KEYS, "student", issues);
-    const fullName = input.student.fullName;
+    rejectUnknownKeys(studentInput, STUDENT_KEYS, "student", issues);
+    const fullName = studentInput["fullName"];
     if (typeof fullName !== "string" || fullName.trim().length < 3 || fullName.trim().length > 160) {
       addIssue(issues, "student.fullName", "INVALID_NAME", "O nome deve ter entre 3 e 160 caracteres.");
     }
 
     let cpf: string | null | undefined;
-    if (input.student.cpf === null || input.student.cpf === undefined || input.student.cpf === "") {
-      cpf = input.student.cpf as null | undefined | "";
-    } else if (typeof input.student.cpf !== "string") {
+    if (
+      studentInput["cpf"] === null ||
+      studentInput["cpf"] === undefined ||
+      studentInput["cpf"] === ""
+    ) {
+      cpf = studentInput["cpf"] as null | undefined | "";
+    } else if (typeof studentInput["cpf"] !== "string") {
       addIssue(issues, "student.cpf", "INVALID_TYPE", "CPF deve ser texto.");
-    } else if (!isValidCpf(input.student.cpf)) {
+    } else if (!isValidCpf(studentInput["cpf"])) {
       addIssue(issues, "student.cpf", "INVALID_CPF", "CPF inválido.");
     } else {
-      cpf = normalizeDigits(input.student.cpf);
+      cpf = normalizeDigits(studentInput["cpf"]);
     }
 
     let birthDate: string | null | undefined;
-    if (input.student.birthDate === null || input.student.birthDate === undefined || input.student.birthDate === "") {
-      birthDate = input.student.birthDate as null | undefined | "";
-    } else if (typeof input.student.birthDate !== "string" || !isValidCalendarDate(input.student.birthDate)) {
+    if (
+      studentInput["birthDate"] === null ||
+      studentInput["birthDate"] === undefined ||
+      studentInput["birthDate"] === ""
+    ) {
+      birthDate = studentInput["birthDate"] as null | undefined | "";
+    } else if (
+      typeof studentInput["birthDate"] !== "string" ||
+      !isValidCalendarDate(studentInput["birthDate"])
+    ) {
       addIssue(issues, "student.birthDate", "INVALID_BIRTH_DATE", "Data de nascimento inválida ou futura.");
     } else {
-      birthDate = input.student.birthDate;
+      birthDate = studentInput["birthDate"];
     }
 
     if (typeof fullName === "string" && fullName.trim().length >= 3 && fullName.trim().length <= 160) {
@@ -201,8 +215,8 @@ export function validateEnrollmentPreflight(input: unknown): EnrollmentValidatio
     ok: true,
     value: {
       schema_version: 1,
-      academic_year: input.academic_year as number,
-      course_id: input.course_id as string,
+      academic_year: input["academic_year"] as number,
+      course_id: input["course_id"] as string,
       quota,
       student,
     },
