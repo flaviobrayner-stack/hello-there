@@ -7,6 +7,7 @@ interface AdminUsersDialogProps {
   onClose: () => void;
   users: UserProfile[];
   onUpdateUsers: (users: UserProfile[]) => void;
+  onCreateUser: (name: string, email: string, role: UserRole) => Promise<UserProfile>;
   currentUser: UserProfile;
 }
 
@@ -15,6 +16,7 @@ export function AdminUsersDialog({
   onClose,
   users,
   onUpdateUsers,
+  onCreateUser,
   currentUser,
 }: AdminUsersDialogProps) {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -22,29 +24,21 @@ export function AdminUsersDialog({
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState<UserRole>("operador");
   const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleAddUser = (e: React.FormEvent) => {
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName || !newEmail) return;
-
-    const newUser: UserProfile = {
-      id: "usr-" + Date.now(),
-      name: newName,
-      email: newEmail,
-      role: newRole,
-      active: true,
-      password: "123456",
-      mustChangePassword: true,
-      createdAt: new Date().toLocaleDateString("pt-BR"),
-    };
-
-    onUpdateUsers([...users, newUser]);
-    setNewName("");
-    setNewEmail("");
-    setShowAddForm(false);
-    setNotice(`Usuário ${newUser.name} cadastrado com senha padrão 123456 (alteração obrigatória no primeiro acesso).`);
+    if (!newName.trim() || !newEmail.trim()) return;
+    setBusy(true);
+    try {
+      const newUser = await onCreateUser(newName.trim(), newEmail.trim(), newRole);
+      setNewName(""); setNewEmail(""); setShowAddForm(false);
+      setNotice("Convite enviado para " + newUser.email + ". A pessoa deverá usar o link recebido por e-mail para definir a própria senha.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Falha ao criar usuário.");
+    } finally { setBusy(false); }
   };
 
   const handleResetPassword = (id: string) => {
@@ -131,7 +125,7 @@ export function AdminUsersDialog({
               className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 space-y-3"
             >
               <h4 className="font-bold text-blue-950 text-xs uppercase tracking-wide">
-                Cadastrar Novo Funcionário
+                Convidar Novo Funcionário
               </h4>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
@@ -179,7 +173,7 @@ export function AdminUsersDialog({
                     type="submit"
                     className="rounded-lg bg-blue-700 px-4 py-1.5 text-xs font-bold text-white hover:bg-blue-800"
                   >
-                    Salvar
+                    {busy ? "Enviando convite…" : "Enviar convite"}
                   </button>
                   <button
                     type="button"
@@ -231,7 +225,7 @@ export function AdminUsersDialog({
                       type="button"
                       onClick={() => handleResetPassword(u.id)}
                       className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100"
-                      title="Resetar senha para padrão 123456"
+                      title="Use o fluxo seguro de recuperação por e-mail"
                     >
                       <KeyRound size={12} /> Resetar Senha
                     </button>
