@@ -137,3 +137,15 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
 }
 
 export async function pingAdminBootstrap() { return true; }
+
+export async function createStaffUser(session: SupabaseSession, fullName: string, email: string, role: "admin" | "operador") {
+  const { url, key } = config();
+  const response = await fetch(url + "/functions/v1/manage-staff-users", {
+    method: "POST",
+    headers: { apikey: key, Authorization: "Bearer " + session.access_token, "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "create-user", fullName, email, role, redirectTo: window.location.origin }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || data.error || "Não foi possível convidar o usuário.");
+  return data;
+}
