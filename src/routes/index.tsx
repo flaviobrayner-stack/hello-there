@@ -64,7 +64,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Section =
-  "dashboard" | "matriculas" | "nova" | "documentos" | "documentos-gerados" | "configuracoes";
+  "dashboard" | "matriculas" | "nova" | "saude-emergencia" | "documentos" | "documentos-gerados" | "configuracoes";
 
 function StatusBadge({ status }: { status: StudentInfo["status"] }) {
   const styles = {
@@ -201,6 +201,7 @@ function Index() {
   const [section, setSection] = useState<Section>("dashboard");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [search, setSearch] = useState("");
+  const [healthSearch, setHealthSearch] = useState("");
   const [courseFilter, setCourseFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [quotaFilter, setQuotaFilter] = useState("all");
@@ -403,6 +404,7 @@ function Index() {
   const navItems = [
     { id: "dashboard" as const, label: "Visão geral", icon: LayoutDashboard },
     { id: "matriculas" as const, label: "Matrículas", icon: GraduationCap },
+    { id: "saude-emergencia" as const, label: "Pesquisa de Saúde e Emergência", icon: HeartPulse },
     { id: "documentos" as const, label: "Documentação oficial", icon: FileText },
     {
       id: "documentos-gerados" as const,
@@ -421,6 +423,8 @@ function Index() {
           ? editingStudent
             ? `Editar Matrícula: ${editingStudent.protocol}`
             : "Nova Matrícula 2026"
+          : section === "saude-emergencia"
+          ? "Pesquisa de Saúde e Emergência"
           : section === "documentos"
             ? "Central de Documentação (Ficha Ok 2026)"
             : section === "documentos-gerados"
@@ -1003,6 +1007,115 @@ function Index() {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Pesquisa de saúde e emergência — consulta os dados já cadastrados na matrícula */}
+          {section === "saude-emergencia" && (
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-6">
+                <div className="flex items-start gap-4">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white">
+                    <HeartPulse size={25} />
+                  </span>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">Pesquisa de Saúde e Emergência</h2>
+                    <p className="mt-1 text-sm text-slate-600">Pesquise um aluno para consultar informações de saúde e localizar o contato de emergência.</p>
+                  </div>
+                </div>
+                <div className="relative mt-5">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    value={healthSearch}
+                    onChange={(e) => setHealthSearch(e.target.value)}
+                    placeholder="Digite nome, número da matrícula ou CPF..."
+                    className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    aria-label="Pesquisar aluno para consulta de saúde e emergência"
+                  />
+                </div>
+                <p className="mt-2 text-xs text-slate-500">Informações exibidas conforme os dados disponíveis no cadastro.</p>
+              </div>
+
+              {(() => {
+                const query = healthSearch.trim().toLocaleLowerCase("pt-BR");
+                const matches = query
+                  ? students.filter((student) =>
+                      [student.fullName, student.socialName || "", student.protocol, student.cpf]
+                        .some((value) => value.toLocaleLowerCase("pt-BR").includes(query)),
+                    )
+                  : [];
+                if (!query) {
+                  return <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                    <Search className="mx-auto text-slate-300" size={30} />
+                    <p className="mt-3 text-sm font-semibold text-slate-700">Pesquise um aluno para começar</p>
+                    <p className="mt-1 text-xs text-slate-500">Digite pelo menos parte do nome, matrícula ou CPF.</p>
+                  </div>;
+                }
+                if (matches.length === 0) {
+                  return <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Nenhum aluno encontrado para essa pesquisa.</div>;
+                }
+                return <div className="space-y-4">
+                  <p className="text-sm text-slate-500">{matches.length} aluno(s) encontrado(s)</p>
+                  {matches.map((student) => (
+                    <article key={student.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                      <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/70 p-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h3 className="font-bold text-slate-900">{student.fullName}</h3>
+                          <p className="mt-1 text-xs text-slate-500">Matrícula: {student.protocol} · Curso: {student.course}</p>
+                        </div>
+                        <span className="inline-flex w-fit items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">{student.status}</span>
+                      </div>
+                      <div className="grid gap-5 p-5 md:grid-cols-2">
+                        <section className="space-y-3">
+                          <h4 className="flex items-center gap-2 font-bold text-slate-800"><HeartPulse size={17} className="text-rose-600" /> Informações de saúde</h4>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-slate-500">Tipo sanguíneo</p>
+                            <p className="mt-1 font-semibold text-slate-800">{student.health.bloodType || "Não informado"}</p>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-slate-500">Alergia a medicamentos</p>
+                            <p className="mt-1 font-semibold text-slate-800">{student.health.hasDrugAllergy ? "Sim" : "Não informado"}</p>
+                            {student.health.hasDrugAllergy && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{student.health.drugAllergyDetails || "Detalhes não informados"}</p>}
+                          </div>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-slate-500">Medicamento de uso controlado</p>
+                            <p className="mt-1 font-semibold text-slate-800">{student.health.hasControlledMedication ? "Sim" : "Não informado"}</p>
+                            {student.health.hasControlledMedication && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{student.health.controlledMedicationDetails || "Detalhes não informados"}</p>}
+                          </div>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-slate-500">Outras condições de saúde</p>
+                            <p className="mt-1 font-semibold text-slate-800">{student.health.hasOtherHealthCondition ? "Sim" : "Não informado"}</p>
+                            {student.health.hasOtherHealthCondition && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{student.health.otherHealthConditionDetails || "Detalhes não informados"}</p>}
+                          </div>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-slate-500">Plano de saúde / hospital indicado</p>
+                            <p className="mt-1 font-semibold text-slate-800">{student.health.hasHealthInsurance ? (student.health.insuranceName || "Plano informado, sem nome cadastrado") : "Não informado"}</p>
+                            {student.health.indicatedHospital && <p className="mt-1 text-sm text-slate-700">Hospital: {student.health.indicatedHospital}</p>}
+                          </div>
+                        </section>
+                        <section className="space-y-3">
+                          <h4 className="flex items-center gap-2 font-bold text-slate-800"><AlertCircle size={17} className="text-amber-600" /> Contato de emergência</h4>
+                          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                            <p className="text-xs text-amber-800">Nome do contato</p>
+                            <p className="mt-1 font-bold text-slate-900">{student.health.emergencyContactName || "Não informado"}</p>
+                            <p className="mt-3 text-xs text-amber-800">Parentesco</p>
+                            <p className="mt-1 font-semibold text-slate-800">{student.health.emergencyContactRelationship || "Não informado"}</p>
+                            <p className="mt-3 text-xs text-amber-800">Telefone para emergência</p>
+                            <p className="mt-1 text-lg font-bold text-slate-900">{student.health.emergencyContactPhone || "Não informado"}</p>
+                            {student.health.emergencyContactPhone && <a href={`tel:${student.health.emergencyContactPhone.replace(/[^+\\d]/g, "")}`} className="mt-3 inline-flex items-center rounded-lg bg-amber-600 px-3 py-2 text-xs font-bold text-white hover:bg-amber-700">Ligar para contato</a>}
+                          </div>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-slate-500">Responsável legal</p>
+                            <p className="mt-1 font-semibold text-slate-800">{student.guardian.name || "Não informado"}</p>
+                            <p className="mt-1 text-sm text-slate-600">{student.guardian.phone || "Telefone não informado"}</p>
+                          </div>
+                          <p className="text-xs leading-relaxed text-slate-500">Uso restrito à equipe autorizada. Confirme as informações com o responsável antes de tomar decisões; esta tela não substitui atendimento profissional de saúde.</p>
+                        </section>
+                      </div>
+                    </article>
+                  ))}
+                </div>;
+              })()}
             </div>
           )}
 
