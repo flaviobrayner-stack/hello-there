@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { isValidCpf } from "../lib/enrollment-validation";
+import { readJsonBodyLimited } from "../lib/server/request-body";
 import {
   authenticateStaff,
   jsonError,
@@ -118,23 +119,22 @@ export const Route = createFileRoute("/api/enrollments")({
           return jsonError("Envie os dados em formato JSON.", 415, "UNSUPPORTED_MEDIA_TYPE");
         }
 
-        const contentLength = Number(request.headers.get("content-length") ?? "0");
-        if (Number.isFinite(contentLength) && contentLength > 16_384) {
-          return jsonError(
-            "Os dados enviados excedem o limite permitido.",
-            413,
-            "PAYLOAD_TOO_LARGE",
-          );
-        }
-
-        let payload: unknown;
-        try {
-          payload = await request.json();
-        } catch {
+        const bodyResult = await readJsonBodyLimited(request, 16_384);
+        if (!bodyResult.ok) {
+          if (bodyResult.reason === "too_large") {
+            return jsonError(
+              "Os dados enviados excedem o limite permitido.",
+              413,
+              "PAYLOAD_TOO_LARGE",
+            );
+          }
+          if (bodyResult.reason === "unreadable") {
+            return jsonError("Não foi possível ler o corpo da solicitação.", 400, "UNREADABLE_BODY");
+          }
           return jsonError("Corpo JSON inválido.", 400, "INVALID_JSON");
         }
 
-        const parsed = createEnrollmentSchema.safeParse(payload);
+        const parsed = createEnrollmentSchema.safeParse(bodyResult.value);
         if (!parsed.success) {
           return jsonError(
             "Confira os campos da matrícula e tente novamente.",
