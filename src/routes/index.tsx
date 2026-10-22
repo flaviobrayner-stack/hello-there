@@ -710,35 +710,6 @@ function Index() {
           </div>
         </div>
 
-        {/* Current User & Role Switcher */}
-        <div className="mt-auto p-4 border-t border-slate-100">
-          <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-900">
-                Simulação de Papel
-              </span>
-              <span
-                className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
-                  isAdmin ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                {currentUser.role}
-              </span>
-            </div>
-
-            <select
-              value={currentUserId}
-              onChange={(e) => setCurrentUserId(e.target.value)}
-              className="w-full rounded-lg border border-blue-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 outline-none"
-            >
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} ({u.role})
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
       </aside>
 
       {mobileMenu && (
