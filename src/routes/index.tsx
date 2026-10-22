@@ -34,6 +34,7 @@ import {
   Eye,
   FileCheck,
   UserCheck,
+  Trash2,
 } from "lucide-react";
 
 import {
@@ -217,6 +218,7 @@ function Index() {
   // Selection & Editing
   const [editingStudent, setEditingStudent] = useState<StudentInfo | null>(null);
   const [conferencingStudent, setConferencingStudent] = useState<StudentInfo | null>(null);
+  const [studentPendingDeletion, setStudentPendingDeletion] = useState<StudentInfo | null>(null);
 
   // Modals
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
@@ -336,6 +338,28 @@ function Index() {
         ? `Rascunho de ${savedStudent.fullName} salvo com sucesso.`
         : `Matrícula ${savedStudent.protocol} (${savedStudent.fullName}) concluída com sucesso!`,
     );
+  };
+
+  // Excluir matrícula após confirmação explícita do usuário.
+  const handleDeleteStudent = (student: StudentInfo) => {
+    setStudents((prev) => prev.filter((item) => item.id !== student.id));
+    setGeneratedDocs((prev) => prev.filter((doc) => doc.enrollmentId !== student.protocol));
+    setAuditLogs((prev) => [
+      {
+        id: "log-" + Date.now(),
+        action: "Exclusão de Matrícula",
+        actor: currentUser.name,
+        targetId: student.protocol,
+        targetName: student.fullName,
+        timestamp: new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR"),
+        details: "Matrícula removida após confirmação do usuário.",
+      },
+      ...prev,
+    ]);
+    if (editingStudent?.id === student.id) setEditingStudent(null);
+    if (conferencingStudent?.id === student.id) setConferencingStudent(null);
+    setStudentPendingDeletion(null);
+    setNotice(`Matrícula ${student.protocol} — ${student.fullName} excluída.`);
   };
 
   // Open PDF for a student
@@ -1001,6 +1025,15 @@ function Index() {
                                 >
                                   <Edit size={14} />
                                 </button>
+                                {/* Excluir — disponível para qualquer usuário; exige confirmação */}
+                                <button
+                                  onClick={() => setStudentPendingDeletion(s)}
+                                  className="rounded-lg border border-rose-200 bg-white p-1.5 text-rose-700 hover:bg-rose-50 transition"
+                                  title="Excluir Matrícula"
+                                  aria-label={`Excluir matrícula ${s.protocol}`}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -1436,6 +1469,30 @@ function Index() {
           </footer>
         </div>
       </main>
+
+      {/* Confirmação de exclusão da matrícula */}
+      {studentPendingDeletion && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-enrollment-title">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-700">
+                <AlertCircle size={21} />
+              </div>
+              <div>
+                <h2 id="delete-enrollment-title" className="text-base font-bold text-slate-900">Tem certeza que deseja excluir esta matrícula?</h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  Você está prestes a excluir a matrícula <strong>{studentPendingDeletion.protocol}</strong> de <strong>{studentPendingDeletion.fullName}</strong>. Esta ação não poderá ser desfeita nesta tela.
+                </p>
+                <p className="mt-2 text-xs text-rose-700">Os documentos gerados associados também serão removidos desta lista.</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setStudentPendingDeletion(null)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancelar</button>
+              <button type="button" onClick={() => handleDeleteStudent(studentPendingDeletion)} className="rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-rose-800">Sim, excluir matrícula</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Prévia imprimível baseada no PDF oficial anexado. O conteúdo é preenchido com o cadastro selecionado. */}
       {pdfDialogOpen && (() => {
