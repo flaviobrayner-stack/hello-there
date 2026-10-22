@@ -365,7 +365,7 @@ language plpgsql
 immutable
 strict
 set search_path = ''
-as $
+as $$
 declare
   v_digits text := regexp_replace(p_cpf, '[^0-9]', '', 'g');
   v_sum integer := 0;
@@ -507,6 +507,7 @@ begin
       nullif(trim(p_student->>'phone'), ''),
       nullif(trim(p_student->>'email'), ''),
       nullif(trim(p_student->>'address'), ''),
+      nullif(trim(p_student->>'city'), ''),
       nullif(upper(trim(p_student->>'state')), ''),
       nullif(regexp_replace(coalesce(p_student->>'cep', ''), '[^0-9]', '', 'g'), ''),
       nullif(trim(p_student->>'raceColor'), ''),
