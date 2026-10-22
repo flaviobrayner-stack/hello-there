@@ -54,7 +54,7 @@ import {
   availableCourses,
 } from "../lib/mock-data";
 import { maskCpfPrivate } from "../lib/mask";
-import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, listStaffUsers, sendPasswordRecovery, consumeAuthRedirect, updatePassword, type SupabaseSession } from "../lib/supabase";
+import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, listEnrollments, createStaffUser, listStaffUsers, sendPasswordRecovery, consumeAuthRedirect, updatePassword, type SupabaseSession } from "../lib/supabase";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
@@ -236,7 +236,9 @@ function Index() {
       setUsers([profile]);
       listStaffUsers(session).then((staff) => { if (!cancelled) setUsers(staff); }).catch(() => undefined);
       setCurrentUserId(profile.id);
-      setStudents([]);
+      listEnrollments(session).then((rows) => { if (!cancelled) setStudents(rows); }).catch((error) => {
+        if (!cancelled) setNotice(error instanceof Error ? "Não foi possível carregar matrículas: " + error.message : "Não foi possível carregar as matrículas salvas.");
+      });
     }).catch(async () => {
       await signOut(session).catch(() => undefined);
       if (!cancelled) setAuthSession(null);
@@ -573,6 +575,9 @@ function Index() {
               listStaffUsers(result.session).then(setUsers).catch(() => undefined);
               setCurrentUserId(result.profile.id);
               setStudents([]);
+              listEnrollments(result.session).then(setStudents).catch((error) => {
+                setNotice(error instanceof Error ? "Login concluído, mas não foi possível carregar matrículas: " + error.message : "Login concluído, mas não foi possível carregar as matrículas.");
+              });
               setAuditLogs([]);
               setGeneratedDocs([]);
               setAuthPassword("");
