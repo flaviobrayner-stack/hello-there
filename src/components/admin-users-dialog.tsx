@@ -8,6 +8,9 @@ interface AdminUsersDialogProps {
   users: UserProfile[];
   onUpdateUsers: (users: UserProfile[]) => void;
   onCreateUser: (name: string, email: string, role: UserRole) => Promise<UserProfile>;
+  onChangeUserPassword: (id: string, password: string) => Promise<void>;
+  onChangeUserRole: (id: string, role: UserRole) => Promise<void>;
+  onSetUserActive: (id: string, active: boolean) => Promise<void>;
   currentUser: UserProfile;
 }
 
@@ -17,6 +20,9 @@ export function AdminUsersDialog({
   users,
   onUpdateUsers,
   onCreateUser,
+  onChangeUserPassword,
+  onChangeUserRole,
+  onSetUserActive,
   currentUser,
 }: AdminUsersDialogProps) {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -25,6 +31,8 @@ export function AdminUsersDialog({
   const [newRole, setNewRole] = useState<UserRole>("operador");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [passwords, setPasswords] = useState<Record<string, string>>({});
+  const [actionBusyId, setActionBusyId] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -41,33 +49,54 @@ export function AdminUsersDialog({
     } finally { setBusy(false); }
   };
 
-  const handleResetPassword = (id: string) => {
-    onUpdateUsers(
-      users.map((u) =>
-        u.id === id ? { ...u, password: "123456", mustChangePassword: true } : u,
-      ),
-    );
-    setNotice("Senha resetada para '123456' com alteração obrigatória no próximo acesso.");
+  const handleResetPassword = async (id: string) => {
+    const password = passwords[id] || "";
+    if (password.length < 8) {
+      setNotice("A nova senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+    setActionBusyId(id);
+    try {
+      await onChangeUserPassword(id, password);
+      setPasswords((current) => ({ ...current, [id]: "" }));
+      setNotice("Senha alterada com sucesso. Informe a nova senha ao usuário por um canal seguro.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Não foi possível alterar a senha.");
+    } finally {
+      setActionBusyId(null);
+    }
   };
 
-  const handleToggleRole = (id: string) => {
+  const handleToggleRole = async (id: string, role: UserRole) => {
     if (id === currentUser.id) {
       setNotice("Não é permitido alterar o próprio papel administrativo.");
       return;
     }
-    onUpdateUsers(
-      users.map((u) =>
-        u.id === id ? { ...u, role: u.role === "admin" ? "operador" : "admin" } : u,
-      ),
-    );
+    setActionBusyId(id);
+    try {
+      await onChangeUserRole(id, role);
+      setNotice("Permissão do usuário atualizada.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Não foi possível alterar a permissão.");
+    } finally {
+      setActionBusyId(null);
+    }
   };
 
-  const handleToggleActive = (id: string) => {
+  const handleToggleActive = async (id: string, active: boolean) => {
     if (id === currentUser.id) {
       setNotice("Não é permitido desativar a própria conta em uso.");
       return;
     }
-    onUpdateUsers(users.map((u) => (u.id === id ? { ...u, active: !u.active } : u)));
+    setActionBusyId(id);
+    try {
+      await onSetUserActive(id, active);
+      setNotice(active ? "Usuário ativado." : "Usuário bloqueado.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Não foi possível alterar o status.");
+    } finally {
+      setActionBusyId(null);
+    }
   };
 
   return (
@@ -221,27 +250,41 @@ export function AdminUsersDialog({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="password"
+                        autoComplete="new-password"
+                        value={passwords[u.id] || ""}
+                        onChange={(event) => setPasswords((current) => ({ ...current, [u.id]: event.target.value }))}
+                        placeholder="Nova senha (mín. 8)"
+                        aria-label={`Nova senha para ${u.name}`}
+                        minLength={8}
+                        className="w-36 rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                      />
+                      <button
+                        type="button"
+                        disabled={actionBusyId === u.id || (passwords[u.id] || "").length < 8}
+                        onClick={() => void handleResetPassword(u.id)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50"
+                        title="Definir nova senha para este usuário"
+                      >
+                        <KeyRound size={12} /> Alterar senha
+                      </button>
+                    </div>
                     <button
                       type="button"
-                      disabled
-                      onClick={() => handleResetPassword(u.id)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100"
-                      title="Use o fluxo seguro de recuperação por e-mail"
-                    >
-                      <KeyRound size={12} /> Resetar Senha
-                    </button>
-                    <button
-                      disabled
-                      onClick={() => handleToggleRole(u.id)}
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-                      title="Alternar Papel"
+                      disabled={actionBusyId === u.id || u.id === currentUser.id}
+                      onClick={() => void handleToggleRole(u.id, isAdmin ? "operador" : "admin")}
+                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+                      title="Alterar papel de acesso"
                     >
                       Mudar para {isAdmin ? "Operador" : "Admin"}
                     </button>
                     <button
-                      disabled
-                      onClick={() => handleToggleActive(u.id)}
-                      className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                      type="button"
+                      disabled={actionBusyId === u.id || u.id === currentUser.id}
+                      onClick={() => void handleToggleActive(u.id, !u.active)}
+                      className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold disabled:opacity-50 ${
                         u.active
                           ? "border border-rose-200 text-rose-700 hover:bg-rose-50"
                           : "border border-emerald-200 text-emerald-700 hover:bg-emerald-50"
