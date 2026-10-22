@@ -56,7 +56,9 @@ type Enrollment = {
 };
 type HealthLookupResult = {
   protocol: string; studentName: string; medicationAllergy: boolean | null;
-  allergyDetails: string | null; controlledMedication: boolean | null;
+  allergyDetails: string | null; foodAllergy: boolean | null;
+  foodAllergyDetails: string | null; healthNotes: boolean | null;
+  healthNotesDetails: string | null; controlledMedication: boolean | null;
   medicationDetails: string | null; emergencyName: string | null;
   emergencyPhone: string | null; emergencyRelationship: string | null;
 };
@@ -1904,7 +1906,9 @@ function AdminApp({
                 <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between"><div><h3 className="text-lg font-bold text-slate-900">{record.studentName}</h3><p className="mt-1 text-xs text-slate-500">Matrícula: {record.protocol}</p></div><span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-800"><HeartPulse size={14} /> Informação sensível</span></div>
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <div className="rounded-xl border border-slate-200 p-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Alergias</p><p className="mt-2 text-sm font-semibold text-slate-900">{record.medicationAllergy === true ? "Alergia medicamentosa registrada" : record.medicationAllergy === false ? "Sem alergia medicamentosa informada" : "Não informado"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{record.allergyDetails || "Sem detalhes registrados."}</p></div>
+                  <div className="rounded-xl border border-slate-200 p-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Alergias alimentares</p><p className="mt-2 text-sm font-semibold text-slate-900">{record.foodAllergy === true ? "Alergia alimentar registrada" : record.foodAllergy === false ? "Sem alergia alimentar informada" : "Não informado"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{record.foodAllergyDetails || "Sem detalhes registrados."}</p></div>
                   <div className="rounded-xl border border-slate-200 p-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Medicação controlada</p><p className="mt-2 text-sm font-semibold text-slate-900">{record.controlledMedication === true ? "Sim" : record.controlledMedication === false ? "Não" : "Não informado"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{record.medicationDetails || "Sem detalhes registrados."}</p></div>
+                  <div className="rounded-xl border border-slate-200 p-4 md:col-span-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Outros problemas de saúde</p><p className="mt-2 text-sm font-semibold text-slate-900">{record.healthNotes === true ? "Observações de saúde registradas" : record.healthNotes === false ? "Nenhuma observação informada" : "Não informado"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{record.healthNotesDetails || "Sem detalhes registrados."}</p></div>
                   <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 md:col-span-2"><p className="text-xs font-semibold uppercase tracking-wide text-amber-800">Contato de emergência</p><p className="mt-2 text-sm font-semibold text-slate-900">{record.emergencyName || "Nome não informado"}</p><p className="mt-1 text-sm text-slate-700">{record.emergencyPhone || "Telefone não informado"}{record.emergencyRelationship ? ` · ${record.emergencyRelationship}` : ""}</p></div>
                 </div><p className="mt-4 text-xs leading-5 text-slate-500">Confirme as informações com a família em caso de emergência. Esta consulta não substitui avaliação profissional de saúde.</p>
               </article>)}
