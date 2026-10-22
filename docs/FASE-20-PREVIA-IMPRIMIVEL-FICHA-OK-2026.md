@@ -7,7 +7,8 @@
 
 - `public/secretaria-educacao.svg`: logomarca extraída da imagem do PDF anexado e incorporada como PNG transparente dentro de SVG.
 - `src/components/enrollment-document-preview.tsx`: pacote de impressão com CSS específico para papel, cabeçalhos, campos, linhas e quebras de página.
-- `src/routes/index.tsx`: central de documentação conectada à prévia; usa os valores digitados no formulário da sessão atual.
+- `src/routes/index.tsx`: botões de PDF da matrícula abrem a prévia imprimível, alimentada pelos dados do estudante selecionado no cadastro.
+- `src/components/enrollment-document-preview.tsx`: agora também exibe os dados de identificação, contato, profissão e trabalho de mãe e pai nos campos correspondentes do modelo.
 
 ## Conteúdo e organização visual
 
@@ -25,8 +26,9 @@ O layout tenta seguir a sequência do PDF de sete páginas, incluindo a folha ho
 
 ## Privacidade e comportamento
 
-- A prévia recebe apenas o estado local do formulário atual.
+- A prévia usa os dados do estudante selecionado no estado local da aplicação.
 - Não grava dados, não chama o endpoint de matrícula e não envia arquivos.
+- O PDF anexado contém dados pessoais de um estudante; esses dados preenchidos não foram copiados para o código ou para o repositório. O sistema renderiza o modelo com o cadastro selecionado.
 - Os campos que não estão disponíveis no formulário permanecem em branco.
 - O PDF original anexado não é alterado.
 - A data impressa é gerada no momento da impressão; o prazo de 29/01/2026 da Ficha 18 aparece como texto de referência do modelo e precisa ser confirmado pela escola.
@@ -47,4 +49,4 @@ O layout tenta seguir a sequência do PDF de sete páginas, incluindo a folha ho
 4. Rodar o CI do GitHub e corrigir falhas de build ou lint.
 5. Só depois da homologação visual e jurídica, considerar a prévia como modelo institucional aprovado.
 
-**Nenhuma migration foi aplicada e a prévia não conclui nem persiste matrículas reais.**
+**Esta atualização só conectou a prévia de impressão à tela de matrícula; não aplicou migrations nem conclui ou persiste matrículas reais. A prévia continua pendente de homologação visual e jurídica.**
