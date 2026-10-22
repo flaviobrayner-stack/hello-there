@@ -53,7 +53,7 @@ import {
   availableCourses,
 } from "../lib/mock-data";
 import { maskCpfPrivate } from "../lib/mask";
-import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, type SupabaseSession } from "../lib/supabase";
+import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, requestAdminSetup, type SupabaseSession } from "../lib/supabase";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
@@ -247,6 +247,14 @@ function Index() {
             </label>
             {authError && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{authError}</p>}
             <button disabled={authBusy} className="w-full rounded-xl bg-blue-700 px-4 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60">{authBusy ? "Validando acesso…" : "Entrar com segurança"}</button>
+            <button type="button" disabled={authBusy} onClick={async () => {
+              setAuthBusy(true); setAuthError("");
+              try {
+                const result = await requestAdminSetup("flaviobrayner@gmail.com");
+                setAuthError(result.inviteSent ? "Convite de administrador enviado para flaviobrayner@gmail.com. Abra o e-mail e defina sua senha." : "A conta de administrador já existe. Entre com o e-mail flaviobrayner@gmail.com.");
+              } catch (error) { setAuthError(error instanceof Error ? error.message : "Não foi possível configurar o administrador."); }
+              finally { setAuthBusy(false); }
+            }} className="w-full rounded-xl border border-blue-200 px-4 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-50 disabled:opacity-60">Configurar administrador inicial</button>
           </form>
           <p className="mt-4 text-xs leading-relaxed text-slate-500">Contas de demonstração foram desativadas nesta tela. Um administrador precisa criar o usuário no Supabase Auth e atribuir um perfil ativo em <code>public.profiles</code>.</p>
         </section>
