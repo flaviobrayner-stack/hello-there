@@ -120,6 +120,41 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    document.documentElement.lang = "pt-BR";
+
+    const enablePortugueseProofreading = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return;
+      if (
+        !(target instanceof HTMLInputElement) &&
+        !(target instanceof HTMLTextAreaElement) &&
+        target.getAttribute("contenteditable") !== "true"
+      ) {
+        return;
+      }
+
+      if (target instanceof HTMLInputElement) {
+        const excludedTypes = ["button", "checkbox", "color", "date", "datetime-local", "file", "hidden", "month", "number", "password", "radio", "range", "reset", "submit", "tel", "time", "url", "week"];
+        if (excludedTypes.includes(target.type)) return;
+      }
+
+      target.setAttribute("lang", "pt-BR");
+      target.setAttribute("spellcheck", "true");
+      target.setAttribute("autocorrect", "on");
+      target.setAttribute("autocapitalize", "sentences");
+    };
+
+    document.querySelectorAll("input, textarea, [contenteditable='true']").forEach((field) => {
+      enablePortugueseProofreading(field);
+    });
+
+    const handleFocus = (event: FocusEvent) => enablePortugueseProofreading(event.target);
+    document.addEventListener("focusin", handleFocus, true);
+
+    return () => document.removeEventListener("focusin", handleFocus, true);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
