@@ -53,7 +53,7 @@ import {
   availableCourses,
 } from "../lib/mock-data";
 import { maskCpfPrivate } from "../lib/mask";
-import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, requestAdminSetup, type SupabaseSession } from "../lib/supabase";
+import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, listStaffUsers, requestAdminSetup, type SupabaseSession } from "../lib/supabase";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
@@ -213,7 +213,9 @@ function Index() {
     if (!session) { setAuthReady(true); return; }
     getProfile(session).then((profile) => {
       if (cancelled) return;
-      setUsers([profile]); setCurrentUserId(profile.id); setStudents([]);
+      setUsers([profile]);
+      listStaffUsers(session).then((staff) => { if (!cancelled) setUsers(staff); }).catch(() => undefined);
+      setCurrentUserId(profile.id); setStudents([]);
     }).catch(async () => {
       await signOut(session).catch(() => undefined);
       if (!cancelled) setAuthSession(null);
@@ -233,7 +235,9 @@ function Index() {
             event.preventDefault(); setAuthBusy(true); setAuthError("");
             try {
               const result = await signIn(authEmail, authPassword);
-              setAuthSession(result.session); setUsers([result.profile]); setCurrentUserId(result.profile.id);
+              setAuthSession(result.session); setUsers([result.profile]);
+              listStaffUsers(result.session).then(setUsers).catch(() => undefined);
+              setCurrentUserId(result.profile.id);
               setStudents([]); setAuditLogs([]); setGeneratedDocs([]); setAuthPassword("");
             } catch (error) {
               setAuthError(error instanceof Error ? error.message : "Falha no login.");
