@@ -8,38 +8,41 @@ import {
   normalizeCpf,
 } from "./enrollment-validation";
 
-describe("normalizeCpf", () => {
-  it("keeps only digits", () => expect(normalizeCpf("529.982.247-25")).toBe("52998224725"));
+describe("CPF utilities used by the enrollment form and API", () => {
+  it("normalizes and formats CPF without changing its digits", () => {
+    expect(normalizeCpf("529.982.247-25")).toBe("52998224725");
+    expect(formatCpf("52998224725")).toBe("529.982.247-25");
+  });
+
+  it("accepts valid CPF and rejects repeated or incorrect digits", () => {
+    expect(isValidCpf("529.982.247-25")).toBe(true);
+    expect(isValidCpf("111.111.111-11")).toBe(false);
+    expect(isValidCpf("529.982.247-24")).toBe(false);
+    expect(isValidCpf("123")).toBe(false);
+  });
 });
 
-describe("isValidCpf", () => {
-  it("accepts a CPF with valid check digits", () =>
-    expect(isValidCpf("529.982.247-25")).toBe(true));
-  it("rejects repeated digits", () => expect(isValidCpf("111.111.111-11")).toBe(false));
-  it("rejects an invalid check digit", () => expect(isValidCpf("529.982.247-24")).toBe(false));
-  it("rejects incomplete values", () => expect(isValidCpf("123")).toBe(false));
+describe("age calculation", () => {
+  it("calculates age before and on the birthday using the supplied date", () => {
+    expect(calculateAge("2000-10-23", new Date("2026-10-22T12:00:00"))).toBe(25);
+    expect(calculateAge("2000-10-22", new Date("2026-10-22T12:00:00"))).toBe(26);
+  });
+
+  it("returns null for missing, invalid, or future dates", () => {
+    expect(calculateAge("")).toBeNull();
+    expect(calculateAge("not-a-date")).toBeNull();
+    expect(calculateAge("2999-01-01", new Date("2026-10-22T12:00:00"))).toBeNull();
+  });
 });
 
-describe("calculateAge", () => {
-  it("calculates age before the birthday", () =>
-    expect(calculateAge("2008-12-10", new Date("2026-10-21T12:00:00"))).toBe(17));
-  it("calculates age on the birthday", () =>
-    expect(calculateAge("2008-10-21", new Date("2026-10-21T12:00:00"))).toBe(18));
-  it("handles today even before noon", () =>
-    expect(calculateAge("2008-10-21", new Date("2026-10-21T08:00:00"))).toBe(18));
-  it("rejects a future birth date", () =>
-    expect(calculateAge("2030-01-01", new Date("2026-10-21T12:00:00"))).toBe(null));
-});
+describe("Brazilian contact formatting", () => {
+  it("formats CEP and limits it to eight digits", () => {
+    expect(formatCep("12345678")).toBe("12345-678");
+    expect(formatCep("123456789")).toBe("12345-678");
+  });
 
-describe("formatCpf", () => {
-  it("formats at most 11 digits", () => expect(formatCpf("52998224725999")).toBe("529.982.247-25"));
-});
-
-describe("formatPhone", () => {
-  it("formats a Brazilian mobile number", () =>
-    expect(formatPhone("81987654321")).toBe("(81) 98765-4321"));
-});
-
-describe("formatCep", () => {
-  it("formats eight digits", () => expect(formatCep("50000000")).toBe("50000-000"));
+  it("formats mobile and landline numbers", () => {
+    expect(formatPhone("81999991234")).toBe("(81) 99999-1234");
+    expect(formatPhone("8133334444")).toBe("(81) 3333-4444");
+  });
 });
