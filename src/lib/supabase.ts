@@ -157,3 +157,11 @@ export async function listStaffUsers(session: SupabaseSession): Promise<UserProf
   );
   return rows.map((row) => ({ id: row.id, name: row.full_name, email: row.email, role: row.role, active: row.active, createdAt: row.created_at }));
 }
+
+export async function requestAdminSetup(email: string) {
+  const { url, key } = config();
+  const response = await fetch(url + "/functions/v1/manage-staff-users", { method: "POST", headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ action: "bootstrap-admin", email, redirectTo: window.location.origin }) });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || data.error || "Não foi possível enviar o convite.");
+  return data;
+}
