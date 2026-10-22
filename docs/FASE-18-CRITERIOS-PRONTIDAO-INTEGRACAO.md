@@ -6,10 +6,11 @@
 
 ## Estado verificado
 - O projeto Supabase está ativo.
-- A consulta atual não encontrou tabelas no schema public.
-- A consulta atual não encontrou migrations registradas.
-- O rascunho SQL permanece apenas em docs/drafts/schema-review.sql.
-- Não foi confirmada execução dos testes ou do pipeline CI.
+- Em 2026-10-22 foi aplicada a migration `20261022155150_matricula_2026_initial_schema` no projeto Supabase.
+- A verificação posterior encontrou 12 tabelas no schema `public`, todas com RLS habilitado, e nenhuma tabela contém dados de matrícula.
+- A migration `20261022155227_secure_enrollment_rpc_execution` revogou a execução da RPC de matrícula para `PUBLIC`, `anon` e `authenticated` enquanto o contrato não for aprovado.
+- Os arquivos correspondentes foram registrados em `supabase/migrations/` nesta branch.
+- O pipeline CI/testes do projeto ainda não foi confirmado.
 
 ## Pendências que impedem a liberação
 1. Receber e conferir a ficha oficial “Ficha Ok 2026”.
@@ -21,7 +22,7 @@
 7. Testar a rota HTTP real com Supabase simulado.
 8. Testar a autorização diretamente no banco em ambiente de desenvolvimento.
 9. Executar testes, lint, TypeScript e build e guardar o resultado do CI.
-10. Apresentar o SQL final para revisão e obter autorização explícita antes de aplicar migration.
+10. Revisar a migration já aplicada, corrigir os avisos de segurança e aprovar formalmente o contrato antes de habilitar a RPC.
 
 ## Condições mínimas para aceite
 - A interface não pode afirmar que uma matrícula foi salva se os dados completos não tiverem sido persistidos.
@@ -32,4 +33,4 @@
 - Chaves privilegiadas não podem ser enviadas ao navegador.
 
 ## Decisão
-Continuar desenvolvimento apenas em branch de revisão e com dados fictícios. Manter o backend desabilitado. Não aplicar migrations nem criar registros reais até que os itens acima sejam aprovados.
+A estrutura inicial foi aplicada por autorização explícita, mas o backend de matrícula continua desabilitado. Usar apenas dados fictícios; não habilitar a RPC nem conectar o formulário real até concluir revisão de segurança, provisionamento de perfis, contrato completo e testes.
