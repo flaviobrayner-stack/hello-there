@@ -54,7 +54,7 @@ import {
   availableCourses,
 } from "../lib/mock-data";
 import { maskCpfPrivate } from "../lib/mask";
-import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, listEnrollments, createStaffUser, listStaffUsers, sendPasswordRecovery, consumeAuthRedirect, updatePassword, type SupabaseSession } from "../lib/supabase";
+import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, listEnrollments, createStaffUser, listStaffUsers, manageStaffUser, sendPasswordRecovery, consumeAuthRedirect, updatePassword, type SupabaseSession } from "../lib/supabase";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
@@ -1686,6 +1686,20 @@ function Index() {
           const profile: UserProfile = { id: created.id, name: created.name, email: created.email, role: created.role, active: created.active, createdAt: new Date().toISOString() };
           setUsers((previous) => [...previous.filter((user) => user.id !== profile.id), profile]);
           return profile;
+        }}
+        onChangeUserPassword={async (id, password) => {
+          if (!authSession || currentUser.role !== "admin") throw new Error("Somente um administrador autenticado pode alterar senhas.");
+          await manageStaffUser(authSession, "change-password", { userId: id, password });
+        }}
+        onChangeUserRole={async (id, role) => {
+          if (!authSession || currentUser.role !== "admin") throw new Error("Somente um administrador autenticado pode alterar permissões.");
+          await manageStaffUser(authSession, "change-role", { userId: id, role });
+          setUsers((previous) => previous.map((user) => user.id === id ? { ...user, role } : user));
+        }}
+        onSetUserActive={async (id, active) => {
+          if (!authSession || currentUser.role !== "admin") throw new Error("Somente um administrador autenticado pode ativar ou bloquear usuários.");
+          await manageStaffUser(authSession, "set-active", { userId: id, active });
+          setUsers((previous) => previous.map((user) => user.id === id ? { ...user, active } : user));
         }}
         currentUser={currentUser}
       />
