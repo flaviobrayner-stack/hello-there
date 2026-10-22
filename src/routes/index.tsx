@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { EnrollmentDocumentPreview } from "../components/enrollment-document-preview";
 import {
   calculateAge,
   formatCep,
@@ -1917,59 +1918,35 @@ function AdminApp({
           )}
 
           {section === "documentos" && (
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-              <div className="flex items-start gap-3">
-                <span className="rounded-xl bg-blue-50 p-3 text-blue-700">
-                  <FileText size={21} />
-                </span>
-                <div>
-                  <h2 className="text-xl font-bold">Central de documentação</h2>
-                  <p className="mt-1 text-sm leading-6 text-slate-500">
-                    A especificação prevê conferência, status, prazos, armazenamento privado e
-                    geração dos oito documentos oficiais a partir do modelo “Ficha Ok 2026”.
-                  </p>
+            <section className="space-y-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                <div className="flex items-start gap-3">
+                  <span className="rounded-xl bg-blue-50 p-3 text-blue-700"><FileText size={21} /></span>
+                  <div>
+                    <h2 className="text-xl font-bold">Documentos no padrão “Ficha Ok 2026”</h2>
+                    <p className="mt-1 text-sm leading-6 text-slate-500">Prévia para impressão com a identidade visual da Secretaria de Educação de Pernambuco e os oito documentos/partes previstos no PDF anexado. Os campos são preenchidos com os dados digitados nesta sessão; nada é salvo nem enviado.</p>
+                  </div>
+                </div>
+                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                  <strong>Importante:</strong> esta é uma reprodução visual de trabalho baseada no PDF fornecido. A marca foi recriada em vetor para a prévia, e os textos jurídicos e prazos precisam de conferência institucional antes de uso oficial. O arquivo original não é alterado.
                 </div>
               </div>
-              <div className="mt-6 grid gap-3 md:grid-cols-2">
-                {[
-                  "Ficha de matrícula",
-                  "Observações",
-                  "Documentação para matrícula",
-                  "Comprovante de matrícula",
-                  "Ficha de saúde",
-                  "Concessão de imagem e som da voz",
-                  "Resumo de contato",
-                  "Termo de compromisso educacional",
-                ].map((name, i) => (
-                  <div
-                    key={name}
-                    className="flex items-center gap-3 rounded-xl border border-slate-200 p-4"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600">
-                      {i + 1}
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold">{name}</p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Modelo oficial · integração pendente
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                      Pendente
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-blue-900">
-                  <CircleHelp size={17} />
-                  Preservação do modelo original
-                </p>
-                <p className="mt-1 text-sm leading-6 text-blue-800">
-                  A integração deverá criar uma cópia do Google Docs configurado, preencher
-                  marcadores únicos e nunca editar ou substituir o arquivo “Ficha Ok 2026”.
-                </p>
-              </div>
+              <EnrollmentDocumentPreview data={{
+                student: form.student, socialName: form.socialName, cpf: form.cpf, rg: form.rg,
+                rgIssuer: form.rgIssuer, birth: form.birth, birthplace: form.birthplace, sex: form.sex,
+                phone: form.phone, email: form.email, address: form.address, neighborhood: form.neighborhood,
+                city: form.city, state: form.state, cep: form.cep, race: form.race, pcd: form.pcd,
+                pcdType: form.pcdType, transport: form.transport, transportType: form.transportType,
+                schoolOrigin: form.schoolOrigin, shirtSize: form.shirtSize, bolsaFamilia: form.bolsaFamilia,
+                course: form.course, quota: form.quota, cotista: form.cotista, mother: form.mother,
+                father: form.father, guardian: form.guardian, guardianRelation: form.guardianRelation,
+                guardianCpf: form.guardianCpf, healthInsurance: form.healthInsurance, hospital: form.hospital,
+                familyHospital: form.familyHospital, allergy: form.allergy, allergyDetails: form.allergyDetails,
+                medication: form.medication, medicationDetails: form.medicationDetails, bloodType: form.bloodType,
+                rhFactor: form.rhFactor, emergencyContact: form.emergencyContact, emergencyName: form.emergencyName,
+                emergencyRelation: form.emergencyRelation, healthNotes: form.healthNotes,
+                healthNotesDetails: form.healthNotesDetails,
+              }} />
             </section>
           )}
 
