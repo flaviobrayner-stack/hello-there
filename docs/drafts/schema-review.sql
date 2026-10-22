@@ -115,6 +115,8 @@ create table public.health_records (
   family_hospital text,
   medication_allergy boolean,
   allergy_details text,
+  food_allergy boolean,
+  food_allergy_details text,
   controlled_medication boolean,
   medication_details text,
   emergency_name text,
