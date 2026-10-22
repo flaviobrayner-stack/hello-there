@@ -82,6 +82,43 @@ export async function signIn(email: string, password: string): Promise<{ session
   }
 }
 
+
+export async function consumeAuthRedirect(): Promise<{ session: SupabaseSession; type: string } | null> {
+  if (typeof window === "undefined" || !window.location.hash) return null;
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const accessToken = params.get("access_token");
+  const refreshToken = params.get("refresh_token");
+  const type = params.get("type") || "";
+  if (!accessToken || !refreshToken || !["invite", "recovery", "signup"].includes(type)) return null;
+  const { url, key } = config();
+  const response = await fetch(url + "/auth/v1/user", {
+    headers: { apikey: key, Authorization: "Bearer " + accessToken },
+  });
+  const user = await response.json();
+  if (!response.ok || !user?.id) throw new Error("O link de convite expirou ou é inválido. Peça um novo convite ao administrador.");
+  const session: SupabaseSession = {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_at: Number(params.get("expires_at") || 0) || undefined,
+    user: { id: user.id, email: user.email },
+  };
+  storeSession(session);
+  window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+  return { session, type };
+}
+
+export async function updatePassword(session: SupabaseSession, password: string) {
+  const { url, key } = config();
+  const response = await fetch(url + "/auth/v1/user", {
+    method: "PUT",
+    headers: { apikey: key, Authorization: "Bearer " + session.access_token, "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data?.msg || data?.message || data?.error_description || "Não foi possível definir a senha.");
+  return data;
+}
+
 export async function sendPasswordRecovery(email: string, redirectTo: string) {
   await request("/auth/v1/recover", {
     method: "POST",
