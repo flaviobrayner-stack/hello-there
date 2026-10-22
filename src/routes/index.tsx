@@ -57,7 +57,10 @@ import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
 import { AuditLogsModal } from "../components/audit-logs-modal";
 import { DocumentConferenceModal } from "../components/document-conference-modal";
-import { EnrollmentDocumentPreview } from "../components/enrollment-document-preview";
+import {
+  EnrollmentDocumentPreview,
+  type EnrollmentDocumentData,
+} from "../components/enrollment-document-preview";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -120,11 +123,11 @@ function MetricCard({
   );
 }
 
-function toEnrollmentDocumentPreviewData(s: StudentInfo) {
+function toEnrollmentDocumentPreviewData(s: StudentInfo): EnrollmentDocumentData {
   const blood = s.health.bloodType || "Não informado";
   const bloodType = blood === "Não informado" ? "" : blood.slice(0, -1);
   const rhFactor = blood.endsWith("+") ? "POSITIVO" : blood.endsWith("-") ? "NEGATIVO" : "";
-  return {
+  const raw = {
     student: s.fullName,
     socialName: s.socialName,
     cpf: s.cpf,
@@ -186,6 +189,11 @@ function toEnrollmentDocumentPreviewData(s: StudentInfo) {
     healthNotes: s.health.hasOtherHealthCondition ? "Sim" : "Não",
     healthNotesDetails: s.health.otherHealthConditionDetails,
   };
+  // Com exactOptionalPropertyTypes, campos sem valor são omitidos em vez de
+  // receberem undefined explicitamente.
+  return Object.fromEntries(
+    Object.entries(raw).filter(([, value]) => value !== undefined),
+  ) as EnrollmentDocumentData;
 }
 
 function Index() {

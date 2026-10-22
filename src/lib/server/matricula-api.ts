@@ -21,12 +21,12 @@ const API_DISABLED_MESSAGE = "O backend de matrículas ainda não foi habilitado
 
 export function getBackendConfig() {
   const enabled =
-    process.env.MATRICULA_BACKEND_ENABLED === "true" &&
-    process.env.MATRICULA_ACCESS_POLICY_APPROVED === "true";
-  const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+    process.env["MATRICULA_BACKEND_ENABLED"] === "true" &&
+    process.env["MATRICULA_ACCESS_POLICY_APPROVED"] === "true";
+  const url = process.env["SUPABASE_URL"]?.replace(/\/+$/, "");
   // Prefer the current Supabase publishable key; keep the legacy variable as
   // a compatibility fallback for existing development environments.
-  const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+  const anonKey = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
 
   if (!enabled || !url || !anonKey) return null;
   try {

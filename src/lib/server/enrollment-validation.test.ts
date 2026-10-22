@@ -48,7 +48,7 @@ describe("validateEnrollmentPreflight", () => {
   it("rejects non-object payloads", () => {
     const result = validateEnrollmentPreflight([]);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.issues[0].code).toBe("INVALID_OBJECT");
+    if (!result.ok) expect(result.issues[0]?.code).toBe("INVALID_OBJECT");
   });
 
   it("rejects unknown top-level and student fields", () => {
