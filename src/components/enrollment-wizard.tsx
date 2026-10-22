@@ -439,12 +439,14 @@ export function EnrollmentWizard({
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                      Funcionário Responsável
+                      Responsável pela Matrícula *
                     </label>
                     <input
                       value={student.responsibleStaff}
-                      readOnly
-                      className={`${inputClass} bg-slate-50 font-medium text-slate-600`}
+                      onChange={(e) => setStudent((prev) => ({ ...prev, responsibleStaff: e.target.value }))}
+                      required
+                      placeholder="Nome do funcionário responsável"
+                      className={inputClass}
                     />
                   </div>
                   <div>
