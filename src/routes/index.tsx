@@ -58,6 +58,7 @@ import { PdfConverterDialog } from "../components/pdf-converter-dialog";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
 import { AuditLogsModal } from "../components/audit-logs-modal";
 import { DocumentConferenceModal } from "../components/document-conference-modal";
+import { EnrollmentDocumentPreview } from "../components/enrollment-document-preview";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -118,6 +119,74 @@ function MetricCard({
       <p className="mt-2 text-xs text-slate-500">{note}</p>
     </div>
   );
+}
+
+function toEnrollmentDocumentPreviewData(s: StudentInfo) {
+  const blood = s.health.bloodType || "Não informado";
+  const bloodType = blood === "Não informado" ? "" : blood.slice(0, -1);
+  const rhFactor = blood.endsWith("+") ? "POSITIVO" : blood.endsWith("-") ? "NEGATIVO" : "";
+  return {
+    student: s.fullName,
+    socialName: s.socialName,
+    cpf: s.cpf,
+    rg: s.rg,
+    rgIssuer: s.rgIssuer,
+    birth: s.birthDate,
+    sex: s.gender,
+    phone: s.phone,
+    email: s.email,
+    address: s.address,
+    neighborhood: s.neighborhood,
+    city: s.city,
+    state: s.uf,
+    cep: s.cep,
+    race: s.race,
+    pcd: s.isPcd ? "Sim" : "Não",
+    pcdType: s.pcdType,
+    transport: s.usesSchoolTransport ? "Sim" : "Não",
+    transportType: s.transportType,
+    schoolOrigin: s.previousSchool,
+    shirtSize: s.uniformSize,
+    bolsaFamilia: s.receivesBolsaFamilia ? "Sim" : "Não",
+    course: s.course,
+    quota: s.quotaType,
+    cotista: s.isQuota ? "Sim" : "Não",
+    mother: s.mother.name,
+    motherCpf: s.mother.cpf,
+    motherRg: s.mother.rg,
+    motherRgIssuer: s.mother.rgIssuer,
+    motherPhone: s.mother.phone,
+    motherEmail: s.mother.email,
+    motherOccupation: s.mother.occupation,
+    motherWorkplace: s.mother.workplace,
+    motherWorkPhone: s.mother.workPhone,
+    father: s.father.name,
+    fatherCpf: s.father.cpf,
+    fatherRg: s.father.rg,
+    fatherRgIssuer: s.father.rgIssuer,
+    fatherPhone: s.father.phone,
+    fatherEmail: s.father.email,
+    fatherOccupation: s.father.occupation,
+    fatherWorkplace: s.father.workplace,
+    fatherWorkPhone: s.father.workPhone,
+    guardian: s.guardian.name,
+    guardianRelation: s.guardian.relationship,
+    guardianCpf: s.guardian.cpf,
+    healthInsurance: s.health.hasHealthInsurance ? "Sim" : "Não",
+    hospital: s.health.insuranceName,
+    familyHospital: s.health.indicatedHospital,
+    allergy: s.health.hasDrugAllergy ? "Sim" : "Não",
+    allergyDetails: s.health.drugAllergyDetails,
+    medication: s.health.hasControlledMedication ? "Sim" : "Não",
+    medicationDetails: s.health.controlledMedicationDetails,
+    bloodType,
+    rhFactor,
+    emergencyContact: s.health.emergencyContactPhone,
+    emergencyName: s.health.emergencyContactName,
+    emergencyRelation: s.health.emergencyContactRelationship,
+    healthNotes: s.health.hasOtherHealthCondition ? "Sim" : "Não",
+    healthNotesDetails: s.health.otherHealthConditionDetails,
+  };
 }
 
 function Index() {
@@ -1248,12 +1317,25 @@ function Index() {
         </div>
       </main>
 
-      {/* PDF Converter Modal */}
-      <PdfConverterDialog
-        isOpen={pdfDialogOpen}
-        onClose={() => setPdfDialogOpen(false)}
-        enrollment={selectedPdfEnrollment}
-      />
+      {/* Prévia imprimível baseada no PDF oficial anexado. O conteúdo é preenchido com o cadastro selecionado. */}
+      {pdfDialogOpen && (() => {
+        const selectedStudent = students.find((student) => student.protocol === selectedPdfEnrollment.id) || students[0];
+        if (!selectedStudent) return null;
+        return (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 p-4">
+            <div className="mx-auto my-4 max-w-5xl rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
+              <div className="mb-4 flex items-center justify-between gap-4 border-b border-slate-200 pb-3">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Documentos da matrícula — Ficha Ok 2026</h2>
+                  <p className="text-xs text-slate-500">Prévia dos documentos para conferência e impressão; revise antes de assinar ou utilizar oficialmente.</p>
+                </div>
+                <button type="button" onClick={() => setPdfDialogOpen(false)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Fechar</button>
+              </div>
+              <EnrollmentDocumentPreview data={toEnrollmentDocumentPreviewData(selectedStudent)} />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Admin Users Modal */}
       <AdminUsersDialog
