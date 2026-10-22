@@ -6,11 +6,11 @@ Esta especificação registra os pedidos de administração e não cria contas n
 
 | Nome de exibição | Perfil desejado | Situação |
 | --- | --- | --- |
-| Arthu | operador | Aguardando e-mail institucional para convite |
-| Tati | operador | Aguardando e-mail institucional para convite |
-| Fabio Arimateia | admin | Aguardando e-mail institucional para convite |
+| Arthur — jose.apsilva7@adm.educacao.pe.gov.br | operador | E-mail informado; conta ainda não criada |
+| Taty — tatyany.oaraujo@adm.educacao.pe.gov.br | operador | E-mail informado; conta ainda não criada |
+| Fabio Ariamateia — fabiojarimateia@adm.educacao.pe.gov.br | admin | E-mail informado; conta ainda não criada |
 
-A conta deve ser criada pelo fluxo seguro do Supabase Auth e vinculada a um registro em `profiles` com o mesmo UUID do usuário autenticado. Não usar senhas compartilhadas, não inserir contas fictícias e não conceder privilégios apenas com base no nome de exibição. A criação efetiva exige os e-mails institucionais e configuração segura de convite administrativo.
+A conta deve ser criada pelo fluxo seguro do Supabase Auth e vinculada a um registro em `profiles` com o mesmo UUID do usuário autenticado. Não usar senhas compartilhadas, não inserir contas fictícias e não conceder privilégios apenas com base no nome de exibição. Os e-mails institucionais foram fornecidos. A criação efetiva ainda exige provisionamento seguro pelo Supabase Auth, configuração administrativa autorizada e vínculo do perfil com o UUID autenticado. Não há senha compartilhada nem credenciais de administrador no repositório.
 
 ## Revisão ortográfica
 
