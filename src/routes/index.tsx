@@ -189,6 +189,7 @@ function toEnrollmentDocumentPreviewData(s: StudentInfo): EnrollmentDocumentData
     emergencyRelation: s.health.emergencyContactRelationship,
     healthNotes: s.health.hasOtherHealthCondition ? "Sim" : "Não",
     healthNotesDetails: s.health.otherHealthConditionDetails,
+    deliveredDocuments: s.documents.filter((d) => d.status === "Entregue" || d.status === "Conferido").map((d) => d.type),
   };
   // Com exactOptionalPropertyTypes, campos sem valor são omitidos em vez de
   // receberem undefined explicitamente.
