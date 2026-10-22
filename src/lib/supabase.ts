@@ -156,7 +156,7 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
   // mas o PostgreSQL espera YYYY-MM-DD para colunas date.
   const normalizeDateValues = (value: unknown): unknown => {
     if (typeof value === "string") {
-      const match = value.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+      const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
       if (match) return `${match[3]}-${match[2]}-${match[1]}`;
       return value;
     }
