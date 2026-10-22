@@ -3,6 +3,7 @@ import type { StudentInfo, UserProfile } from "./types";
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || "https://oreeyfyidnhpkwnxubpw.supabase.co";
 const SUPABASE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) || "sb_publishable_r9HALBJWZKnLe_vy060umg_B9s7JKwA";
 const SESSION_KEY = "matricula2026.supabase.session";
+const APP_URL = "https://matriculaetemjv.lovable.app";
 
 export interface SupabaseSession {
   access_token: string;
@@ -150,7 +151,7 @@ export async function createStaffUser(session: SupabaseSession, fullName: string
   const response = await fetch(url + "/functions/v1/manage-staff-users", {
     method: "POST",
     headers: { apikey: key, Authorization: "Bearer " + session.access_token, "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "create-user", fullName, email, role, redirectTo: window.location.origin }),
+    body: JSON.stringify({ action: "create-user", fullName, email, role, redirectTo: APP_URL }),
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || data.error || "Não foi possível convidar o usuário.");
@@ -167,7 +168,7 @@ export async function listStaffUsers(session: SupabaseSession): Promise<UserProf
 
 export async function requestAdminSetup(email: string) {
   const { url, key } = config();
-  const response = await fetch(url + "/functions/v1/manage-staff-users", { method: "POST", headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ action: "bootstrap-admin", email, redirectTo: window.location.origin }) });
+  const response = await fetch(url + "/functions/v1/manage-staff-users", { method: "POST", headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ action: "bootstrap-admin", email, redirectTo: APP_URL }) });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || data.error || "Não foi possível enviar o convite.");
   return data;
