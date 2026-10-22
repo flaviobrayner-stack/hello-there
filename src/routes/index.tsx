@@ -53,7 +53,7 @@ import {
   availableCourses,
 } from "../lib/mock-data";
 import { maskCpfPrivate } from "../lib/mask";
-import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, listStaffUsers, requestAdminSetup, type SupabaseSession } from "../lib/supabase";
+import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, listStaffUsers, sendPasswordRecovery, type SupabaseSession } from "../lib/supabase";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
@@ -210,63 +210,23 @@ function Index() {
   useEffect(() => {
     let cancelled = false;
     const session = getStoredSession();
-    if (!session) { setAuthReady(true); return; }
+    if (!session) {
+      setAuthReady(true);
+      return () => { cancelled = true; };
+    }
     getProfile(session).then((profile) => {
       if (cancelled) return;
       setUsers([profile]);
       listStaffUsers(session).then((staff) => { if (!cancelled) setUsers(staff); }).catch(() => undefined);
-      setCurrentUserId(profile.id); setStudents([]);
+      setCurrentUserId(profile.id);
+      setStudents([]);
     }).catch(async () => {
       await signOut(session).catch(() => undefined);
       if (!cancelled) setAuthSession(null);
-    }).finally(() => { if (!cancelled) setAuthReady(true); });
-    if (!authReady) {
-    return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">Verificando sessão segura…</div>;
-  }
-
-  if (!authSession) {
-    return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
-        <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 text-white"><GraduationCap size={28} /></div>
-          <h1 className="text-center text-2xl font-bold text-slate-900">Sistema de Matrícula 2026</h1>
-          <p className="mt-2 text-center text-sm text-slate-500">Acesso restrito à equipe autorizada</p>
-          <form className="mt-6 space-y-4" onSubmit={async (event) => {
-            event.preventDefault(); setAuthBusy(true); setAuthError("");
-            try {
-              const result = await signIn(authEmail, authPassword);
-              setAuthSession(result.session); setUsers([result.profile]);
-              listStaffUsers(result.session).then(setUsers).catch(() => undefined);
-              setCurrentUserId(result.profile.id);
-              setStudents([]); setAuditLogs([]); setGeneratedDocs([]); setAuthPassword("");
-            } catch (error) {
-              setAuthError(error instanceof Error ? error.message : "Falha no login.");
-            } finally { setAuthBusy(false); }
-          }}>
-            <label className="block text-sm font-semibold text-slate-700">E-mail institucional
-              <input type="email" required autoComplete="username" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="nome@ete.pe.gov.br" />
-            </label>
-            <label className="block text-sm font-semibold text-slate-700">Senha
-              <input type="password" required autoComplete="current-password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Sua senha do sistema" />
-            </label>
-            {authError && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{authError}</p>}
-            <button disabled={authBusy} className="w-full rounded-xl bg-blue-700 px-4 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60">{authBusy ? "Validando acesso…" : "Entrar com segurança"}</button>
-            <button type="button" disabled={authBusy} onClick={async () => {
-              setAuthBusy(true); setAuthError("");
-              try {
-                const result = await requestAdminSetup("flaviobrayner@gmail.com");
-                setAuthError(result.inviteSent ? "Convite de administrador enviado para flaviobrayner@gmail.com. Abra o e-mail e defina sua senha." : "A conta de administrador já existe. Entre com o e-mail flaviobrayner@gmail.com.");
-              } catch (error) { setAuthError(error instanceof Error ? error.message : "Não foi possível configurar o administrador."); }
-              finally { setAuthBusy(false); }
-            }} className="w-full rounded-xl border border-blue-200 px-4 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-50 disabled:opacity-60">Configurar administrador inicial</button>
-          </form>
-          <p className="mt-4 text-xs leading-relaxed text-slate-500">Contas de demonstração foram desativadas nesta tela. Um administrador precisa criar o usuário no Supabase Auth e atribuir um perfil ativo em <code>public.profiles</code>.</p>
-        </section>
-      </main>
-    );
-  }
-
-  return () => { cancelled = true; };
+    }).finally(() => {
+      if (!cancelled) setAuthReady(true);
+    });
+    return () => { cancelled = true; };
   }, []);
 
   // App State
@@ -1582,7 +1542,65 @@ function Index() {
       {pdfDialogOpen && (() => {
         const selectedStudent = students.find((student) => student.protocol === selectedPdfEnrollment.id) || students[0];
         if (!selectedStudent) return null;
-        return (
+        if (!authReady) {
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">Verificando sessão segura…</div>;
+  }
+
+  if (!authSession) {
+    return (
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
+        <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 text-white"><GraduationCap size={28} /></div>
+          <h1 className="text-center text-2xl font-bold text-slate-900">Sistema de Matrícula 2026</h1>
+          <p className="mt-2 text-center text-sm text-slate-500">Entre com seu e-mail e senha cadastrados.</p>
+          <form className="mt-6 space-y-4" onSubmit={async (event) => {
+            event.preventDefault();
+            setAuthBusy(true);
+            setAuthError("");
+            try {
+              const result = await signIn(authEmail, authPassword);
+              setAuthSession(result.session);
+              setUsers([result.profile]);
+              listStaffUsers(result.session).then(setUsers).catch(() => undefined);
+              setCurrentUserId(result.profile.id);
+              setStudents([]);
+              setAuditLogs([]);
+              setGeneratedDocs([]);
+              setAuthPassword("");
+            } catch (error) {
+              setAuthError(error instanceof Error ? error.message : "Não foi possível entrar. Confira e-mail e senha.");
+            } finally {
+              setAuthBusy(false);
+            }
+          }}>
+            <label className="block text-sm font-semibold text-slate-700">E-mail
+              <input type="email" required autoComplete="username" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="seuemail@exemplo.com" />
+            </label>
+            <label className="block text-sm font-semibold text-slate-700">Senha
+              <input type="password" required autoComplete="current-password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Digite sua senha" />
+            </label>
+            {authError && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{authError}</p>}
+            <button disabled={authBusy} className="w-full rounded-xl bg-blue-700 px-4 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60">{authBusy ? "Validando acesso…" : "Entrar"}</button>
+            <button type="button" disabled={authBusy || !authEmail.trim()} onClick={async () => {
+              setAuthBusy(true);
+              setAuthError("");
+              try {
+                await sendPasswordRecovery(authEmail.trim(), window.location.origin);
+                setAuthError("Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha.");
+              } catch (error) {
+                setAuthError(error instanceof Error ? error.message : "Não foi possível solicitar a recuperação de senha.");
+              } finally {
+                setAuthBusy(false);
+              }
+            }} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-50 disabled:opacity-60">Esqueci minha senha</button>
+          </form>
+          <p className="mt-4 text-xs leading-relaxed text-slate-500">Acesso restrito a usuários ativos cadastrados pela administração.</p>
+        </section>
+      </main>
+    );
+  }
+
+  return (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 p-4">
             <div className="mx-auto my-4 max-w-5xl rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
               <div className="mb-4 flex items-center justify-between gap-4 border-b border-slate-200 pb-3">
