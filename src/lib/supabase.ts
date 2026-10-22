@@ -152,14 +152,30 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     {}, session.access_token,
   );
   if (!courses[0]) throw new Error(`O curso "${student.course}" não está cadastrado como ativo no Supabase.`);
-  const payload = {
+  // O formulário exibe datas em pt-BR em alguns metadados de documentos,
+  // mas o PostgreSQL espera YYYY-MM-DD para colunas date.
+  const normalizeDateValues = (value: unknown): unknown => {
+    if (typeof value === "string") {
+      const match = value.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+      if (match) return `${match[3]}-${match[2]}-${match[1]}`;
+      return value;
+    }
+    if (Array.isArray(value)) return value.map(normalizeDateValues);
+    if (value && typeof value === "object") {
+      return Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).map(([key, nested]) => [key, normalizeDateValues(nested)]),
+      );
+    }
+    return value;
+  };
+  const payload = normalizeDateValues({
     ...student,
     documents: student.documents.map((doc) => ({
       ...doc,
       fileSizeBytes: doc.fileSize ? Number(String(doc.fileSize).replace(/[^0-9]/g, "")) || undefined : undefined,
       storagePath: doc.fileUrl || undefined,
     })),
-  };
+  });
   const isExistingEnrollment = Boolean(student.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(student.id));
   const rpc = isExistingEnrollment ? "update_enrollment_transaction" : "create_enrollment_transaction";
   const args = {
