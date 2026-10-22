@@ -43,7 +43,7 @@ import {
   CircleHelp,
 } from "lucide-react";
 
-type Section = "dashboard" | "matriculas" | "nova" | "documentos" | "configuracoes";
+type Section = "dashboard" | "matriculas" | "nova" | "documentos" | "saude" | "configuracoes";
 type StaffSession = { id: string; role: "admin" | "operador" };
 type Enrollment = {
   id: string;
@@ -53,6 +53,12 @@ type Enrollment = {
   status: "Concluída" | "Em análise" | "Rascunho" | "Cancelada";
   quota: string;
   docs: string;
+};
+type HealthLookupResult = {
+  protocol: string; studentName: string; medicationAllergy: boolean | null;
+  allergyDetails: string | null; controlledMedication: boolean | null;
+  medicationDetails: string | null; emergencyName: string | null;
+  emergencyPhone: string | null; emergencyRelationship: string | null;
 };
 
 const steps = [
@@ -330,6 +336,10 @@ function AdminApp({
   const [enrollmentsLoading, setEnrollmentsLoading] = useState(true);
   const [enrollmentsError, setEnrollmentsError] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [healthSearch, setHealthSearch] = useState("");
+  const [healthResults, setHealthResults] = useState<HealthLookupResult[]>([]);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [healthError, setHealthError] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -500,7 +510,8 @@ function AdminApp({
     { id: "dashboard", label: "Visão geral", icon: LayoutDashboard },
     { id: "matriculas", label: "Matrículas", icon: GraduationCap },
     { id: "documentos", label: "Documentação", icon: FileText },
-    { id: "configuracoes", label: "Configurações", icon: Settings2 },
+    ...(authSession.role === "admin" ? [{ id: "saude" as const, label: "Consulta de saúde", icon: HeartPulse }] : []),
+    ...(authSession.role === "admin" ? [{ id: "configuracoes" as const, label: "Configurações", icon: Settings2 }] : []),
   ];
 
   const title =
@@ -512,9 +523,28 @@ function AdminApp({
           ? "Nova matrícula"
           : section === "documentos"
             ? "Documentação"
-            : "Configurações";
+            : section === "saude"
+              ? "Consulta de saúde"
+              : "Configurações";
   const updateForm = (key: keyof typeof form, value: string | boolean) =>
     setForm((current) => ({ ...current, [key]: value }));
+
+  async function searchHealthRecords(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (authSession.role !== "admin") { setHealthError("A consulta de saúde é restrita ao perfil administrador."); return; }
+    const name = healthSearch.trim();
+    if (name.length < 3) { setHealthError("Digite pelo menos 3 letras do nome do estudante."); setHealthResults([]); return; }
+    setHealthLoading(true); setHealthError(""); setHealthResults([]);
+    try {
+      const response = await fetch(`/api/health?name=${encodeURIComponent(name)}`, { credentials: "same-origin", cache: "no-store" });
+      const payload = (await response.json().catch(() => ({}))) as { data?: HealthLookupResult[]; error?: string };
+      if (!response.ok || !Array.isArray(payload.data)) throw new Error(payload.error ?? "Não foi possível consultar os dados de saúde.");
+      setHealthResults(payload.data);
+      if (payload.data.length === 0) setHealthError("Nenhum registro encontrado para esse nome.");
+    } catch (error) {
+      setHealthError(error instanceof Error ? error.message : "Falha ao consultar os dados de saúde.");
+    } finally { setHealthLoading(false); }
+  }
   const validateCurrentStep = () => {
     if (step === 0 && !form.course) {
       setNotice("Selecione o curso antes de avançar.");
@@ -1858,6 +1888,28 @@ function AdminApp({
                 </div>
               </section>
             </div>
+          )}
+
+          {section === "saude" && authSession.role === "admin" && (
+            <section className="space-y-5">
+              <div className="rounded-2xl border border-rose-100 bg-white p-5 shadow-sm sm:p-7">
+                <div className="flex items-start gap-3"><span className="rounded-xl bg-rose-50 p-3 text-rose-700"><HeartPulse size={22} /></span><div><h2 className="text-xl font-bold">Consulta de saúde do estudante</h2><p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">Pesquise pelo nome para consultar alergias registradas, medicação controlada e telefone de emergência. Use apenas para atendimento autorizado.</p></div></div>
+                <form onSubmit={(event) => void searchHealthRecords(event)} className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <label className="flex-1 space-y-2"><span className="text-sm font-semibold text-slate-700">Nome do estudante</span><input value={healthSearch} onChange={(event) => setHealthSearch(event.target.value)} className={inputClass} placeholder="Digite o nome completo ou parte dele" minLength={3} maxLength={120} required spellCheck lang="pt-BR" /></label>
+                  <button type="submit" disabled={healthLoading} className="inline-flex items-center justify-center gap-2 self-end rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-60"><Search size={17} /> {healthLoading ? "Consultando…" : "Consultar saúde"}</button>
+                </form>
+                {healthError && <p role="status" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">{healthError}</p>}
+              </div>
+              {healthResults.map((record) => <article key={record.protocol} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between"><div><h3 className="text-lg font-bold text-slate-900">{record.studentName}</h3><p className="mt-1 text-xs text-slate-500">Matrícula: {record.protocol}</p></div><span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-800"><HeartPulse size={14} /> Informação sensível</span></div>
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 p-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Alergias</p><p className="mt-2 text-sm font-semibold text-slate-900">{record.medicationAllergy === true ? "Alergia medicamentosa registrada" : record.medicationAllergy === false ? "Sem alergia medicamentosa informada" : "Não informado"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{record.allergyDetails || "Sem detalhes registrados."}</p></div>
+                  <div className="rounded-xl border border-slate-200 p-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Medicação controlada</p><p className="mt-2 text-sm font-semibold text-slate-900">{record.controlledMedication === true ? "Sim" : record.controlledMedication === false ? "Não" : "Não informado"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{record.medicationDetails || "Sem detalhes registrados."}</p></div>
+                  <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 md:col-span-2"><p className="text-xs font-semibold uppercase tracking-wide text-amber-800">Contato de emergência</p><p className="mt-2 text-sm font-semibold text-slate-900">{record.emergencyName || "Nome não informado"}</p><p className="mt-1 text-sm text-slate-700">{record.emergencyPhone || "Telefone não informado"}{record.emergencyRelationship ? ` · ${record.emergencyRelationship}` : ""}</p></div>
+                </div><p className="mt-4 text-xs leading-5 text-slate-500">Confirme as informações com a família em caso de emergência. Esta consulta não substitui avaliação profissional de saúde.</p>
+              </article>)}
+              <div className="rounded-xl border border-rose-100 bg-rose-50/60 p-4 text-sm leading-6 text-rose-900"><strong>Privacidade:</strong> dados de saúde são sensíveis. Esta área deve permanecer restrita a administradores autorizados e ser protegida por autenticação, políticas RLS e auditoria no servidor.</div>
+            </section>
           )}
 
           {section === "documentos" && (
