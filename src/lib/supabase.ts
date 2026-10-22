@@ -408,3 +408,25 @@ export async function requestAdminSetup(email: string) {
   if (!response.ok) throw new Error(data.message || data.error || "Não foi possível enviar o convite.");
   return data;
 }
+
+export async function manageStaffUser(
+  session: SupabaseSession,
+  action: "change-password" | "change-role" | "set-active",
+  payload: { userId: string; password?: string; role?: "admin" | "operador"; active?: boolean },
+) {
+  const { url, key } = config();
+  const response = await fetch(url + "/functions/v1/manage-staff-users", {
+    method: "POST",
+    headers: {
+      apikey: key,
+      Authorization: "Bearer " + session.access_token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || data.error || "Não foi possível atualizar o usuário.");
+  }
+  return data;
+}
