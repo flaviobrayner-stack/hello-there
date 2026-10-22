@@ -53,7 +53,7 @@ import {
   availableCourses,
 } from "../lib/mock-data";
 import { maskCpfPrivate } from "../lib/mask";
-import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, listStaffUsers, sendPasswordRecovery, type SupabaseSession } from "../lib/supabase";
+import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, createStaffUser, listStaffUsers, sendPasswordRecovery, consumeAuthRedirect, updatePassword, type SupabaseSession } from "../lib/supabase";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
@@ -206,6 +206,22 @@ function Index() {
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [passwordSetup, setPasswordSetup] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    consumeAuthRedirect().then((result) => {
+      if (cancelled || !result) return;
+      setAuthSession(result.session);
+      setPasswordSetup(true);
+      setAuthReady(true);
+    }).catch((error) => {
+      if (!cancelled) { setAuthError(error instanceof Error ? error.message : "O link não é válido."); setAuthReady(true); }
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -511,6 +527,37 @@ function Index() {
     return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">Verificando sessão segura…</div>;
   }
 
+  if (passwordSetup && authSession) {
+    return (
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
+        <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 text-white"><LockKeyhole size={26} /></div>
+          <h1 className="text-center text-2xl font-bold text-slate-900">Defina sua senha</h1>
+          <p className="mt-2 text-center text-sm text-slate-500">Crie uma senha para acessar o Sistema de Matrícula 2026.</p>
+          <form className="mt-6 space-y-4" onSubmit={async (event) => {
+            event.preventDefault(); setAuthError("");
+            if (newPassword.length < 8) { setAuthError("A senha deve ter pelo menos 8 caracteres."); return; }
+            if (newPassword !== confirmPassword) { setAuthError("As senhas não coincidem."); return; }
+            setAuthBusy(true);
+            try {
+              await updatePassword(authSession, newPassword);
+              await signOut(authSession).catch(() => undefined);
+              setAuthSession(null); setPasswordSetup(false); setNewPassword(""); setConfirmPassword("");
+              setAuthError("Senha criada com sucesso. Entre com seu e-mail e a nova senha.");
+            } catch (error) {
+              setAuthError(error instanceof Error ? error.message : "Não foi possível definir a senha.");
+            } finally { setAuthBusy(false); }
+          }}>
+            <label className="block text-sm font-semibold text-slate-700">Nova senha<input type="password" required minLength={8} autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Mínimo de 8 caracteres" /></label>
+            <label className="block text-sm font-semibold text-slate-700">Confirme a senha<input type="password" required minLength={8} autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Digite a senha novamente" /></label>
+            {authError && <p role="alert" className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">{authError}</p>}
+            <button disabled={authBusy} className="w-full rounded-xl bg-blue-700 px-4 py-3 font-bold text-white hover:bg-blue-800 disabled:opacity-60">{authBusy ? "Salvando senha…" : "Salvar senha"}</button>
+          </form>
+        </section>
+      </main>
+    );
+  }
+
   if (!authSession) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
@@ -550,7 +597,7 @@ function Index() {
               setAuthBusy(true);
               setAuthError("");
               try {
-                await sendPasswordRecovery(authEmail.trim(), window.location.origin);
+                await sendPasswordRecovery(authEmail.trim(), "https://matriculaetemjv.lovable.app");
                 setAuthError("Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha.");
               } catch (error) {
                 setAuthError(error instanceof Error ? error.message : "Não foi possível solicitar a recuperação de senha.");
