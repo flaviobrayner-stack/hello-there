@@ -145,7 +145,7 @@ const quotaToDb: Record<string, string> = {
   "Escola Pública": "escola_publica", Renda: "renda", Vulnerabilidade: "vulnerabilidade", PCD: "pcd",
 };
 
-export async function saveEnrollment(session: SupabaseSession, student: StudentInfo) {
+export async function saveEnrollment(session: SupabaseSession, student: StudentInfo, isDraft = true) {
   const { url, key } = config();
   const courses = await request<Array<{ id: string; name: string }>>(
     "/rest/v1/courses?select=id,name&active=eq.true&name=eq." + encodeURIComponent(student.course) + "&limit=1",
@@ -160,25 +160,40 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
       storagePath: doc.fileUrl || undefined,
     })),
   };
-  const response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/create_enrollment_transaction`, {
+  const isExistingEnrollment = Boolean(student.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(student.id));
+  const rpc = isExistingEnrollment ? "update_enrollment_transaction" : "create_enrollment_transaction";
+  const args = {
+    p_student: payload,
+    p_course_id: courses[0].id,
+    p_academic_year: student.academicYear,
+    p_is_quota: student.isQuota,
+    p_quota_type: student.isQuota ? quotaToDb[student.quotaType] : null,
+    ...(isExistingEnrollment ? { p_enrollment_id: student.id } : {}),
+  };
+  const response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/${rpc}`, {
     method: "POST",
     headers: {
       apikey: key,
       Authorization: `Bearer ${session.access_token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      p_student: payload,
-      p_course_id: courses[0].id,
-      p_academic_year: student.academicYear,
-      p_is_quota: student.isQuota,
-      p_quota_type: student.isQuota ? quotaToDb[student.quotaType] : null,
-    }),
+    body: JSON.stringify(args),
   });
   const body = await response.text();
   const data = body ? JSON.parse(body) : null;
   if (!response.ok) throw new Error(data?.message || data?.details || data?.hint || `Falha ao gravar matrícula (${response.status})`);
-  return data as { id: string; protocol: string; academic_year: number; status: string };
+  const result = data as { id: string; protocol: string; academic_year: number; status: string };
+  if (!isDraft) {
+    return await request<{ id: string; protocol: string; academic_year: number; status: string }>(
+      "/rest/v1/rpc/transition_enrollment_status",
+      {
+        method: "POST",
+        body: JSON.stringify({ p_enrollment_id: result.id, p_new_status: "concluida" }),
+      },
+      session.access_token,
+    );
+  }
+  return result;
 }
 
 export async function pingAdminBootstrap() { return true; }
