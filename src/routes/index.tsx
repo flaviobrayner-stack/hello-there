@@ -353,14 +353,10 @@ function Index() {
   // Handle Save / Update Student
   const handleSaveStudent = async (savedStudent: StudentInfo, isDraft: boolean) => {
     if (!authSession) { setNotice("Entre com uma conta autorizada para gravar no banco."); return; }
-    if (!isDraft) {
-      setNotice("A gravação de rascunhos está conectada. A conclusão definitiva será habilitada após a rotina segura de mudança de status ser implantada no banco.");
-      return;
-    }
     try {
-      setNotice("Gravando rascunho no Supabase…");
-      const result = await saveEnrollment(authSession, savedStudent);
-      savedStudent = { ...savedStudent, id: result.id, protocol: result.protocol, status: "Rascunho" };
+      setNotice(isDraft ? "Gravando rascunho no Supabase…" : "Salvando e concluindo matrícula no Supabase…");
+      const result = await saveEnrollment(authSession, savedStudent, isDraft);
+      savedStudent = { ...savedStudent, id: result.id, protocol: result.protocol, status: result.status === "concluida" ? "Concluída" : "Rascunho" };
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Não foi possível gravar no Supabase.");
       return;
