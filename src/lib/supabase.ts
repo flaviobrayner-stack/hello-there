@@ -149,3 +149,11 @@ export async function createStaffUser(session: SupabaseSession, fullName: string
   if (!response.ok) throw new Error(data.message || data.error || "Não foi possível convidar o usuário.");
   return data;
 }
+
+export async function listStaffUsers(session: SupabaseSession): Promise<UserProfile[]> {
+  const rows = await request<Array<{ id: string; full_name: string; email: string; role: "admin" | "operador"; active: boolean; created_at: string }>>(
+    "/rest/v1/profiles?select=id,full_name,email,role,active,created_at&order=created_at.asc",
+    {}, session.access_token,
+  );
+  return rows.map((row) => ({ id: row.id, name: row.full_name, email: row.email, role: row.role, active: row.active, createdAt: row.created_at }));
+}
