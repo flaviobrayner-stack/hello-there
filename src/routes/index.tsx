@@ -17,6 +17,7 @@ import {
   HeartPulse,
   LayoutDashboard,
   LockKeyhole,
+  LogOut,
   Menu,
   Plus,
   Search,
@@ -802,6 +803,39 @@ function Index() {
                   : "Operador de Matrícula"}
               </p>
             </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                setAuthBusy(true);
+                try {
+                  await signOut(authSession);
+                } finally {
+                  setAuthSession(null);
+                  setAuthPassword("");
+                  setAuthError("");
+                  setPasswordSetup(false);
+                  setUsers([]);
+                  setCurrentUserId("");
+                  setStudents([]);
+                  setAuditLogs([]);
+                  setGeneratedDocs([]);
+                  setEditingStudent(null);
+                  setConferencingStudent(null);
+                  setStudentPendingDeletion(null);
+                  setUsersDialogOpen(false);
+                  setAuditModalOpen(false);
+                  setSection("dashboard");
+                  setAuthBusy(false);
+                }
+              }}
+              disabled={authBusy}
+              className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-60"
+              title="Encerrar sessão e entrar com outro usuário"
+            >
+              <LogOut size={16} />
+              <span className="hidden sm:inline">Sair</span>
+            </button>
           </div>
         </header>
 
