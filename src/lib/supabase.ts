@@ -1,7 +1,7 @@
 import type { StudentInfo, UserProfile } from "./types";
 
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || "https://oreeyfyidnhpkwnxubpw.supabase.co";
-const SUPABASE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) || "sb_publishable_r9HALBJWZKnLe_vy060umg_B9s7JKwA";
+const SUPABASE_URL = (import.meta.env['VITE_SUPABASE_URL'] as string | undefined) || "https://oreeyfyidnhpkwnxubpw.supabase.co";
+const SUPABASE_KEY = (import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] as string | undefined) || "sb_publishable_r9HALBJWZKnLe_vy060umg_B9s7JKwA";
 const SESSION_KEY = "matricula2026.supabase.session";
 const APP_URL = "https://matriculaetemjv.lovable.app";
 
@@ -212,6 +212,20 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
   return result;
 }
 
+
+/** The existing RPC deletes related records and records the audit atomically. */
+export async function deleteEnrollment(session: SupabaseSession, enrollmentId: string) {
+  if (!session.access_token) throw new Error("Entre com uma conta autorizada para excluir a matrícula.");
+  const result = await request<{ success: boolean; id: string; protocol: string } | null>(
+    "/rest/v1/rpc/delete_enrollment_transaction",
+    { method: "POST", body: JSON.stringify({ p_enrollment_id: enrollmentId }) },
+    session.access_token,
+  );
+  if (result?.success !== true || result.id !== enrollmentId) {
+    throw new Error("O banco não confirmou a exclusão. Atualize a lista antes de tentar novamente.");
+  }
+  return result;
+}
 
 const dbStatusToUi = (status: string): StudentInfo["status"] => ({
   rascunho: "Rascunho",

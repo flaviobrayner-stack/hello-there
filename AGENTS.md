@@ -10,3 +10,5 @@
 > the editor, so keep the branch in a working state.
 
 <!-- LOVABLE:END -->
+
+- Enrollment deletion uses the existing authenticated transactional RPC; update local enrollment, document history and audit state only after its explicit success response, to preserve atomic deletion and the current session.

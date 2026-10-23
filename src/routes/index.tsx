@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Activity,
@@ -54,7 +54,7 @@ import {
   availableCourses,
 } from "../lib/mock-data";
 import { maskCpfPrivate } from "../lib/mask";
-import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, listEnrollments, createStaffUser, listStaffUsers, manageStaffUser, sendPasswordRecovery, consumeAuthRedirect, updatePassword, type SupabaseSession } from "../lib/supabase";
+import { getProfile, getStoredSession, signIn, signOut, saveEnrollment, deleteEnrollment, listEnrollments, createStaffUser, listStaffUsers, manageStaffUser, sendPasswordRecovery, consumeAuthRedirect, updatePassword, type SupabaseSession } from "../lib/supabase";
 import { DashboardCharts } from "../components/dashboard-charts";
 import { EnrollmentWizard } from "../components/enrollment-wizard";
 import { AdminUsersDialog } from "../components/admin-users-dialog";
@@ -66,6 +66,14 @@ import {
 } from "../components/enrollment-document-preview";
 
 export const Route = createFileRoute("/")({
+  head: () => ({ meta: [
+    { title: "Sistema de Matrícula 2026 — ETE Maria José Vasconcelos" },
+    { name: "description", content: "Gestão de matrículas, documentação e atendimento escolar da ETE Maria José Vasconcelos em 2026." },
+    { property: "og:title", content: "Sistema de Matrícula 2026 — ETE Maria José Vasconcelos" },
+    { property: "og:description", content: "Gestão de matrículas, documentação e atendimento escolar da ETE Maria José Vasconcelos em 2026." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Index,
 });
 
@@ -287,6 +295,9 @@ function Index() {
   const [editingStudent, setEditingStudent] = useState<StudentInfo | null>(null);
   const [conferencingStudent, setConferencingStudent] = useState<StudentInfo | null>(null);
   const [studentPendingDeletion, setStudentPendingDeletion] = useState<StudentInfo | null>(null);
+  const [isDeletingStudent, setIsDeletingStudent] = useState(false);
+  const [deletionError, setDeletionError] = useState("");
+  const deletionInFlight = useRef(false);
 
   // Modals
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
@@ -418,7 +429,26 @@ function Index() {
   };
 
   // Excluir matrícula após confirmação explícita do usuário.
-  const handleDeleteStudent = (student: StudentInfo) => {
+  const handleDeleteStudent = async (student: StudentInfo) => {
+    if (deletionInFlight.current) return;
+    setDeletionError("");
+    if (!authSession) {
+      setDeletionError("Entre com uma conta autorizada para excluir a matrícula.");
+      return;
+    }
+    deletionInFlight.current = true;
+    setIsDeletingStudent(true);
+    try {
+      await deleteEnrollment(authSession, student.id);
+    } catch (error) {
+      const message = "Não foi possível excluir a matrícula. " + (error instanceof Error ? error.message : "Verifique sua conexão e tente novamente.");
+      setDeletionError(message);
+      setNotice(message);
+      return;
+    } finally {
+      deletionInFlight.current = false;
+      setIsDeletingStudent(false);
+    }
     setStudents((prev) => prev.filter((item) => item.id !== student.id));
     setGeneratedDocs((prev) => prev.filter((doc) => doc.enrollmentId !== student.protocol));
     setAuditLogs((prev) => [
@@ -1220,7 +1250,8 @@ function Index() {
                                 </button>
                                 {/* Excluir — disponível para qualquer usuário; exige confirmação */}
                                 <button
-                                  onClick={() => setStudentPendingDeletion(s)}
+                                  onClick={() => { setDeletionError(""); setStudentPendingDeletion(s); }}
+                                  disabled={isDeletingStudent}
                                   className="rounded-lg border border-rose-200 bg-white p-1.5 text-rose-700 hover:bg-rose-50 transition"
                                   title="Excluir Matrícula"
                                   aria-label={`Excluir matrícula ${s.protocol}`}
@@ -1714,9 +1745,10 @@ function Index() {
                 <p className="mt-2 text-xs text-rose-700">Os documentos gerados associados também serão removidos desta lista.</p>
               </div>
             </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button type="button" onClick={() => setStudentPendingDeletion(null)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancelar</button>
-              <button type="button" onClick={() => handleDeleteStudent(studentPendingDeletion)} className="rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-rose-800">Sim, excluir matrícula</button>
+            {deletionError && <p role="alert" className="mt-4 text-sm text-destructive">{deletionError}</p>}
+            <div className="mt-6 flex justify-end gap-3" aria-busy={isDeletingStudent}>
+              <button type="button" disabled={isDeletingStudent} onClick={() => setStudentPendingDeletion(null)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50">Cancelar</button>
+              <button type="button" disabled={isDeletingStudent} onClick={() => handleDeleteStudent(studentPendingDeletion)} className="rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-rose-800 disabled:opacity-50">{isDeletingStudent ? "Excluindo…" : "Sim, excluir matrícula"}</button>
             </div>
           </div>
         </div>
