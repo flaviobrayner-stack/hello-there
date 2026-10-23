@@ -1016,9 +1016,9 @@ function Index() {
               <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 p-5 gap-3">
                   <div>
-                    <h3 className="font-bold text-slate-900">Matrículas Recentes Cadastradas</h3>
+                    <h3 className="font-bold text-slate-900">Matrículas Recentes Concluídas</h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Últimos registros submetidos pela equipe escolar
+                      Últimas matrículas finalizadas pela equipe escolar
                     </p>
                   </div>
                   <button
