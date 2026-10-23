@@ -184,10 +184,8 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     documents: student.documents.map((doc) => ({
       ...doc,
       status: doc.status === "Entregue" || doc.status === "Conferido" ? "Entregue" : "Pendente",
-      fileName: undefined,
-      fileSizeBytes: undefined,
-      storagePath: undefined,
-      mimeType: undefined,
+      fileSizeBytes: doc.fileSize ? Number(String(doc.fileSize).replace(/[^0-9]/g, "")) || undefined : undefined,
+      storagePath: doc.fileUrl || undefined,
     })),
   });
   const rpc = isExistingEnrollment ? "update_enrollment_transaction" : "create_enrollment_transaction";
