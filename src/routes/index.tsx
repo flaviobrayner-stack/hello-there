@@ -390,10 +390,8 @@ function Index() {
     setRefreshingSystem(true);
     try {
       const profile = await getProfile(authSession);
-      const [staff, rows] = await Promise.all([
-        listStaffUsers(authSession),
-        listEnrollments(authSession),
-      ]);
+      const rows = await listEnrollments(authSession);
+      const staff = await listStaffUsers(authSession).catch(() => []);
       setUsers(staff.length ? staff : [profile]);
       setCurrentUserId(profile.id);
       setStudents(rows);
