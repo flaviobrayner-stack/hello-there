@@ -99,7 +99,7 @@ export async function consumeAuthRedirect(): Promise<{ session: SupabaseSession;
   const session: SupabaseSession = {
     access_token: accessToken,
     refresh_token: refreshToken,
-    expires_at: Number(params.get("expires_at") || 0) || undefined,
+    ...(Number(params.get("expires_at") || 0) ? { expires_at: Number(params.get("expires_at")) } : {}),
     user: { id: user.id, email: user.email },
   };
   storeSession(session);
@@ -275,7 +275,7 @@ export async function listEnrollments(session: SupabaseSession): Promise<Student
     {}, session.access_token,
   );
   if (!enrollments.length) return [];
-  const ids = enrollments.map((row) => row.id).filter((id) => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id));
+  const ids = enrollments.map((row) => row['id']).filter((id) => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id));
   const inFilter = "in.(" + ids.join(",") + ")";
   const [parentRows, documentRows, healthRows] = await Promise.all([
     request<Array<Record<string, any>>>("/rest/v1/parents_guardians?select=*&enrollment_id=" + encodeURIComponent(inFilter), {}, session.access_token),
@@ -287,104 +287,104 @@ export async function listEnrollments(session: SupabaseSession): Promise<Student
   const parentsByEnrollment = new Map<string, Array<Record<string, any>>>();
   const documentsByEnrollment = new Map<string, Array<Record<string, any>>>();
   const healthByEnrollment = new Map<string, Record<string, any>>();
-  parentRows.forEach((row) => parentsByEnrollment.set(row.enrollment_id, [...(parentsByEnrollment.get(row.enrollment_id) || []), row]));
-  documentRows.forEach((row) => documentsByEnrollment.set(row.enrollment_id, [...(documentsByEnrollment.get(row.enrollment_id) || []), row]));
-  healthRows.forEach((row) => healthByEnrollment.set(row.enrollment_id, row));
+  parentRows.forEach((row) => parentsByEnrollment.set(row['enrollment_id'], [...(parentsByEnrollment.get(row['enrollment_id']) || []), row]));
+  documentRows.forEach((row) => documentsByEnrollment.set(row['enrollment_id'], [...(documentsByEnrollment.get(row['enrollment_id']) || []), row]));
+  healthRows.forEach((row) => healthByEnrollment.set(row['enrollment_id'], row));
 
   return enrollments.map((enrollment) => {
-    const student = enrollment.students || {};
-    const parents = parentsByEnrollment.get(enrollment.id) || [];
-    const motherRow = parents.find((row) => row.relationship_type === "mae");
-    const fatherRow = parents.find((row) => row.relationship_type === "pai");
-    const guardianRow = parents.find((row) => row.is_legal_guardian) || parents.find((row) => row.relationship_type === "responsavel");
-    const health = healthByEnrollment.get(enrollment.id);
-    const documents = (documentsByEnrollment.get(enrollment.id) || []).map((doc) => ({
-      id: doc.id,
-      type: doc.document_type,
-      name: String(doc.document_type || "Documento").replace(/_/g, " "),
-      status: dbDocumentStatusToUi(doc.status),
-      fileName: doc.file_name || undefined,
-      fileSize: doc.file_size_bytes == null ? undefined : String(doc.file_size_bytes),
-      fileUrl: doc.storage_path || undefined,
-      submittedAt: doc.submitted_at || undefined,
-      verifiedAt: doc.checked_at || undefined,
-      verifiedBy: doc.checked_by || undefined,
-      notes: doc.notes || undefined,
-      deadline: doc.due_at || undefined,
-      isMandatory: doc.required !== false,
-      blocksCompletion: doc.required !== false,
+    const student = enrollment['students'] || {};
+    const parents = parentsByEnrollment.get(enrollment['id']) || [];
+    const motherRow = parents.find((row) => row['relationship_type'] === "mae");
+    const fatherRow = parents.find((row) => row['relationship_type'] === "pai");
+    const guardianRow = parents.find((row) => row['is_legal_guardian']) || parents.find((row) => row['relationship_type'] === "responsavel");
+    const health = healthByEnrollment.get(enrollment['id']);
+    const documents = (documentsByEnrollment.get(enrollment['id']) || []).map((doc) => ({
+      id: doc['id'],
+      type: doc['document_type'],
+      name: String(doc['document_type'] || "Documento").replace(/_/g, " "),
+      status: dbDocumentStatusToUi(doc['status']),
+      fileName: doc['file_name'] || undefined,
+      fileSize: doc['file_size_bytes'] == null ? undefined : String(doc['file_size_bytes']),
+      fileUrl: doc['storage_path'] || undefined,
+      submittedAt: doc['submitted_at'] || undefined,
+      verifiedAt: doc['checked_at'] || undefined,
+      verifiedBy: doc['checked_by'] || undefined,
+      notes: doc['notes'] || undefined,
+      deadline: doc['due_at'] || undefined,
+      isMandatory: doc['required'] !== false,
+      blocksCompletion: doc['required'] !== false,
     })) as StudentInfo["documents"];
     const parent = (row: Record<string, any> | undefined) => row ? ({
-      status: row.status === "falecido" ? "Falecido(a)" : row.status === "nao_se_aplica" ? "Não se aplica" : row.status === "nao_informado" ? "Não informado" : "Informado",
-      name: row.full_name || "", cpf: row.cpf_digits || "", rg: row.rg || "", rgIssuer: row.rg_issuer || "",
-      phone: row.phone || "", address: row.address || "", email: row.email || "", occupation: row.profession || "",
-      workplace: row.workplace || "", workPhone: row.work_phone || "",
+      status: row['status'] === "falecido" ? "Falecido(a)" : row['status'] === "nao_se_aplica" ? "Não se aplica" : row['status'] === "nao_informado" ? "Não informado" : "Informado",
+      name: row['full_name'] || "", cpf: row['cpf_digits'] || "", rg: row['rg'] || "", rgIssuer: row['rg_issuer'] || "",
+      phone: row['phone'] || "", address: row['address'] || "", email: row['email'] || "", occupation: row['profession'] || "",
+      workplace: row['workplace'] || "", workPhone: row['work_phone'] || "",
     }) : emptyParent();
     const guardian = guardianRow ? ({
-      name: guardianRow.full_name || "",
-      relationship: guardianRow.relationship_type === "mae" ? "Mãe" : guardianRow.relationship_type === "pai" ? "Pai" : "Outro",
-      maritalStatus: guardianRow.marital_status || "", occupation: guardianRow.profession || "", cpf: guardianRow.cpf_digits || "",
-      rg: guardianRow.rg || "", rgIssuer: guardianRow.rg_issuer || "", address: guardianRow.address || "",
-      phone: guardianRow.phone || "", email: guardianRow.email || "", isSameAddressAsStudent: Boolean(guardianRow.address && guardianRow.address === student.address),
+      name: guardianRow['full_name'] || "",
+      relationship: guardianRow['relationship_type'] === "mae" ? "Mãe" : guardianRow['relationship_type'] === "pai" ? "Pai" : "Outro",
+      maritalStatus: guardianRow['marital_status'] || "", occupation: guardianRow['profession'] || "", cpf: guardianRow['cpf_digits'] || "",
+      rg: guardianRow['rg'] || "", rgIssuer: guardianRow['rg_issuer'] || "", address: guardianRow['address'] || "",
+      phone: guardianRow['phone'] || "", email: guardianRow['email'] || "", isSameAddressAsStudent: Boolean(guardianRow['address'] && guardianRow['address'] === student['address']),
     } as StudentInfo["guardian"]) : emptyGuardian();
-    const blood = health?.blood_type && health.blood_type !== "Não informado"
-      ? health.blood_type + (health.rh_factor || "")
+    const blood = health?.['blood_type'] && health['blood_type'] !== "Não informado"
+      ? health['blood_type'] + (health['rh_factor'] || "")
       : "Não informado";
     return {
-      id: enrollment.id,
-      protocol: enrollment.protocol,
-      academicYear: enrollment.academic_year,
-      course: enrollment.courses?.name || "Curso não informado",
+      id: enrollment['id'],
+      protocol: enrollment['protocol'],
+      academicYear: enrollment['academic_year'],
+      course: enrollment['courses']?.name || "Curso não informado",
       shift: "Integral",
-      isQuota: Boolean(enrollment.is_quota),
-      quotaType: dbQuotaToUi(enrollment.quota_type, Boolean(enrollment.is_quota)),
-      status: dbStatusToUi(enrollment.status),
+      isQuota: Boolean(enrollment['is_quota']),
+      quotaType: dbQuotaToUi(enrollment['quota_type'], Boolean(enrollment['is_quota'])),
+      status: dbStatusToUi(enrollment['status']),
       responsibleStaff: profile.name,
-      createdAt: displayDateTime(enrollment.created_at),
-      updatedAt: displayDateTime(enrollment.updated_at),
-      fullName: student.full_name || "",
-      socialName: student.social_name || "",
-      cpf: student.cpf_digits || "",
-      rg: student.rg || "",
-      rgIssuer: student.rg_issuer || "",
-      birthDate: student.birth_date || "",
-      age: student.birth_date ? Math.max(0, new Date().getFullYear() - new Date(student.birth_date).getFullYear()) : 0,
-      placeOfBirth: student.birthplace || "",
+      createdAt: displayDateTime(enrollment['created_at']),
+      updatedAt: displayDateTime(enrollment['updated_at']),
+      fullName: student['full_name'] || "",
+      socialName: student['social_name'] || "",
+      cpf: student['cpf_digits'] || "",
+      rg: student['rg'] || "",
+      rgIssuer: student['rg_issuer'] || "",
+      birthDate: student['birth_date'] || "",
+      age: student['birth_date'] ? Math.max(0, new Date().getFullYear() - new Date(student['birth_date']).getFullYear()) : 0,
+      placeOfBirth: student['birthplace'] || "",
       placeOfBirthUf: "",
-      gender: student.sex === "M" || student.sex === "Masculino" ? "Masculino" : student.sex === "F" || student.sex === "Feminino" ? "Feminino" : "Não informado",
-      maritalStatus: student.marital_status || "",
-      phone: student.phone || "",
-      email: student.email || "",
-      address: student.address || "",
-      neighborhood: student.neighborhood || "",
-      city: student.city || "",
-      uf: student.state || "",
-      cep: student.cep_digits || "",
-      race: ({"branca":"Branca","preta":"Preta","parda":"Parda","amarela":"Amarela","indigena":"Indígena","nao_declarada":"Não declarada"} as Record<string, StudentInfo["race"]>)[student.race_color] || "Não declarada",
-      isPcd: Boolean(student.pcd),
-      pcdType: student.pcd_type || "",
-      usesSchoolTransport: Boolean(student.school_transport),
-      transportType: student.transport_type || undefined,
-      previousSchool: student.previous_school || "",
-      uniformSize: student.shirt_size || "M",
-      receivesBolsaFamilia: Boolean(student.bolsa_familia),
+      gender: student['sex'] === "M" || student['sex'] === "Masculino" ? "Masculino" : student['sex'] === "F" || student['sex'] === "Feminino" ? "Feminino" : "Não informado",
+      maritalStatus: student['marital_status'] || "",
+      phone: student['phone'] || "",
+      email: student['email'] || "",
+      address: student['address'] || "",
+      neighborhood: student['neighborhood'] || "",
+      city: student['city'] || "",
+      uf: student['state'] || "",
+      cep: student['cep_digits'] || "",
+      race: ({"branca":"Branca","preta":"Preta","parda":"Parda","amarela":"Amarela","indigena":"Indígena","nao_declarada":"Não declarada"} as Record<string, StudentInfo["race"]>)[student['race_color']] || "Não declarada",
+      isPcd: Boolean(student['pcd']),
+      pcdType: student['pcd_type'] || "",
+      usesSchoolTransport: Boolean(student['school_transport']),
+      transportType: student['transport_type'] || undefined,
+      previousSchool: student['previous_school'] || "",
+      uniformSize: student['shirt_size'] || "M",
+      receivesBolsaFamilia: Boolean(student['bolsa_familia']),
       nisNumber: "",
       mother: parent(motherRow),
       father: parent(fatherRow),
       guardian,
       health: {
-        hasHealthInsurance: Boolean(health?.health_insurance),
-        insuranceName: health?.accredited_hospital || "",
-        indicatedHospital: health?.family_hospital || "",
-        hasDrugAllergy: Boolean(health?.medication_allergy),
-        drugAllergyDetails: health?.allergy_details || "",
-        hasControlledMedication: Boolean(health?.controlled_medication),
-        controlledMedicationDetails: health?.medication_details || "",
-        emergencyContactName: health?.emergency_name || guardian.name || "",
-        emergencyContactPhone: health?.emergency_phone || guardian.phone || "",
-        emergencyContactRelationship: health?.emergency_relationship || guardian.relationship || "",
-        hasOtherHealthCondition: Boolean(health?.health_notes),
-        otherHealthConditionDetails: health?.health_notes_details || "",
+        hasHealthInsurance: Boolean(health?.['health_insurance']),
+        insuranceName: health?.['accredited_hospital'] || "",
+        indicatedHospital: health?.['family_hospital'] || "",
+        hasDrugAllergy: Boolean(health?.['medication_allergy']),
+        drugAllergyDetails: health?.['allergy_details'] || "",
+        hasControlledMedication: Boolean(health?.['controlled_medication']),
+        controlledMedicationDetails: health?.['medication_details'] || "",
+        emergencyContactName: health?.['emergency_name'] || guardian.name || "",
+        emergencyContactPhone: health?.['emergency_phone'] || guardian.phone || "",
+        emergencyContactRelationship: health?.['emergency_relationship'] || guardian.relationship || "",
+        hasOtherHealthCondition: Boolean(health?.['health_notes']),
+        otherHealthConditionDetails: health?.['health_notes_details'] || "",
         bloodType: blood as StudentInfo["health"]["bloodType"],
       },
       documents,
