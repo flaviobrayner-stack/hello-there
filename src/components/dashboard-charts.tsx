@@ -43,14 +43,23 @@ export function DashboardCharts({ students }: DashboardChartsProps) {
   }));
 
   // 3. Evolução / Matrículas Recentes
-  const dailyData = [
-    { date: "16/10", matriculas: 18 },
-    { date: "17/10", matriculas: 24 },
-    { date: "18/10", matriculas: 31 },
-    { date: "19/10", matriculas: 28 },
-    { date: "20/10", matriculas: 35 },
-    { date: "21/10", matriculas: students.length + 12 },
-  ];
+  const dailyCounts = new Map<string, number>();
+  students.forEach((student) => {
+    const rawDate = student.createdAt?.split(" ")[0] || "";
+    const match = rawDate.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const parsed = match ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1])) : new Date(rawDate);
+    if (Number.isNaN(parsed.getTime())) return;
+    const key = parsed.toLocaleDateString("pt-BR");
+    dailyCounts.set(key, (dailyCounts.get(key) || 0) + 1);
+  });
+  const dailyData = Array.from(dailyCounts.entries())
+    .map(([date, matriculas]) => {
+      const [day, month, year] = date.split("/");
+      return { date, matriculas, sortKey: new Date(Number(year), Number(month) - 1, Number(day)).getTime() };
+    })
+    .sort((a, b) => a.sortKey - b.sortKey)
+    .slice(-7)
+    .map(({ date, matriculas }) => ({ date: date.slice(0, 5), matriculas }));
 
   // 4. Status de Documentação e Pendências
   let semFotos = 0;
@@ -72,11 +81,11 @@ export function DashboardCharts({ students }: DashboardChartsProps) {
   });
 
   const pendenciasData = [
-    { name: "Fotos 3×4", total: semFotos + 8 },
-    { name: "Ficha 18", total: semFicha18 + 12 },
-    { name: "Comp. Renda", total: semRenda + 3 },
-    { name: "Cartão Vacina", total: semVacina + 5 },
-    { name: "Comp. Residência", total: semResidencia + 4 },
+    { name: "Fotos 3×4", total: semFotos },
+    { name: "Ficha 18", total: semFicha18 },
+    { name: "Comp. Renda", total: semRenda },
+    { name: "Cartão Vacina", total: semVacina },
+    { name: "Comp. Residência", total: semResidencia },
   ];
 
   return (
