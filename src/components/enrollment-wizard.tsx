@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Upload,  AlertCircle,
+  AlertCircle,
   Printer,
   Save,
   Check,
