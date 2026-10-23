@@ -29,6 +29,7 @@ import {
   AlertCircle,
   CircleHelp,
   Printer,
+  RefreshCw,
   History,
   ShieldAlert,
   Edit,
@@ -307,6 +308,7 @@ function Index() {
   const [usersDialogOpen, setUsersDialogOpen] = useState(false);
   const [auditModalOpen, setAuditModalOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const [refreshingSystem, setRefreshingSystem] = useState(false);
 
   // App Settings (Configurações)
   const [settings, setSettings] = useState({
@@ -381,6 +383,27 @@ function Index() {
       docsPendentes: total - docsCompletos,
     };
   }, [students]);
+
+  // Atualiza os dados persistidos no Supabase sem encerrar a sessão.
+  const handleRefreshSystem = async () => {
+    if (!authSession || refreshingSystem) return;
+    setRefreshingSystem(true);
+    try {
+      const profile = await getProfile(authSession);
+      const rows = await listEnrollments(authSession);
+      const staff = await listStaffUsers(authSession).catch(() => []);
+      setUsers(staff.length ? staff : [profile]);
+      setCurrentUserId(profile.id);
+      setStudents(rows);
+      setNotice(`Sistema atualizado: ${rows.length} matrícula(s) carregada(s) do banco.`);
+    } catch (error) {
+      setNotice(error instanceof Error
+        ? `Não foi possível atualizar o sistema: ${error.message}`
+        : "Não foi possível atualizar o sistema. Verifique a conexão.");
+    } finally {
+      setRefreshingSystem(false);
+    }
+  };
 
   // Handle Save / Update Student
   const handleSaveStudent = async (savedStudent: StudentInfo, isDraft: boolean) => {
@@ -809,6 +832,17 @@ function Index() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={handleRefreshSystem}
+              disabled={!authSession || refreshingSystem}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              title="Buscar novamente os dados salvos no Supabase"
+            >
+              <RefreshCw size={15} className={refreshingSystem ? "animate-spin" : ""} />
+              <span className="hidden sm:inline">{refreshingSystem ? "Atualizando…" : "Atualizar sistema"}</span>
+              <span className="sm:hidden">{refreshingSystem ? "…" : "Atualizar"}</span>
+            </button>
             {/* Quick action: Converter em PDF */}
             <button
               onClick={() => {

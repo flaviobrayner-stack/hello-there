@@ -147,6 +147,17 @@ const quotaToDb: Record<string, string> = {
 
 export async function saveEnrollment(session: SupabaseSession, student: StudentInfo, isDraft = true) {
   const { url, key } = config();
+  const isExistingEnrollment = Boolean(student.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(student.id));
+  const cpfDigits = String(student.cpf || "").replace(/\D/g, "");
+  if (!isExistingEnrollment && cpfDigits) {
+    const matches = await request<Array<{ id: string }>>(
+      "/rest/v1/students?select=id&cpf_digits=eq." + encodeURIComponent(cpfDigits) + "&limit=1",
+      {}, session.access_token,
+    );
+    if (matches.length) {
+      throw new Error("Este CPF já está cadastrado no sistema. Consulte o registro existente.");
+    }
+  }
   const courses = await request<Array<{ id: string; name: string }>>(
     "/rest/v1/courses?select=id,name&active=eq.true&name=eq." + encodeURIComponent(student.course) + "&limit=1",
     {}, session.access_token,
@@ -172,11 +183,11 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     ...student,
     documents: student.documents.map((doc) => ({
       ...doc,
+      status: doc.status === "Entregue" || doc.status === "Conferido" ? "Entregue" : "Pendente",
       fileSizeBytes: doc.fileSize ? Number(String(doc.fileSize).replace(/[^0-9]/g, "")) || undefined : undefined,
       storagePath: doc.fileUrl || undefined,
     })),
   });
-  const isExistingEnrollment = Boolean(student.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(student.id));
   const rpc = isExistingEnrollment ? "update_enrollment_transaction" : "create_enrollment_transaction";
   const args = {
     p_student: payload,
@@ -197,7 +208,13 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
   });
   const body = await response.text();
   const data = body ? JSON.parse(body) : null;
-  if (!response.ok) throw new Error(data?.message || data?.details || data?.hint || `Falha ao gravar matrícula (${response.status})`);
+  if (!response.ok) {
+    const rawMessage = String(data?.message || data?.details || data?.hint || "");
+    if (rawMessage.includes("student_cpf_already_registered") || rawMessage.includes("student_cpf_already_in_use")) {
+      throw new Error("Este CPF já está cadastrado no sistema. Consulte o registro existente.");
+    }
+    throw new Error(rawMessage || `Falha ao gravar matrícula (${response.status})`);
+  }
   const result = data as { id: string; protocol: string; academic_year: number; status: string };
   if (!isDraft) {
     return await request<{ id: string; protocol: string; academic_year: number; status: string }>(
@@ -234,13 +251,8 @@ const dbStatusToUi = (status: string): StudentInfo["status"] => ({
   cancelada: "Cancelada",
 } as Record<string, StudentInfo["status"]>)[status] || "Rascunho";
 
-const dbDocumentStatusToUi = (status: string): StudentInfo["documents"][number]["status"] => ({
-  pendente: "Pendente",
-  entregue: "Entregue",
-  conferido: "Conferido",
-  recusado: "Recusado",
-  nao_se_aplica: "Não se aplica",
-} as Record<string, StudentInfo["documents"][number]["status"]>)[status] || "Pendente";
+const dbDocumentStatusToUi = (status: string): StudentInfo["documents"][number]["status"] =>
+  status === "entregue" || status === "conferido" ? "Entregue" : "Pendente";
 
 const dbQuotaToUi = (quota: string | null, isQuota: boolean): StudentInfo["quotaType"] => {
   if (!isQuota) return "Não cotista";
