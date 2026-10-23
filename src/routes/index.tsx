@@ -253,8 +253,26 @@ function Index() {
   const [currentUserId, setCurrentUserId] = useState<string>("usr-admin-1");
   const [students, setStudents] = useState<StudentInfo[]>(initialStudents);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
-  const [generatedDocs, setGeneratedDocs] =
-    useState<GeneratedDocumentRecord[]>(initialGeneratedDocuments);
+  const [generatedDocs, setGeneratedDocs] = useState<GeneratedDocumentRecord[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = window.localStorage.getItem("matricula2026.generatedDocs");
+        if (stored !== null) return JSON.parse(stored) as GeneratedDocumentRecord[];
+      } catch {
+        // Se o histórico local estiver inválido, inicia com os dados de demonstração.
+      }
+    }
+    return initialGeneratedDocuments;
+  });
+  const [documentPendingDeletion, setDocumentPendingDeletion] = useState<GeneratedDocumentRecord | null>(null);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("matricula2026.generatedDocs", JSON.stringify(generatedDocs));
+    } catch {
+      setNotice("Não foi possível salvar o histórico de documentos neste navegador.");
+    }
+  }, [generatedDocs]);
 
   // Navigation & Filtering
   const [section, setSection] = useState<Section>("dashboard");
@@ -445,13 +463,8 @@ function Index() {
     setGeneratedDocs((prev) => [newGen, ...prev]);
   };
 
-  // Excluir um registro individual do histórico de documentos gerados.
+  // Excluir um registro individual do histórico após confirmação na interface.
   const handleDeleteGeneratedDocument = (doc: GeneratedDocumentRecord) => {
-    const confirmed = window.confirm(
-      `Deseja realmente excluir do histórico o documento "${doc.documentType}" da matrícula ${doc.enrollmentId} — ${doc.studentName}?`,
-    );
-    if (!confirmed) return;
-
     setGeneratedDocs((prev) => prev.filter((item) => item.id !== doc.id));
     setAuditLogs((prev) => [
       {
@@ -1518,7 +1531,7 @@ function Index() {
                               <Printer size={12} /> Abrir PDF
                             </button>
                             <button
-                              onClick={() => handleDeleteGeneratedDocument(doc)}
+                              onClick={() => setDocumentPendingDeletion(doc)}
                               title="Excluir do histórico"
                               aria-label={`Excluir documento da matrícula ${doc.enrollmentId}`}
                               className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-100"
@@ -1660,6 +1673,30 @@ function Index() {
           </footer>
         </div>
       </main>
+
+      {/* Confirmação de exclusão de documento gerado */}
+      {documentPendingDeletion && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-generated-document-title">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-700">
+                <Trash2 size={21} />
+              </div>
+              <div>
+                <h2 id="delete-generated-document-title" className="text-base font-bold text-slate-900">Excluir do histórico?</h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  Deseja remover <strong>{documentPendingDeletion.documentType}</strong> da matrícula <strong>{documentPendingDeletion.enrollmentId} — {documentPendingDeletion.studentName}</strong>?
+                </p>
+                <p className="mt-2 text-xs text-amber-700">Isso remove o registro do histórico deste navegador. Não apaga um arquivo externo do Google Drive.</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setDocumentPendingDeletion(null)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancelar</button>
+              <button type="button" onClick={() => { handleDeleteGeneratedDocument(documentPendingDeletion); setDocumentPendingDeletion(null); }} className="rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-rose-800">Sim, excluir</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmação de exclusão da matrícula */}
       {studentPendingDeletion && (
