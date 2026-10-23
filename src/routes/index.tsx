@@ -344,20 +344,21 @@ function Index() {
     });
   }, [students, search, courseFilter, statusFilter, quotaFilter]);
 
-  // Derived Metrics
+  // O dashboard considera matrículas concluídas; rascunhos são exibidos separadamente.
   const metrics = useMemo(() => {
-    const total = students.length;
-    const concluidas = students.filter((s) => s.status === "Concluída").length;
+    const concluidasStudents = students.filter((s) => s.status === "Concluída");
+    const total = concluidasStudents.length;
+    const concluidas = total;
     const analise = students.filter((s) => s.status === "Em análise").length;
     const rascunhos = students.filter((s) => s.status === "Rascunho").length;
-    const cotistas = students.filter((s) => s.isQuota).length;
+    const cotistas = concluidasStudents.filter((s) => s.isQuota).length;
     const naoCotistas = total - cotistas;
 
     let semFotos = 0;
     let semFicha18 = 0;
     let docsCompletos = 0;
 
-    students.forEach((s) => {
+    concluidasStudents.forEach((s) => {
       const delivered = s.documents.filter(
         (d) => d.status === "Entregue" || d.status === "Conferido",
       ).length;
@@ -756,7 +757,7 @@ function Index() {
                 {item.label}
                 {item.id === "matriculas" && (
                   <span className="ml-auto rounded-md bg-white px-2 py-0.5 text-xs text-slate-500 border border-slate-200">
-                    {students.length}
+                    {students.filter((s) => s.status === "Concluída").length}
                   </span>
                 )}
                 {item.id === "documentos-gerados" && (
@@ -970,13 +971,20 @@ function Index() {
               </div>
 
               {/* Cards Grid */}
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 <MetricCard
                   label="Total de Matrículas"
                   value={metrics.total}
-                  note={`${metrics.concluidas} concluídas · ${metrics.analise} em análise`}
+                  note="Somente matrículas concluídas"
                   icon={GraduationCap}
                   tone="blue"
+                />
+                <MetricCard
+                  label="Rascunhos"
+                  value={metrics.rascunhos}
+                  note="Cadastros ainda não concluídos"
+                  icon={FileText}
+                  tone="violet"
                 />
                 <MetricCard
                   label="Documentação Completa"
@@ -1002,7 +1010,7 @@ function Index() {
               </div>
 
               {/* Recharts Analytics */}
-              <DashboardCharts students={students} />
+              <DashboardCharts students={students.filter((s) => s.status === "Concluída")} />
 
               {/* Tabela de Matrículas Recentes */}
               <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -1017,7 +1025,7 @@ function Index() {
                     onClick={() => setSection("matriculas")}
                     className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900"
                   >
-                    Ver todas as {students.length} matrículas <ArrowRight size={15} />
+                    Ver todas as {metrics.concluidas} matrículas concluídas <ArrowRight size={15} />
                   </button>
                 </div>
 
@@ -1034,7 +1042,7 @@ function Index() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {students.slice(0, 5).map((s) => {
+                      {students.filter((s) => s.status === "Concluída").slice(0, 5).map((s) => {
                         const delivered = s.documents.filter(
                           (d) => d.status === "Entregue" || d.status === "Conferido",
                         ).length;
