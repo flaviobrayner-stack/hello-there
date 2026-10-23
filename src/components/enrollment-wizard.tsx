@@ -1737,7 +1737,7 @@ export function EnrollmentWizard({
                 type="button"
                 disabled={saving}
                 onClick={() => void handleSave(true)}
-                className={` ${saving ? "cursor-not-allowed opacity-60" : ""} ` +"inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
+                className={`inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs ${saving ? "cursor-not-allowed opacity-60" : ""}`}
               >
                 <Save size={15} />
                 Salvar Rascunho
@@ -1778,7 +1778,7 @@ export function EnrollmentWizard({
                   type="button"
                   disabled={saving}
                   onClick={() => void handleSave(false)}
-                  className={` ${saving ? "cursor-not-allowed opacity-60" : ""} ` +"inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition"
+                  className={`inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition ${saving ? "cursor-not-allowed opacity-60" : ""}`}
                 >
                   <CheckCircle2 size={16} />
                   Concluir Matrícula
