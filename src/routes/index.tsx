@@ -270,7 +270,7 @@ function Index() {
     try {
       window.localStorage.setItem("matricula2026.generatedDocs", JSON.stringify(generatedDocs));
     } catch {
-      setNotice("Não foi possível salvar o histórico de documentos neste navegador.");
+      // O navegador pode bloquear armazenamento local; a exclusão continua válida na tela atual.
     }
   }, [generatedDocs]);
 
