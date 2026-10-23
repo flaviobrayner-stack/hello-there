@@ -52,7 +52,14 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
   const data = body ? JSON.parse(body) : null;
   if (!response.ok) {
     const message = data?.msg || data?.message || data?.error_description || data?.error || `Erro Supabase (${response.status})`;
-    throw new Error(String(message));
+    const rawMessage = String(message);
+    const friendlyMessages: Record<string, string> = {
+      student_already_has_completed_enrollment:
+        "Este aluno já possui matrícula concluída para este ano letivo. Não é possível criar outro rascunho ou concluir uma segunda matrícula.",
+      student_has_another_draft_or_pending_enrollment:
+        "Este aluno possui outro rascunho ou matrícula em análise. Cancele ou resolva o registro anterior antes de concluir esta matrícula.",
+    };
+    throw new Error(friendlyMessages[rawMessage] || rawMessage);
   }
   return data as T;
 }
