@@ -445,6 +445,29 @@ function Index() {
     setGeneratedDocs((prev) => [newGen, ...prev]);
   };
 
+  // Excluir um registro individual do histórico de documentos gerados.
+  const handleDeleteGeneratedDocument = (doc: GeneratedDocumentRecord) => {
+    const confirmed = window.confirm(
+      `Deseja realmente excluir do histórico o documento "${doc.documentType}" da matrícula ${doc.enrollmentId} — ${doc.studentName}?`,
+    );
+    if (!confirmed) return;
+
+    setGeneratedDocs((prev) => prev.filter((item) => item.id !== doc.id));
+    setAuditLogs((prev) => [
+      {
+        id: "log-" + Date.now(),
+        action: "Exclusão de Documento Gerado",
+        actor: currentUser.name,
+        targetId: doc.enrollmentId,
+        targetName: doc.studentName,
+        timestamp: new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR"),
+        details: `Registro "${doc.documentType}" (${doc.id}) removido do histórico de documentos gerados.`,
+      },
+      ...prev,
+    ]);
+    setNotice(`Documento da matrícula ${doc.enrollmentId} removido do histórico.`);
+  };
+
   // CSV Export
   const handleExportCsv = () => {
     const headers = [
@@ -1483,15 +1506,26 @@ function Index() {
                         <td className="px-4 py-3 text-slate-600">{doc.generatedBy}</td>
                         <td className="px-4 py-3 text-slate-500">{doc.generatedAt}</td>
                         <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={() => {
-                              const s = students.find((st) => st.protocol === doc.enrollmentId);
-                              if (s) handleOpenPdfForStudent(s);
-                            }}
-                            className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100"
-                          >
-                            <Printer size={12} /> Abrir PDF
-                          </button>
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                const s = students.find((st) => st.protocol === doc.enrollmentId);
+                                if (s) handleOpenPdfForStudent(s);
+                                else setNotice("A matrícula associada não está carregada; não é possível abrir a prévia deste documento.");
+                              }}
+                              className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100"
+                            >
+                              <Printer size={12} /> Abrir PDF
+                            </button>
+                            <button
+                              onClick={() => handleDeleteGeneratedDocument(doc)}
+                              title="Excluir do histórico"
+                              aria-label={`Excluir documento da matrícula ${doc.enrollmentId}`}
+                              className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-100"
+                            >
+                              <Trash2 size={12} /> Excluir
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
