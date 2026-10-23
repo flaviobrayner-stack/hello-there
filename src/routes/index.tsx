@@ -1022,7 +1022,10 @@ function Index() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setSection("matriculas")}
+                    onClick={() => {
+                      setStatusFilter("Concluída");
+                      setSection("matriculas");
+                    }}
                     className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900"
                   >
                     Ver todas as {metrics.concluidas} matrículas concluídas <ArrowRight size={15} />
