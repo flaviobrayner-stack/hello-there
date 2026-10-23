@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   ClipboardCheck,
   UserRound,
@@ -61,6 +61,8 @@ export function EnrollmentWizard({
   const [step, setStep] = useState(0);
   const [cpfError, setCpfError] = useState("");
   const [notification, setNotification] = useState("");
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   // Initial State setup
   const nextProtocol = useMemo(() => {
@@ -306,18 +308,27 @@ export function EnrollmentWizard({
       missingFields.push("Comprovante de Renda (obrigatório para cota)");
   }
 
-  const handleSave = (asDraft: boolean) => {
+  const handleSave = async (asDraft: boolean) => {
+    // Impede que cliques repetidos criem várias matrículas para o mesmo envio.
+    if (savingRef.current) return;
     if (!asDraft && missingFields.length > 0) {
       setNotification(`Não é possível concluir. Campos pendentes: ${missingFields.join(", ")}`);
       return;
     }
-    const finalStudent: StudentInfo = {
-      ...student,
-      age: calculatedAge || student.age,
-      status: asDraft ? "Rascunho" : "Concluída",
-      updatedAt: new Date().toLocaleDateString("pt-BR"),
-    };
-    onSave(finalStudent, asDraft);
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      const finalStudent: StudentInfo = {
+        ...student,
+        age: calculatedAge || student.age,
+        status: asDraft ? "Rascunho" : "Concluída",
+        updatedAt: new Date().toLocaleDateString("pt-BR"),
+      };
+      await onSave(finalStudent, asDraft);
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
 
   const inputClass =
@@ -1724,8 +1735,9 @@ export function EnrollmentWizard({
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               <button
                 type="button"
-                onClick={() => handleSave(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
+                disabled={saving}
+                onClick={() => void handleSave(true)}
+                className={` ${saving ? "cursor-not-allowed opacity-60" : ""} ` +"inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
               >
                 <Save size={15} />
                 Salvar Rascunho
@@ -1764,8 +1776,9 @@ export function EnrollmentWizard({
               ) : (
                 <button
                   type="button"
-                  onClick={() => handleSave(false)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition"
+                  disabled={saving}
+                  onClick={() => void handleSave(false)}
+                  className={` ${saving ? "cursor-not-allowed opacity-60" : ""} ` +"inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition"
                 >
                   <CheckCircle2 size={16} />
                   Concluir Matrícula
