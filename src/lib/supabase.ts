@@ -148,7 +148,7 @@ const quotaToDb: Record<string, string> = {
 export async function saveEnrollment(session: SupabaseSession, student: StudentInfo, isDraft = true) {
   const { url, key } = config();
   const isExistingEnrollment = Boolean(student.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(student.id));
-  const cpfDigits = String(student.cpf || "").replace(/\\D/g, "");
+  const cpfDigits = String(student.cpf || "").replace(/\D/g, "");
   if (!isExistingEnrollment && cpfDigits) {
     const matches = await request<Array<{ id: string }>>(
       "/rest/v1/students?select=id&cpf_digits=eq." + encodeURIComponent(cpfDigits) + "&limit=1",
