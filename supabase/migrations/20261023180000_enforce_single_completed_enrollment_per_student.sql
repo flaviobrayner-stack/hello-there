@@ -55,3 +55,4 @@ for each row execute function public.enforce_single_active_enrollment_per_studen
 create unique index if not exists enrollments_one_completed_per_student_year
 on public.enrollments (student_id, academic_year)
 where status = 'concluida';
+revoke all on function public.enforce_single_active_enrollment_per_student() from public, anon, authenticated;
