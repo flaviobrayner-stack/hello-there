@@ -148,16 +148,6 @@ const quotaToDb: Record<string, string> = {
 export async function saveEnrollment(session: SupabaseSession, student: StudentInfo, isDraft = true) {
   const { url, key } = config();
   const isExistingEnrollment = Boolean(student.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(student.id));
-  const cpfDigits = String(student.cpf || "").replace(/\D/g, "");
-  if (!isExistingEnrollment && cpfDigits) {
-    const matches = await request<Array<{ id: string }>>(
-      "/rest/v1/students?select=id&cpf_digits=eq." + encodeURIComponent(cpfDigits) + "&limit=1",
-      {}, session.access_token,
-    );
-    if (matches.length) {
-      throw new Error("Este CPF já está cadastrado no sistema. Consulte o registro existente.");
-    }
-  }
   const courses = await request<Array<{ id: string; name: string }>>(
     "/rest/v1/courses?select=id,name&active=eq.true&name=eq." + encodeURIComponent(student.course) + "&limit=1",
     {}, session.access_token,
@@ -210,9 +200,6 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
   const data = body ? JSON.parse(body) : null;
   if (!response.ok) {
     const rawMessage = String(data?.message || data?.details || data?.hint || "");
-    if (rawMessage.includes("student_cpf_already_registered") || rawMessage.includes("student_cpf_already_in_use")) {
-      throw new Error("Este CPF já está cadastrado no sistema. Consulte o registro existente.");
-    }
     throw new Error(rawMessage || `Falha ao gravar matrícula (${response.status})`);
   }
   const result = data as { id: string; protocol: string; academic_year: number; status: string };
