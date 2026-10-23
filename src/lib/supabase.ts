@@ -216,7 +216,9 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     throw new Error(friendlyMessages[rawMessage] || rawMessage || `Falha ao gravar matrícula (${response.status})`);
   }
   const result = data as { id: string; protocol: string; academic_year: number; status: string };
-  if (!isDraft) {
+  // Uma matrícula concluída pode ser editada sem voltar para rascunho.
+  // Só fazemos a transição quando a gravação ainda não concluiu o registro.
+  if (!isDraft && result.status !== "concluida") {
     return await request<{ id: string; protocol: string; academic_year: number; status: string }>(
       "/rest/v1/rpc/transition_enrollment_status",
       {
