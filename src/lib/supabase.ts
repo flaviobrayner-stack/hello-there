@@ -172,8 +172,11 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     ...student,
     documents: student.documents.map((doc) => ({
       ...doc,
-      fileSizeBytes: doc.fileSize ? Number(String(doc.fileSize).replace(/[^0-9]/g, "")) || undefined : undefined,
-      storagePath: doc.fileUrl || undefined,
+      status: doc.status === "Entregue" || doc.status === "Conferido" ? "Entregue" : "Pendente",
+      fileName: undefined,
+      fileSizeBytes: undefined,
+      storagePath: undefined,
+      mimeType: undefined,
     })),
   });
   const isExistingEnrollment = Boolean(student.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(student.id));
@@ -234,13 +237,8 @@ const dbStatusToUi = (status: string): StudentInfo["status"] => ({
   cancelada: "Cancelada",
 } as Record<string, StudentInfo["status"]>)[status] || "Rascunho";
 
-const dbDocumentStatusToUi = (status: string): StudentInfo["documents"][number]["status"] => ({
-  pendente: "Pendente",
-  entregue: "Entregue",
-  conferido: "Conferido",
-  recusado: "Recusado",
-  nao_se_aplica: "Não se aplica",
-} as Record<string, StudentInfo["documents"][number]["status"]>)[status] || "Pendente";
+const dbDocumentStatusToUi = (status: string): StudentInfo["documents"][number]["status"] =>
+  status === "entregue" || status === "conferido" ? "Entregue" : "Pendente";
 
 const dbQuotaToUi = (quota: string | null, isQuota: boolean): StudentInfo["quotaType"] => {
   if (!isQuota) return "Não cotista";
