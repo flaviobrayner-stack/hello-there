@@ -9,9 +9,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Upload,
-  Camera,
-  AlertCircle,
+  Upload,  AlertCircle,
   Printer,
   Save,
   Check,
@@ -270,23 +268,6 @@ export function EnrollmentWizard({
     }));
   };
 
-  const handleDocumentFileUpload = (docId: string, file: File) => {
-    setStudent((prev) => ({
-      ...prev,
-      documents: prev.documents.map((d) =>
-        d.id === docId
-          ? {
-              ...d,
-              status: "Entregue" as const,
-              fileName: file.name,
-              fileSize: (file.size / 1024).toFixed(1) + " KB",
-              submittedAt: new Date().toLocaleDateString("pt-BR"),
-            }
-          : d,
-      ),
-    }));
-    setNotification(`Arquivo "${file.name}" anexado com sucesso.`);
-  };
 
   // Progress Calculation
   const deliveredCount = student.documents.filter(
@@ -302,11 +283,6 @@ export function EnrollmentWizard({
   if (!student.guardian.name) missingFields.push("Nome do Responsável Legal");
   if (!student.guardian.cpf) missingFields.push("CPF do Responsável Legal");
   if (!student.guardian.phone) missingFields.push("Telefone do Responsável Legal");
-  if (student.isQuota && student.quotaType === "Renda") {
-    const docRenda = student.documents.find((d) => d.type === "comprovante_renda");
-    if (docRenda && docRenda.status === "Pendente")
-      missingFields.push("Comprovante de Renda (obrigatório para cota)");
-  }
 
   const handleSave = async (asDraft: boolean) => {
     // Impede que cliques repetidos criem várias matrículas para o mesmo envio.
@@ -1513,7 +1489,7 @@ export function EnrollmentWizard({
                       )
                     </h4>
                     <p className="text-xs text-blue-800 mt-0.5">
-                      Suporte a upload de arquivo PDF/imagem e foto direta pela câmera do celular.
+                      Marque cada documento como Entregue ou Pendente. Anexos não são obrigatórios para concluir a matrícula.
                     </p>
                   </div>
                   <div className="text-right font-mono font-bold text-blue-900 text-lg">
@@ -1568,23 +1544,6 @@ export function EnrollmentWizard({
                           </div>
 
                           <div className="flex items-center gap-2 pl-8 sm:pl-0">
-                            {/* File Upload / Camera Input */}
-                            <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs">
-                              <Camera size={14} className="text-slate-500" />
-                              <span>Foto/Arquivo</span>
-                              <input
-                                type="file"
-                                accept="image/*,application/pdf"
-                                capture="environment"
-                                className="hidden"
-                                onChange={(e) => {
-                                  if (e.target.files?.[0]) {
-                                    handleDocumentFileUpload(doc.id, e.target.files[0]);
-                                  }
-                                }}
-                              />
-                            </label>
-
                             {/* Status Selector */}
                             <select
                               value={doc.status}
@@ -1595,9 +1554,6 @@ export function EnrollmentWizard({
                             >
                               <option value="Pendente">Pendente</option>
                               <option value="Entregue">Entregue</option>
-                              <option value="Conferido">Conferido</option>
-                              <option value="Recusado">Recusado</option>
-                              <option value="Não se aplica">Não se aplica</option>
                             </select>
                           </div>
                         </div>
