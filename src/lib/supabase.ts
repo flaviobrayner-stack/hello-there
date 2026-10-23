@@ -200,7 +200,13 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
   const data = body ? JSON.parse(body) : null;
   if (!response.ok) {
     const rawMessage = String(data?.message || data?.details || data?.hint || "");
-    throw new Error(rawMessage || `Falha ao gravar matrícula (${response.status})`);
+    const friendlyMessages: Record<string, string> = {
+      student_already_has_completed_enrollment:
+        "Este aluno já possui matrícula concluída para este ano letivo. Não é possível criar outro rascunho ou concluir uma segunda matrícula.",
+      student_has_another_draft_or_pending_enrollment:
+        "Este aluno possui outro rascunho ou matrícula em análise. Cancele ou resolva o registro anterior antes de concluir esta matrícula.",
+    };
+    throw new Error(friendlyMessages[rawMessage] || rawMessage || `Falha ao gravar matrícula (${response.status})`);
   }
   const result = data as { id: string; protocol: string; academic_year: number; status: string };
   if (!isDraft) {
