@@ -190,11 +190,14 @@ export function EnrollmentWizard({
         setCpfError("CPF inválido segundo dígito verificador.");
         return;
       }
-      // Check duplicate
-      const duplicate = existingStudents.find((s) => s.cpf === masked && s.id !== student.id);
-      if (duplicate) {
+      // Impede nova matrícula para aluno que já possui matrícula concluída.
+      const duplicateCompleted = existingStudents.find(
+        (s) => s.cpf.replace(/\D/g, "") === masked.replace(/\D/g, "") &&
+          s.id !== student.id && s.status === "Concluída",
+      );
+      if (duplicateCompleted) {
         setCpfError(
-          `CPF já cadastrado na matrícula ${duplicate.protocol} (${duplicate.fullName}).`,
+          `Este aluno já possui a matrícula concluída ${duplicateCompleted.protocol}. Não é possível criar outro registro ativo.`,
         );
         return;
       }
