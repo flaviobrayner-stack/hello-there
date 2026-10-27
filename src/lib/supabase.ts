@@ -336,7 +336,8 @@ export async function listEnrollments(session: SupabaseSession): Promise<Student
     }) : emptyParent();
     const guardian = guardianRow ? ({
       name: guardianRow['full_name'] || "",
-      relationship: guardianRow['relationship_type'] === "mae" ? "Mãe" : guardianRow['relationship_type'] === "pai" ? "Pai" : "Outro",
+      relationship: ["Mãe", "Pai", "Avô/Avó", "Tio/Tia", "Tutor Legal"].includes(guardianRow['relationship_detail']) ? guardianRow['relationship_detail'] : "Outro",
+      relationshipOther: guardianRow['relationship_detail'] && !["Mãe", "Pai", "Avô/Avó", "Tio/Tia", "Tutor Legal"].includes(guardianRow['relationship_detail']) ? guardianRow['relationship_detail'] : "",
       maritalStatus: guardianRow['marital_status'] || "", occupation: guardianRow['profession'] || "", cpf: guardianRow['cpf_digits'] || "",
       rg: guardianRow['rg'] || "", rgIssuer: guardianRow['rg_issuer'] || "", address: guardianRow['address'] || "",
       phone: guardianRow['phone'] || "", email: guardianRow['email'] || "", isSameAddressAsStudent: Boolean(guardianRow['address'] && guardianRow['address'] === student['address']),
