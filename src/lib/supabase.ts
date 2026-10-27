@@ -380,6 +380,8 @@ export async function listEnrollments(session: SupabaseSession): Promise<Student
       usesSchoolTransport: Boolean(student['school_transport']),
       transportType: student['transport_type'] || undefined,
       previousSchool: student['previous_school'] || "",
+      previousClass: student['previous_class'] || "",
+      yearOfEntry: student['year_of_entry'] == null ? "" : String(student['year_of_entry']),
       uniformSize: student['shirt_size'] || "M",
       receivesBolsaFamilia: Boolean(student['bolsa_familia']),
       nisNumber: "",
