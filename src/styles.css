@@ -238,3 +238,16 @@
     margin-top: 0 !important;
   }
 }
+
+
+/* Ficha de matrícula: espaço 1,5 antes da data e 2,0 antes das assinaturas */
+@media print {
+  .ficha-preview .ficha-enrollment .ficha-center {
+    margin-top: 1.5em !important;
+    margin-bottom: 2em !important;
+  }
+
+  .ficha-preview .ficha-enrollment .ficha-signatures {
+    margin-top: 0 !important;
+  }
+}
