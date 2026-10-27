@@ -400,6 +400,7 @@ export async function listEnrollments(session: SupabaseSession): Promise<Student
         emergencyContactName: health?.['emergency_name'] || guardian.name || "",
         emergencyContactPhone: health?.['emergency_phone'] || guardian.phone || "",
         emergencyContactRelationship: health?.['emergency_relationship'] || guardian.relationship || "",
+        useGuardianAsEmergencyContact: Boolean(guardian.name && guardian.phone && health?.['emergency_name'] === guardian.name && health?.['emergency_phone'] === guardian.phone),
         hasOtherHealthCondition: Boolean(health?.['health_notes']),
         otherHealthConditionDetails: health?.['health_notes_details'] || "",
         bloodType: blood as StudentInfo["health"]["bloodType"],
