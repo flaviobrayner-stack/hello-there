@@ -113,7 +113,7 @@ export function EnrollmentWizard({
       transportType: "Ônibus",
       previousSchool: "",
       previousClass: "",
-      yearOfEntry: "2026",
+      yearOfEntry: "",
       uniformSize: "M",
       receivesBolsaFamilia: false,
       nisNumber: "",
