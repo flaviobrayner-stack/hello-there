@@ -171,3 +171,42 @@
     max-width: 100% !important;
   }
 }
+
+
+/* Espaçamento de leitura dos documentos legais impressos */
+@media print {
+  .ficha-preview .ficha-term .ficha-title,
+  .ficha-preview .ficha-image-consent .ficha-title {
+    margin-top: 2.2em !important;
+    margin-bottom: 1.5em !important;
+    line-height: 1.5 !important;
+  }
+
+  .ficha-preview .ficha-term .ficha-school,
+  .ficha-preview .ficha-image-consent .ficha-school {
+    margin-bottom: 0 !important;
+  }
+
+  .ficha-preview .ficha-term p,
+  .ficha-preview .ficha-term .ficha-legal,
+  .ficha-preview .ficha-term .ficha-list,
+  .ficha-preview .ficha-term .ficha-list li,
+  .ficha-preview .ficha-image-consent p,
+  .ficha-preview .ficha-image-consent .ficha-legal,
+  .ficha-preview .ficha-image-consent .ficha-field {
+    line-height: 1.5 !important;
+  }
+
+  .ficha-preview .ficha-term p,
+  .ficha-preview .ficha-term .ficha-legal,
+  .ficha-preview .ficha-image-consent p,
+  .ficha-preview .ficha-image-consent .ficha-legal {
+    margin-top: 1.5em !important;
+    margin-bottom: 1.5em !important;
+  }
+
+  .ficha-preview .ficha-term .ficha-list li {
+    margin-top: 1.5em !important;
+    margin-bottom: 1.5em !important;
+  }
+}
