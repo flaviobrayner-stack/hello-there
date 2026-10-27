@@ -1824,7 +1824,7 @@ function Index() {
         const selectedStudent = students.find((student) => student.protocol === selectedPdfEnrollment.id) || students[0];
         if (!selectedStudent) return null;
   return (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 p-4">
+          <div className="pdf-print-modal fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 p-4">
             <div className="mx-auto my-4 max-w-5xl rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
               <div className="mb-4 flex items-center justify-between gap-4 border-b border-slate-200 pb-3">
                 <div>
