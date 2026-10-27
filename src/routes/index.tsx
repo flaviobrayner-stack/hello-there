@@ -140,13 +140,20 @@ function toEnrollmentDocumentPreviewData(s: StudentInfo): EnrollmentDocumentData
   const bloodType = blood === "Não informado" ? "" : blood.slice(0, -1);
   const rhFactor = blood.endsWith("+") ? "POSITIVO" : blood.endsWith("-") ? "NEGATIVO" : "";
   const raw = {
+    protocol: s.protocol,
+    responsibleStaff: s.responsibleStaff,
+    yearOfEntry: s.yearOfEntry,
+    previousClass: s.previousClass,
     student: s.fullName,
     socialName: s.socialName,
     cpf: s.cpf,
     rg: s.rg,
     rgIssuer: s.rgIssuer,
     birth: s.birthDate,
+    birthplace: s.placeOfBirth,
+    birthplaceUf: s.placeOfBirthUf,
     sex: s.gender,
+    maritalStatus: s.maritalStatus,
     phone: s.phone,
     email: s.email,
     address: s.address,
@@ -184,8 +191,16 @@ function toEnrollmentDocumentPreviewData(s: StudentInfo): EnrollmentDocumentData
     fatherWorkplace: s.father.workplace,
     fatherWorkPhone: s.father.workPhone,
     guardian: s.guardian.name,
-    guardianRelation: s.guardian.relationship,
+    guardianRelation: s.guardian.relationship === "Outro" && s.guardian.relationshipOther
+      ? s.guardian.relationshipOther
+      : s.guardian.relationship,
     guardianCpf: s.guardian.cpf,
+    guardianRg: s.guardian.rg,
+    guardianRgIssuer: s.guardian.rgIssuer,
+    guardianPhone: s.guardian.phone,
+    guardianEmail: s.guardian.email,
+    guardianAddress: s.guardian.address,
+    guardianOccupation: s.guardian.occupation,
     healthInsurance: s.health.hasHealthInsurance ? "Sim" : "Não",
     hospital: s.health.insuranceName,
     familyHospital: s.health.indicatedHospital,
