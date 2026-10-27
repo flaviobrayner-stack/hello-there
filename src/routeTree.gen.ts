@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VisaoGeralMatriculasRouteImport } from './routes/visao-geral-matriculas'
 import { Route as ApiCoursesRouteImport } from './routes/api.courses'
 import { Route as ApiEnrollmentsRouteImport } from './routes/api.enrollments'
 import { Route as ApiHealthRouteImport } from './routes/api.health'
@@ -20,6 +21,11 @@ import { Route as ApiAuthSessionRouteImport } from './routes/api.auth.session'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VisaoGeralMatriculasRoute = VisaoGeralMatriculasRouteImport.update({
+  id: '/visao-geral-matriculas',
+  path: '/visao-geral-matriculas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCoursesRoute = ApiCoursesRouteImport.update({
@@ -55,6 +61,7 @@ const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/visao-geral-matriculas': typeof VisaoGeralMatriculasRoute
   '/api/courses': typeof ApiCoursesRoute
   '/api/enrollments': typeof ApiEnrollmentsRoute
   '/api/health': typeof ApiHealthRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/visao-geral-matriculas': typeof VisaoGeralMatriculasRoute
   '/api/courses': typeof ApiCoursesRoute
   '/api/enrollments': typeof ApiEnrollmentsRoute
   '/api/health': typeof ApiHealthRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/visao-geral-matriculas': typeof VisaoGeralMatriculasRoute
   '/api/courses': typeof ApiCoursesRoute
   '/api/enrollments': typeof ApiEnrollmentsRoute
   '/api/health': typeof ApiHealthRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/visao-geral-matriculas'
     | '/api/courses'
     | '/api/enrollments'
     | '/api/health'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/visao-geral-matriculas'
     | '/api/courses'
     | '/api/enrollments'
     | '/api/health'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/visao-geral-matriculas'
     | '/api/courses'
     | '/api/enrollments'
     | '/api/health'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  VisaoGeralMatriculasRoute: typeof VisaoGeralMatriculasRoute
   ApiCoursesRoute: typeof ApiCoursesRoute
   ApiEnrollmentsRoute: typeof ApiEnrollmentsRoute
   ApiHealthRoute: typeof ApiHealthRoute
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/visao-geral-matriculas': {
+      id: '/visao-geral-matriculas'
+      path: '/visao-geral-matriculas'
+      fullPath: '/visao-geral-matriculas'
+      preLoaderRoute: typeof VisaoGeralMatriculasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/courses': {
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  VisaoGeralMatriculasRoute: VisaoGeralMatriculasRoute,
   ApiCoursesRoute: ApiCoursesRoute,
   ApiEnrollmentsRoute: ApiEnrollmentsRoute,
   ApiHealthRoute: ApiHealthRoute,
