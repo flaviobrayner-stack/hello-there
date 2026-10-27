@@ -131,6 +131,8 @@ export interface StudentInfo {
   usesSchoolTransport: boolean;
   transportType?: "Ônibus" | "Van" | "Outro";
   previousSchool: string;
+  previousClass?: string;
+  yearOfEntry?: string;
   uniformSize: "PP" | "P" | "M" | "G" | "GG" | "XG";
   receivesBolsaFamilia: boolean;
   nisNumber?: string;
