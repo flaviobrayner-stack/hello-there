@@ -168,6 +168,7 @@ export function EnrollmentWizard({
         emergencyContactName: "",
         emergencyContactPhone: "",
         emergencyContactRelationship: "",
+        useGuardianAsEmergencyContact: false,
         hasOtherHealthCondition: false,
         otherHealthConditionDetails: "",
         bloodType: "Não informado",
@@ -1507,71 +1508,59 @@ export function EnrollmentWizard({
                   )}
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                      Tipo Sanguíneo / Fator RH
-                    </label>
-                    <select
-                      value={student.health.bloodType}
-                      onChange={(e) =>
-                        setStudent((prev) => ({
-                          ...prev,
-                          health: {
-                            ...prev.health,
-                            bloodType: e.target.value as HealthInfo["bloodType"],
-                          },
-                        }))
-                      }
-                      className={inputClass}
-                    >
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">Tipo Sanguíneo / Fator RH</label>
+                    <select value={student.health.bloodType}
+                      onChange={(e) => setStudent((prev) => ({ ...prev, health: { ...prev.health, bloodType: e.target.value as HealthInfo["bloodType"] } }))}
+                      className={inputClass}>
                       <option value="Não informado">Não informado</option>
-                      <option value="A+">A+</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B-">B-</option>
-                      <option value="AB+">AB+</option>
-                      <option value="AB-">AB-</option>
-                      <option value="O+">O+</option>
-                      <option value="O-">O-</option>
+                      <option value="A+">A+</option><option value="A-">A-</option>
+                      <option value="B+">B+</option><option value="B-">B-</option>
+                      <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                      <option value="O+">O+</option><option value="O-">O-</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                      Nome do Contato de Emergência
-                    </label>
-                    <input
-                      value={student.health.emergencyContactName}
-                      onChange={(e) =>
-                        setStudent((prev) => ({
-                          ...prev,
-                          health: { ...prev.health, emergencyContactName: e.target.value },
-                        }))
-                      }
-                      placeholder="Pessoa para ligar em emergência"
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                      Telefone de Emergência
-                    </label>
-                    <input
-                      value={student.health.emergencyContactPhone}
-                      onChange={(e) =>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Deseja manter os dados do responsável legal como contato de emergência?</label>
+                    <select value={student.health.useGuardianAsEmergencyContact ? "Sim" : "Não"}
+                      onChange={(e) => {
+                        const useGuardian = e.target.value === "Sim";
                         setStudent((prev) => ({
                           ...prev,
                           health: {
                             ...prev.health,
-                            emergencyContactPhone: maskPhone(e.target.value),
+                            useGuardianAsEmergencyContact: useGuardian,
+                            emergencyContactName: useGuardian ? prev.guardian.name : "",
+                            emergencyContactPhone: useGuardian ? prev.guardian.phone : "",
+                            emergencyContactRelationship: useGuardian
+                              ? (prev.guardian.relationship === "Outro" && prev.guardian.relationshipOther ? prev.guardian.relationshipOther : prev.guardian.relationship)
+                              : "",
                           },
-                        }))
-                      }
-                      placeholder="(81) 98888-0000"
-                      className={inputClass}
-                    />
+                        }));
+                      }}
+                      className={inputClass}>
+                      <option value="Não">Não</option><option value="Sim">Sim</option>
+                    </select>
+                    {student.health.useGuardianAsEmergencyContact && <p className="mt-1 text-xs text-emerald-700">Nome e telefone do responsável legal foram copiados para o contato de emergência.</p>}
                   </div>
                 </div>
+                {!student.health.useGuardianAsEmergencyContact && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">Nome do Contato de Emergência</label>
+                      <input value={student.health.emergencyContactName}
+                        onChange={(e) => setStudent((prev) => ({ ...prev, health: { ...prev.health, emergencyContactName: e.target.value } }))}
+                        placeholder="Pessoa para ligar em emergência" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">Telefone de Emergência</label>
+                      <input value={student.health.emergencyContactPhone}
+                        onChange={(e) => setStudent((prev) => ({ ...prev, health: { ...prev.health, emergencyContactPhone: maskPhone(e.target.value) } }))}
+                        placeholder="(81) 98888-0000" className={inputClass} />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
