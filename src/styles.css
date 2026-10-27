@@ -226,3 +226,15 @@
     margin-top: 0 !important;
   }
 }
+
+
+/* Ficha de matrícula: espaço 2,0 entre o nome da escola e o título */
+@media print {
+  .ficha-preview .ficha-enrollment .ficha-school {
+    margin-bottom: 2em !important;
+  }
+
+  .ficha-preview .ficha-enrollment .ficha-title {
+    margin-top: 0 !important;
+  }
+}
