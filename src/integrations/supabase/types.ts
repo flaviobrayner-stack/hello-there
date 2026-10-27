@@ -246,6 +246,8 @@ export type Database = {
           is_quota: boolean
           protocol: string
           quota_type: string | null
+          responsible_staff: string | null
+          shift: string | null
           status: string
           student_id: string
           updated_at: string
@@ -262,6 +264,8 @@ export type Database = {
           is_quota?: boolean
           protocol: string
           quota_type?: string | null
+          responsible_staff?: string | null
+          shift?: string | null
           status?: string
           student_id: string
           updated_at?: string
@@ -278,6 +282,8 @@ export type Database = {
           is_quota?: boolean
           protocol?: string
           quota_type?: string | null
+          responsible_staff?: string | null
+          shift?: string | null
           status?: string
           student_id?: string
           updated_at?: string
@@ -456,6 +462,7 @@ export type Database = {
           marital_status: string | null
           phone: string | null
           profession: string | null
+          relationship_detail: string | null
           relationship_type: string
           rg: string | null
           rg_issuer: string | null
@@ -476,6 +483,7 @@ export type Database = {
           marital_status?: string | null
           phone?: string | null
           profession?: string | null
+          relationship_detail?: string | null
           relationship_type: string
           rg?: string | null
           rg_issuer?: string | null
@@ -496,6 +504,7 @@ export type Database = {
           marital_status?: string | null
           phone?: string | null
           profession?: string | null
+          relationship_detail?: string | null
           relationship_type?: string
           rg?: string | null
           rg_issuer?: string | null
@@ -562,6 +571,7 @@ export type Database = {
           pcd: boolean
           pcd_type: string | null
           phone: string | null
+          previous_class: string | null
           previous_school: string | null
           race_color: string | null
           rg: string | null
@@ -573,6 +583,7 @@ export type Database = {
           state: string | null
           transport_type: string | null
           updated_at: string
+          year_of_entry: number | null
         }
         Insert: {
           address?: string | null
@@ -591,6 +602,7 @@ export type Database = {
           pcd?: boolean
           pcd_type?: string | null
           phone?: string | null
+          previous_class?: string | null
           previous_school?: string | null
           race_color?: string | null
           rg?: string | null
@@ -602,6 +614,7 @@ export type Database = {
           state?: string | null
           transport_type?: string | null
           updated_at?: string
+          year_of_entry?: number | null
         }
         Update: {
           address?: string | null
@@ -620,6 +633,7 @@ export type Database = {
           pcd?: boolean
           pcd_type?: string | null
           phone?: string | null
+          previous_class?: string | null
           previous_school?: string | null
           race_color?: string | null
           rg?: string | null
@@ -631,6 +645,7 @@ export type Database = {
           state?: string | null
           transport_type?: string | null
           updated_at?: string
+          year_of_entry?: number | null
         }
         Relationships: []
       }
