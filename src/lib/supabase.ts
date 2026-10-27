@@ -354,7 +354,7 @@ export async function listEnrollments(session: SupabaseSession): Promise<Student
       isQuota: Boolean(enrollment['is_quota']),
       quotaType: dbQuotaToUi(enrollment['quota_type'], Boolean(enrollment['is_quota'])),
       status: dbStatusToUi(enrollment['status']),
-      responsibleStaff: enrollment['responsible_staff'] || profile.name,
+      responsibleStaff: enrollment['responsible_staff'] || (enrollment['created_by'] === profile.id ? profile.name : "Não informado"),
       createdAt: displayDateTime(enrollment['created_at']),
       updatedAt: displayDateTime(enrollment['updated_at']),
       fullName: student['full_name'] || "",
