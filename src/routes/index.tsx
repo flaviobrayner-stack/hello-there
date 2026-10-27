@@ -217,6 +217,7 @@ function toEnrollmentDocumentPreviewData(s: StudentInfo): EnrollmentDocumentData
     emergencyContact: s.health.emergencyContactPhone,
     emergencyName: s.health.emergencyContactName,
     emergencyRelation: s.health.emergencyContactRelationship,
+    emergencyUseGuardian: s.health.useGuardianAsEmergencyContact ? "Sim" : "Não",
     healthNotes: s.health.hasOtherHealthCondition ? "Sim" : "Não",
     healthNotesDetails: s.health.otherHealthConditionDetails,
     deliveredDocuments: s.documents.filter((d) => d.status === "Entregue" || d.status === "Conferido").map((d) => d.type),
