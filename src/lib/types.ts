@@ -88,6 +88,7 @@ export interface HealthInfo {
   emergencyContactName: string;
   emergencyContactPhone: string;
   emergencyContactRelationship: string;
+  useGuardianAsEmergencyContact?: boolean;
   hasOtherHealthCondition: boolean;
   otherHealthConditionDetails?: string;
   bloodType: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | "Não informado";
