@@ -142,6 +142,7 @@ function toEnrollmentDocumentPreviewData(s: StudentInfo): EnrollmentDocumentData
   const raw = {
     protocol: s.protocol,
     responsibleStaff: s.responsibleStaff,
+    academicYear: String(s.academicYear),
     yearOfEntry: s.yearOfEntry,
     previousClass: s.previousClass,
     shift: s.shift,
