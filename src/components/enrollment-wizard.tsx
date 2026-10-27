@@ -112,6 +112,8 @@ export function EnrollmentWizard({
       usesSchoolTransport: false,
       transportType: "Ônibus",
       previousSchool: "",
+      previousClass: "",
+      yearOfEntry: "2026",
       uniformSize: "M",
       receivesBolsaFamilia: false,
       nisNumber: "",
@@ -605,6 +607,34 @@ export function EnrollmentWizard({
                   </div>
                 </div>
 
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Sexo
+                    </label>
+                    <select
+                      value={student.gender === "Masculino" || student.gender === "Feminino" ? student.gender : ""}
+                      onChange={(e) => setStudent((prev) => ({ ...prev, gender: e.target.value as StudentInfo["gender"] }))}
+                      className={inputClass}
+                    >
+                      <option value="">Selecione</option>
+                      <option value="Masculino">Masculino</option>
+                      <option value="Feminino">Feminino</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Cidade de Nascimento do Estudante
+                    </label>
+                    <input
+                      value={student.placeOfBirth || ""}
+                      onChange={(e) => setStudent((prev) => ({ ...prev, placeOfBirth: e.target.value }))}
+                      placeholder="Cidade onde nasceu"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
@@ -884,6 +914,31 @@ export function EnrollmentWizard({
                         setStudent((prev) => ({ ...prev, previousSchool: e.target.value }))
                       }
                       placeholder="Nome da escola anterior"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Turma Anterior
+                    </label>
+                    <input
+                      value={student.previousClass || ""}
+                      onChange={(e) => setStudent((prev) => ({ ...prev, previousClass: e.target.value }))}
+                      placeholder="Ex.: 9º ano B"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Ano de Ingresso na Escola
+                    </label>
+                    <input
+                      type="number"
+                      min="1900"
+                      max="2100"
+                      value={student.yearOfEntry || ""}
+                      onChange={(e) => setStudent((prev) => ({ ...prev, yearOfEntry: e.target.value }))}
+                      placeholder="Ex.: 2026"
                       className={inputClass}
                     />
                   </div>
@@ -1292,6 +1347,44 @@ export function EnrollmentWizard({
                   <strong>Proteção de Dados Sensíveis (LGPD):</strong> Registros de saúde são
                   estritamente confidenciais para apoio a primeiros socorros escolares. Estes dados
                   não são exibidos em listagens gerais.
+                </div>
+
+                <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                  <label className="block text-xs font-bold text-slate-700">
+                    Existe algum dado de Saúde do Estudante que deve ser informado à Escola?
+                  </label>
+                  <select
+                    value={student.health.hasOtherHealthCondition ? "Sim" : "Não"}
+                    onChange={(e) => setStudent((prev) => ({
+                      ...prev,
+                      health: {
+                        ...prev.health,
+                        hasOtherHealthCondition: e.target.value === "Sim",
+                        otherHealthConditionDetails: e.target.value === "Não" ? "" : (prev.health.otherHealthConditionDetails || ""),
+                      },
+                    }))}
+                    className={inputClass}
+                  >
+                    <option value="Não">Não</option>
+                    <option value="Sim">Sim</option>
+                  </select>
+                  {student.health.hasOtherHealthCondition && (
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                        Informe os dados de saúde que a escola deve conhecer
+                      </label>
+                      <textarea
+                        value={student.health.otherHealthConditionDetails || ""}
+                        onChange={(e) => setStudent((prev) => ({
+                          ...prev,
+                          health: { ...prev.health, otherHealthConditionDetails: e.target.value },
+                        }))}
+                        placeholder="Descreva somente as informações necessárias para o cuidado e a segurança do estudante."
+                        rows={3}
+                        className={inputClass}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
