@@ -210,3 +210,19 @@
     margin-bottom: 1.5em !important;
   }
 }
+
+
+/* Ajuste de espaçamento na Ficha de Matrícula impressa */
+@media print {
+  .ficha-enrollment .ficha-title {
+    margin-bottom: 1em !important;
+  }
+
+  .ficha-enrollment .ficha-center {
+    margin-bottom: 2em !important;
+  }
+
+  .ficha-enrollment .ficha-signatures {
+    margin-top: 0 !important;
+  }
+}
