@@ -280,8 +280,8 @@ const emptyGuardian = () => ({
   name: "", relationship: "Outro" as const, maritalStatus: "", occupation: "", cpf: "", rg: "", rgIssuer: "", address: "", phone: "", email: "", isSameAddressAsStudent: false,
 });
 
-/** Loads persisted enrollments after login. Health details are only requested for administrators,
- * because the database intentionally restricts health_records to the admin role. */
+/** Loads persisted enrollments after login. Administrators can read all health records;
+ * operators can read only health records linked to enrollments they created (enforced by RLS). */
 export async function listEnrollments(session: SupabaseSession): Promise<StudentInfo[]> {
   const profile = await getProfile(session);
   const enrollments = await request<Array<Record<string, any>>>(
