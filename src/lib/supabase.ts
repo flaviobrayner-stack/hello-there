@@ -58,15 +58,16 @@ async function getValidAccessToken(token: string): Promise<string> {
   if (!stored) return token;
 
   const suppliedPayload = readJwtPayload(token);
-  const suppliedUserId = typeof suppliedPayload?.sub === "string" ? suppliedPayload.sub : "";
+  const suppliedUserId = typeof suppliedPayload?.['sub'] === "string" ? suppliedPayload['sub'] : "";
   if (suppliedUserId && suppliedUserId !== stored.user.id) return token;
 
   const storedPayload = readJwtPayload(stored.access_token);
-  const expiry = Number(stored.expires_at || storedPayload?.exp || 0);
+  const expiry = Number(stored.expires_at || storedPayload?.['exp'] || 0);
   if (stored.access_token !== token && expiry > Math.floor(Date.now() / 1000) + 60) {
     return stored.access_token;
   }
-  if (stored.access_token === token && expiry > Math.floor(Date.now() / 1000) + 60) {
+  // Without any known expiry we cannot tell the token is stale; let the API decide.
+  if (stored.access_token === token && (!expiry || expiry > Math.floor(Date.now() / 1000) + 60)) {
     return token;
   }
 
@@ -104,7 +105,7 @@ async function getValidAccessToken(token: string): Promise<string> {
     access_token: data.access_token,
     refresh_token: data.refresh_token,
     expires_at: data.expires_at || Math.floor(Date.now() / 1000) + Number(data.expires_in || 3600),
-    user: { id: data.user.id, email: data.user.email },
+    user: data.user.email ? { id: data.user.id, email: data.user.email } : { id: data.user.id },
   };
   storeSession(refreshed);
   return refreshed.access_token;

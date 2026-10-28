@@ -54,6 +54,7 @@ export interface ParentInfo {
   cpf: string;
   rg: string;
   rgIssuer: string;
+  nisNumber?: string | undefined;
   phone: string;
   address: string;
   email: string;
