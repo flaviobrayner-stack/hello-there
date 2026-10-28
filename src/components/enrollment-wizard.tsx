@@ -116,7 +116,6 @@ export function EnrollmentWizard({
       yearOfEntry: "",
       uniformSize: "M",
       receivesBolsaFamilia: false,
-      nisNumber: "",
 
       mother: {
         status: "Informado",
