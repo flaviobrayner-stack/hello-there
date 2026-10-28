@@ -836,7 +836,7 @@ function Index() {
             <img src="/ete-logo.svg" alt="ETE Maria José Vasconcelos" className="hidden h-10 w-10 shrink-0 rounded-lg object-contain sm:block" />
             <div className="hidden text-sm font-semibold text-blue-900 xl:block">ETE Maria José Vasconcelos</div>
             <button
-              onClick={() => setMobileMenu(true)
+              onClick={() => setMobileMenu(true)}
               className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
               aria-label="Abrir menu"
             >
