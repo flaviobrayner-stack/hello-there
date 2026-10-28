@@ -226,7 +226,7 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                 Escola Técnica Estadual Maria José Vasconcelos — Bezerros/PE
               </p>
               <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-0.5 text-[11px] font-bold text-blue-900">
-                {docType === "ficha" && "FICHA OFICIAL DE MATRÍCULA — ANO LETIVO 2026"}
+                {docType === "ficha" && "FICHA OFICIAL DE MATRÍCULA"}
                 {docType === "comprovante" && "COMPROVANTE OFICIAL DE MATRÍCULA 2026"}
                 {docType === "saude" && "FICHA DE SAÚDE E DADOS DE EMERGÊNCIA 2026"}
                 {docType === "termo" && "TERMO DE COMPROMISSO EDUCACIONAL E CONCESSÃO DE IMAGEM"}
