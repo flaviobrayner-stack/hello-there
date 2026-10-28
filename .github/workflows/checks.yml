@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Format changed files
-        run: bunx prettier --write src/routes/index.tsx src/routes/__root.tsx src/lib/enrollment-validation.ts src/lib/enrollment-validation.test.ts src/routes/api.courses.ts src/routes/api.enrollments.ts src/routes/api.auth.login.ts src/routes/api.auth.session.ts src/routes/api.auth.logout.ts src/routes/api.health.ts src/lib/server/matricula-api.ts src/lib/server/matricula-api.test.ts
+        run: bunx prettier --write src/routes/index.tsx src/routes/__root.tsx src/lib/enrollment-validation.ts src/lib/enrollment-validation.test.ts src/routes/api.courses.ts src/routes/api.enrollments.ts src/routes/api.auth.login.ts src/routes/api.auth.session.ts src/routes/api.auth.logout.ts src/routes/api.health.ts src/lib/server/matricula-api.ts src/lib/server/matricula-api.test.ts src/routes/visao-geral-matriculas.tsx
       - name: Unit tests
         run: bun run test
       - name: Lint
