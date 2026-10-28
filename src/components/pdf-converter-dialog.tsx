@@ -84,7 +84,6 @@ SISTEMA DE MATRÍCULA 2026 - DOCUMENTO OFICIAL
 Protocolo: ${enrollment.id}
 Estudante: ${enrollment.name}
 Curso: ${enrollment.course}
-Ano Letivo: 2026
 Situação: ${enrollment.status}
 Cota: ${enrollment.quota}
 Documentos conferidos: ${enrollment.docs}
@@ -334,6 +333,14 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                       </span>
                       <span className="font-semibold text-slate-900">
                         {enrollment.address || "Rua Principal, 123, Centro"}
+                      </span>
+                    </div>
+                    <div className="border border-slate-200 rounded p-2 bg-white">
+                      <span className="block text-[9px] uppercase font-bold text-slate-400">
+                        Série/Ano anterior
+                      </span>
+                      <span className="font-semibold text-slate-900">
+                        {enrollment.previousClass || "Não Informado"}
                       </span>
                     </div>
                     <div className="border border-slate-200 rounded p-2 bg-white">
@@ -726,26 +733,25 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
 
             {/* Official Signatures Section (Always present on all official print documents) */}
             <div className="mt-8 pt-4 border-t border-slate-300">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-center text-[10px] text-slate-600">
-                <div>
-                  <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
-                    Assinatura do(a) Estudante
-                  </div>
-                  <p className="text-[9px] text-slate-500">{enrollment.name}</p>
+              <div className="max-w-md mx-auto text-center text-[10px] text-slate-600">
+                <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
+                  Assinatura do(a) responsável pela matrícula
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-6 text-center text-[10px] text-slate-600 mt-8">
                 <div>
                   <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
-                    Assinatura do(a) Responsável Legal
+                    Assinatura do(a) responsável legal
                   </div>
                   <p className="text-[9px] text-slate-500">
                     {enrollment.guardianName || "Responsável Legal"}
                   </p>
                 </div>
-                <div className="col-span-2 sm:col-span-1">
+                <div>
                   <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
-                    Secretaria Escolar / Matrícula
+                    Assinatura do(a) gestor(a) escolar
                   </div>
-                  <p className="text-[9px] text-slate-500">Carimbo e Assinatura</p>
+                  <p className="text-[9px] text-slate-500">Carimbo e assinatura</p>
                 </div>
               </div>
 
