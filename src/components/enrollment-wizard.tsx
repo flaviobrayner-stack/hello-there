@@ -751,22 +751,42 @@ export function EnrollmentWizard({
                       Município
                     </label>
                     <select
-                      value={student.city}
-                      onChange={(e) => setStudent((prev) => ({ ...prev, city: e.target.value }))}
+                      value={availableCities.includes(student.city) ? student.city : "__OUTRO__"}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setStudent((prev) => ({
+                          ...prev,
+                          city: value === "__OUTRO__" ? "" : value,
+                          uf: value === "__OUTRO__" ? "" : "PE",
+                          cep: value === "__OUTRO__" ? prev.cep : prev.cep,
+                        }));
+                      }}
                       className={inputClass}
                     >
+                      <option value="">Selecione o município</option>
                       {availableCities.map((city) => (
                         <option key={city} value={city}>
                           {city}
                         </option>
                       ))}
+                      <option value="__OUTRO__">Outro (fora de Pernambuco)</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
                       UF
                     </label>
-                    <input value="PE" readOnly className={`${inputClass} bg-slate-50 font-bold`} />
+                    {availableCities.includes(student.city) ? (
+                      <input value="PE" readOnly className={`${inputClass} bg-slate-50 font-bold`} />
+                    ) : (
+                      <input
+                        value={student.uf}
+                        maxLength={2}
+                        onChange={(e) => setStudent((prev) => ({ ...prev, uf: e.target.value.toUpperCase() }))}
+                        placeholder="UF do estado"
+                        className={inputClass}
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
@@ -777,11 +797,27 @@ export function EnrollmentWizard({
                       onChange={(e) =>
                         setStudent((prev) => ({ ...prev, cep: maskCep(e.target.value) }))
                       }
-                      placeholder="55660-000"
+                      placeholder="00000-000"
                       className={inputClass}
                     />
                   </div>
                 </div>
+                {!availableCities.includes(student.city) && (
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Nome da cidade (fora de Pernambuco)
+                    </label>
+                    <input
+                      value={student.city}
+                      onChange={(e) => setStudent((prev) => ({ ...prev, city: e.target.value }))}
+                      placeholder="Digite o nome do município"
+                      className={inputClass}
+                    />
+                  </div>
+                )}
+                <p className="text-xs text-slate-500">
+                  O CEP deve ser informado conforme a rua e o bairro. Muitos municípios têm vários CEPs; a cidade, sozinha, não determina um CEP único.
+                </p>
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
