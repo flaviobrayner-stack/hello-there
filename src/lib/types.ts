@@ -136,7 +136,6 @@ export interface StudentInfo {
   yearOfEntry?: string;
   uniformSize: "PP" | "P" | "M" | "G" | "GG" | "XG";
   receivesBolsaFamilia: boolean;
-  nisNumber?: string;
 
   // Filiação
   mother: ParentInfo;
