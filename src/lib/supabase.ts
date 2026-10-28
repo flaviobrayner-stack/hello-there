@@ -37,13 +37,87 @@ function storeSession(session: SupabaseSession | null) {
   else window.localStorage.removeItem(SESSION_KEY);
 }
 
+function readJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const part = token.split(".")[1];
+    if (!part) return null;
+    const normalized = part.replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "="))) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The custom REST client does not use supabase-js Auth, so it must refresh
+ * expired access tokens itself. Otherwise every data request starts returning
+ * HTTP 401 after the access token expires, while the UI still looks logged in.
+ */
+async function getValidAccessToken(token: string): Promise<string> {
+  const stored = getStoredSession();
+  if (!stored) return token;
+
+  const suppliedPayload = readJwtPayload(token);
+  const suppliedUserId = typeof suppliedPayload?.sub === "string" ? suppliedPayload.sub : "";
+  if (suppliedUserId && suppliedUserId !== stored.user.id) return token;
+
+  const storedPayload = readJwtPayload(stored.access_token);
+  const expiry = Number(stored.expires_at || storedPayload?.exp || 0);
+  if (stored.access_token !== token && expiry > Math.floor(Date.now() / 1000) + 60) {
+    return stored.access_token;
+  }
+  if (stored.access_token === token && expiry > Math.floor(Date.now() / 1000) + 60) {
+    return token;
+  }
+
+  if (!stored.refresh_token) {
+    storeSession(null);
+    throw new Error("Sua sessão expirou. Entre novamente no sistema para salvar a matrícula.");
+  }
+
+  const { url, key } = config();
+  let response: Response;
+  try {
+    response = await fetch(`${url}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: { apikey: key, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: stored.refresh_token }),
+    });
+  } catch {
+    throw new Error("Não foi possível renovar sua sessão. Verifique a conexão e tente novamente.");
+  }
+
+  const body = await response.text();
+  let data: Partial<SupabaseSession> & { expires_in?: number; msg?: string; message?: string; error_description?: string };
+  try {
+    data = body ? JSON.parse(body) : {};
+  } catch {
+    data = {};
+  }
+
+  if (!response.ok || !data.access_token || !data.refresh_token || !data.user?.id) {
+    storeSession(null);
+    throw new Error("Sua sessão expirou ou não pôde ser renovada. Entre novamente no sistema.");
+  }
+
+  const refreshed: SupabaseSession = {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: data.expires_at || Math.floor(Date.now() / 1000) + Number(data.expires_in || 3600),
+    user: { id: data.user.id, email: data.user.email },
+  };
+  storeSession(refreshed);
+  return refreshed.access_token;
+}
+
 async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
   const { url, key } = config();
+  const accessToken = token ? await getValidAccessToken(token) : undefined;
   const response = await fetch(`${url}${path}`, {
     ...options,
     headers: {
       apikey: key,
-      Authorization: `Bearer ${token || key}`,
+      Authorization: `Bearer ${accessToken || key}`,
       "Content-Type": "application/json",
       ...(options.headers || {}),
     },
@@ -194,11 +268,12 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     p_quota_type: student.isQuota ? quotaToDb[student.quotaType] : null,
     ...(isExistingEnrollment ? { p_enrollment_id: student.id } : {}),
   };
+  const accessToken = await getValidAccessToken(session.access_token);
   const response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/${rpc}`, {
     method: "POST",
     headers: {
       apikey: key,
-      Authorization: `Bearer ${session.access_token}`,
+      Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(args),
