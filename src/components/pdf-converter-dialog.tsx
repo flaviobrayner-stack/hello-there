@@ -269,12 +269,6 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                     1. Dados da Matrícula e do Curso
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <div className="border border-slate-200 rounded p-2 bg-white">
-                      <span className="block text-[9px] uppercase font-bold text-slate-400">
-                        Ano Letivo
-                      </span>
-                      <span className="font-semibold text-slate-900">2026</span>
-                    </div>
                     <div className="border border-slate-200 rounded p-2 bg-white col-span-2">
                       <span className="block text-[9px] uppercase font-bold text-slate-400">
                         Curso Técnico
@@ -366,6 +360,12 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                       <span className="font-semibold text-slate-900">
                         {enrollment.motherName || "Maria da Silva"}
                       </span>
+                      <div className="mt-1 text-[10px] text-slate-600">
+                        Endereço: {enrollment.motherAddress || enrollment.address || "Não Informado"}
+                      </div>
+                      <div className="text-[10px] text-slate-600">
+                        E-mail: {enrollment.motherEmail || "Não Informado"}
+                      </div>
                     </div>
                     <div className="border border-slate-200 rounded p-2 bg-white">
                       <span className="block text-[9px] uppercase font-bold text-slate-400">
@@ -374,6 +374,12 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                       <span className="font-semibold text-slate-900">
                         {enrollment.fatherName || "José da Silva"}
                       </span>
+                      <div className="mt-1 text-[10px] text-slate-600">
+                        Endereço: {enrollment.fatherAddress || enrollment.address || "Não Informado"}
+                      </div>
+                      <div className="text-[10px] text-slate-600">
+                        E-mail: {enrollment.fatherEmail || "Não Informado"}
+                      </div>
                     </div>
                     <div className="border border-blue-200 bg-blue-50/50 rounded p-2 col-span-2">
                       <div className="flex justify-between items-center mb-1">
