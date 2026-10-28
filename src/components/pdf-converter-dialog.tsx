@@ -84,7 +84,6 @@ SISTEMA DE MATRÍCULA 2026 - DOCUMENTO OFICIAL
 Protocolo: ${enrollment.id}
 Estudante: ${enrollment.name}
 Curso: ${enrollment.course}
-Ano Letivo: 2026
 Situação: ${enrollment.status}
 Cota: ${enrollment.quota}
 Documentos conferidos: ${enrollment.docs}
@@ -269,12 +268,6 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                     1. Dados da Matrícula e do Curso
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <div className="border border-slate-200 rounded p-2 bg-white">
-                      <span className="block text-[9px] uppercase font-bold text-slate-400">
-                        Ano Letivo
-                      </span>
-                      <span className="font-semibold text-slate-900">2026</span>
-                    </div>
                     <div className="border border-slate-200 rounded p-2 bg-white col-span-2">
                       <span className="block text-[9px] uppercase font-bold text-slate-400">
                         Curso Técnico
@@ -344,6 +337,14 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                     </div>
                     <div className="border border-slate-200 rounded p-2 bg-white">
                       <span className="block text-[9px] uppercase font-bold text-slate-400">
+                        Série/Ano anterior
+                      </span>
+                      <span className="font-semibold text-slate-900">
+                        {enrollment.previousClass || "Não Informado"}
+                      </span>
+                    </div>
+                    <div className="border border-slate-200 rounded p-2 bg-white">
+                      <span className="block text-[9px] uppercase font-bold text-slate-400">
                         Município / UF
                       </span>
                       <span className="font-semibold text-slate-900">
@@ -366,6 +367,12 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                       <span className="font-semibold text-slate-900">
                         {enrollment.motherName || "Maria da Silva"}
                       </span>
+                      <div className="mt-1 text-[10px] text-slate-600">
+                        Endereço: {enrollment.motherAddress || enrollment.address || "Não Informado"}
+                      </div>
+                      <div className="text-[10px] text-slate-600">
+                        E-mail: {enrollment.motherEmail || "Não Informado"}
+                      </div>
                     </div>
                     <div className="border border-slate-200 rounded p-2 bg-white">
                       <span className="block text-[9px] uppercase font-bold text-slate-400">
@@ -374,6 +381,12 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                       <span className="font-semibold text-slate-900">
                         {enrollment.fatherName || "José da Silva"}
                       </span>
+                      <div className="mt-1 text-[10px] text-slate-600">
+                        Endereço: {enrollment.fatherAddress || enrollment.address || "Não Informado"}
+                      </div>
+                      <div className="text-[10px] text-slate-600">
+                        E-mail: {enrollment.fatherEmail || "Não Informado"}
+                      </div>
                     </div>
                     <div className="border border-blue-200 bg-blue-50/50 rounded p-2 col-span-2">
                       <div className="flex justify-between items-center mb-1">
@@ -720,26 +733,25 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
 
             {/* Official Signatures Section (Always present on all official print documents) */}
             <div className="mt-8 pt-4 border-t border-slate-300">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-center text-[10px] text-slate-600">
-                <div>
-                  <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
-                    Assinatura do(a) Estudante
-                  </div>
-                  <p className="text-[9px] text-slate-500">{enrollment.name}</p>
+              <div className="max-w-md mx-auto text-center text-[10px] text-slate-600">
+                <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
+                  Assinatura do(a) responsável pela matrícula
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-6 text-center text-[10px] text-slate-600 mt-8">
                 <div>
                   <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
-                    Assinatura do(a) Responsável Legal
+                    Assinatura do(a) responsável legal
                   </div>
                   <p className="text-[9px] text-slate-500">
                     {enrollment.guardianName || "Responsável Legal"}
                   </p>
                 </div>
-                <div className="col-span-2 sm:col-span-1">
+                <div>
                   <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
-                    Secretaria Escolar / Matrícula
+                    Assinatura do(a) gestor(a) escolar
                   </div>
-                  <p className="text-[9px] text-slate-500">Carimbo e Assinatura</p>
+                  <p className="text-[9px] text-slate-500">Carimbo e assinatura</p>
                 </div>
               </div>
 

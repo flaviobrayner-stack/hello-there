@@ -202,8 +202,13 @@ export type EnrollmentData = {
   race?: string;
   motherName?: string;
   motherStatus?: string;
+  motherAddress?: string;
+  motherEmail?: string;
   fatherName?: string;
   fatherStatus?: string;
+  fatherAddress?: string;
+  fatherEmail?: string;
+  previousClass?: string;
   guardianName?: string;
   guardianRelation?: string;
   guardianCpf?: string;
@@ -242,8 +247,13 @@ export function studentToEnrollmentData(s: StudentInfo): EnrollmentData {
     race: s.race,
     motherName: s.mother.name || "Mãe do Estudante",
     motherStatus: s.mother.status,
+    motherAddress: s.mother.address || "",
+    motherEmail: s.mother.email || "",
     fatherName: s.father.name || "Pai do Estudante",
     fatherStatus: s.father.status,
+    fatherAddress: s.father.address || "",
+    fatherEmail: s.father.email || "",
+    previousClass: s.previousClass || "",
     guardianName: s.guardian.name || "Responsável Legal",
     guardianRelation: s.guardian.relationship,
     guardianCpf: s.guardian.cpf || "123.456.789-00",
