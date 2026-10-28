@@ -17,9 +17,9 @@ export type EnrollmentDocumentData = {
 const val = (value?: string) => value?.trim() || "Não Informado";
 const formatCpf = (value?: string) => {
   const raw = value?.trim() || "";
-  const digits = raw.replace(/\\D/g, "");
+  const digits = raw.replace(/\D/g, "");
   if (digits.length !== 11) return val(value);
-  return digits.replace(/^(\\d{3})(\\d{3})(\\d{3})(\\d{2})$/, "$1.$2.$3-$4");
+  return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
 };
 const yesNo = (value?: string) => value?.trim() || "Não Informado";
 const datePt = (value?: string) => {
