@@ -920,26 +920,12 @@ export function EnrollmentWizard({
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                      Turma Anterior
+Série/Ano anterior
                     </label>
                     <input
                       value={student.previousClass || ""}
                       onChange={(e) => setStudent((prev) => ({ ...prev, previousClass: e.target.value }))}
                       placeholder="Ex.: 9º ano B"
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                      Ano de Ingresso na Escola
-                    </label>
-                    <input
-                      type="number"
-                      min="1900"
-                      max="2100"
-                      value={student.yearOfEntry || ""}
-                      onChange={(e) => setStudent((prev) => ({ ...prev, yearOfEntry: e.target.value }))}
-                      placeholder="Ex.: 2026"
                       className={inputClass}
                     />
                   </div>
@@ -1040,6 +1026,37 @@ export function EnrollmentWizard({
                               }))
                             }
                             placeholder="(81) 98765-4321"
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                            Endereço da Mãe
+                          </label>
+                          <input
+                            value={student.mother.address}
+                            onChange={(e) => setStudent((prev) => ({
+                              ...prev,
+                              mother: { ...prev.mother, address: e.target.value },
+                            }))}
+                            placeholder="Endereço residencial da mãe"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                            E-mail da Mãe
+                          </label>
+                          <input
+                            type="email"
+                            value={student.mother.email}
+                            onChange={(e) => setStudent((prev) => ({
+                              ...prev,
+                              mother: { ...prev.mother, email: e.target.value },
+                            }))}
+                            placeholder="email@exemplo.com"
                             className={inputClass}
                           />
                         </div>
@@ -1154,6 +1171,37 @@ export function EnrollmentWizard({
                               }))
                             }
                             placeholder="(81) 98765-4321"
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                            Endereço do Pai
+                          </label>
+                          <input
+                            value={student.father.address}
+                            onChange={(e) => setStudent((prev) => ({
+                              ...prev,
+                              father: { ...prev.father, address: e.target.value },
+                            }))}
+                            placeholder="Endereço residencial do pai"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                            E-mail do Pai
+                          </label>
+                          <input
+                            type="email"
+                            value={student.father.email}
+                            onChange={(e) => setStudent((prev) => ({
+                              ...prev,
+                              father: { ...prev.father, email: e.target.value },
+                            }))}
+                            placeholder="email@exemplo.com"
                             className={inputClass}
                           />
                         </div>
