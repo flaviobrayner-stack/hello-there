@@ -640,7 +640,7 @@ function Index() {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
         <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 text-white"><LockKeyhole size={26} /></div>
+          <img src="/ete-logo.svg" alt="ETE Maria José Vasconcelos" className="mx-auto mb-4 h-20 w-20 rounded-xl object-contain" />
           <h1 className="text-center text-2xl font-bold text-slate-900">Defina sua senha</h1>
           <p className="mt-2 text-center text-sm text-slate-500">Crie uma senha para acessar o Sistema de Matrícula 2026.</p>
           <form className="mt-6 space-y-4" onSubmit={async (event) => {
@@ -671,7 +671,7 @@ function Index() {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
         <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-xl">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 text-white"><GraduationCap size={28} /></div>
+          <img src="/ete-logo.svg" alt="ETE Maria José Vasconcelos" className="mx-auto mb-4 h-24 w-24 rounded-xl object-contain" />
           <h1 className="text-center text-2xl font-bold text-slate-900">Sistema de Matrícula 2026</h1>
           <p className="mt-2 text-center text-sm text-slate-500">Entre com seu e-mail e senha cadastrados.</p>
           <form className="mt-6 space-y-4" onSubmit={async (event) => {
@@ -735,9 +735,7 @@ function Index() {
         }`}
       >
         <div className="flex h-[84px] items-center gap-3 border-b border-slate-100 px-6">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-700 text-white shadow-lg shadow-blue-700/20">
-            <GraduationCap size={24} />
-          </div>
+          <img src="/ete-logo.svg" alt="Logo ETE" className="h-12 w-12 shrink-0 rounded-lg object-contain" />
           <div>
             <p className="text-sm font-bold tracking-tight">
               Matrícula <span className="text-blue-700">2026</span>
@@ -835,8 +833,10 @@ function Index() {
         {/* Top Header */}
         <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md sm:px-7 lg:px-10">
           <div className="flex items-center gap-3">
+            <img src="/ete-logo.svg" alt="ETE Maria José Vasconcelos" className="hidden h-10 w-10 shrink-0 rounded-lg object-contain sm:block" />
+            <div className="hidden text-sm font-semibold text-blue-900 xl:block">ETE Maria José Vasconcelos</div>
             <button
-              onClick={() => setMobileMenu(true)}
+              onClick={() => setMobileMenu(true)
               className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
               aria-label="Abrir menu"
             >
