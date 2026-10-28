@@ -453,18 +453,8 @@ export function EnrollmentWizard({
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-1">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-                      Ano Letivo
-                    </label>
-                    <input
-                      value="2026"
-                      disabled
-                      className={`${inputClass} bg-slate-50 font-bold`}
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
                       Curso Técnico *
                     </label>
