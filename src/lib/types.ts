@@ -113,6 +113,7 @@ export interface StudentInfo {
   cpf: string;
   rg: string;
   rgIssuer: string;
+  nisNumber?: string | undefined;
   birthDate: string; // YYYY-MM-DD
   age: number;
   placeOfBirth: string;
