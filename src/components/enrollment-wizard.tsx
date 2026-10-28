@@ -909,7 +909,7 @@ export function EnrollmentWizard({
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
-Série/Ano anterior
+Série/Ano Anterior
                     </label>
                     <input
                       value={student.previousClass || ""}
