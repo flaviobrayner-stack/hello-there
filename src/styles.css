@@ -263,3 +263,8 @@
     margin-top: 0 !important;
   }
 }
+
+/* Oculta o selo de identificação do Lovable */
+#lovable-badge {
+  display: none !important;
+}
