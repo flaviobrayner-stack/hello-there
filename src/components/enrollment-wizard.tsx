@@ -298,6 +298,20 @@ export function EnrollmentWizard({
       setNotification(`Não é possível concluir. Campos pendentes: ${missingFields.join(", ")}`);
       return;
     }
+    const incompleteParentCpfs = [
+      { label: "CPF da Mãe", value: student.mother?.cpf },
+      { label: "CPF do Pai", value: student.father?.cpf },
+      { label: "CPF do Responsável Legal", value: student.guardian?.cpf },
+    ].filter(({ value }) => {
+      const digits = String(value || "").replace(/\\D/g, "");
+      return digits.length > 0 && digits.length !== 11;
+    });
+    if (incompleteParentCpfs.length > 0) {
+      setNotification(
+        `${incompleteParentCpfs.map(({ label }) => label).join(", ")}: informe os 11 números do CPF ou deixe o campo em branco.`,
+      );
+      return;
+    }
     savingRef.current = true;
     setSaving(true);
     try {
