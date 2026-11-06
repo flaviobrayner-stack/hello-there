@@ -614,7 +614,7 @@ export function EnrollmentWizard({
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-3">
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
                       Sexo
@@ -627,6 +627,24 @@ export function EnrollmentWizard({
                       <option value="">Selecione</option>
                       <option value="Masculino">Masculino</option>
                       <option value="Feminino">Feminino</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Estado Civil
+                    </label>
+                    <select
+                      value={student.maritalStatus || ""}
+                      onChange={(e) => setStudent((prev) => ({ ...prev, maritalStatus: e.target.value }))}
+                      className={inputClass}
+                    >
+                      <option value="">Selecione</option>
+                      <option value="Solteiro(a)">Solteiro(a)</option>
+                      <option value="Casado(a)">Casado(a)</option>
+                      <option value="União estável">União estável</option>
+                      <option value="Divorciado(a)">Divorciado(a)</option>
+                      <option value="Viúvo(a)">Viúvo(a)</option>
+                      <option value="Não informado">Não informado</option>
                     </select>
                   </div>
                   <div>
