@@ -623,6 +623,14 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                   </div>
                   <div className="border border-slate-200 rounded p-3 bg-white col-span-2">
                     <span className="block text-[9px] uppercase font-bold text-slate-400">
+                      Endereço do Responsável Legal
+                    </span>
+                    <p className="font-semibold text-slate-800 mt-1">
+                      {enrollment.guardianAddress || "Não informado"}
+                    </p>
+                  </div>
+                  <div className="border border-slate-200 rounded p-3 bg-white col-span-2">
+                    <span className="block text-[9px] uppercase font-bold text-slate-400">
                       Contatos Autorizados para Emergência Médica
                     </span>
                     <p className="font-semibold text-slate-800 mt-1">
