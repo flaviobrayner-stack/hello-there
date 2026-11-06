@@ -453,7 +453,7 @@ export function EnrollmentWizard({
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-1">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
                       Curso Técnico *
@@ -471,6 +471,23 @@ export function EnrollmentWizard({
                           </option>
                         ))}
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                      Ano de ingresso na escola
+                    </label>
+                    <input
+                      type="number"
+                      min="1900"
+                      max="2100"
+                      step="1"
+                      value={student.yearOfEntry || ""}
+                      onChange={(e) =>
+                        setStudent((prev) => ({ ...prev, yearOfEntry: e.target.value }))
+                      }
+                      placeholder="Ex.: 2026"
+                      className={inputClass}
+                    />
                   </div>
                 </div>
 
