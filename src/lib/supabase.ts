@@ -251,8 +251,18 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     }
     return value;
   };
-  const payload = normalizeDateValues({
+  const normalizeParentCpf = <T extends { cpf?: string }>(parent: T): T => ({
+    ...parent,
+    cpf: String(parent.cpf || "").replace(/\\D/g, ""),
+  });
+  const normalizedStudent = {
     ...student,
+    mother: normalizeParentCpf(student.mother),
+    father: normalizeParentCpf(student.father),
+    guardian: normalizeParentCpf(student.guardian),
+  };
+  const payload = normalizeDateValues({
+    ...normalizedStudent,
     documents: student.documents.map((doc) => ({
       ...doc,
       status: doc.status === "Entregue" || doc.status === "Conferido" ? "Entregue" : "Pendente",
