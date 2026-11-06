@@ -251,6 +251,20 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     }
     return value;
   };
+  const parentCpfFields = [
+    { label: "CPF da Mãe", value: student.mother?.cpf },
+    { label: "CPF do Pai", value: student.father?.cpf },
+    { label: "CPF do Responsável Legal", value: student.guardian?.cpf },
+  ];
+  const invalidParentCpfs = parentCpfFields.filter(({ value }) => {
+    const digits = String(value || "").replace(/\\D/g, "");
+    return digits.length > 0 && digits.length !== 11;
+  });
+  if (invalidParentCpfs.length > 0) {
+    throw new Error(
+      `${invalidParentCpfs.map(({ label }) => label).join(", ")} deve conter 11 números ou ficar em branco.`,
+    );
+  }
   const normalizeParentCpf = <T extends { cpf?: string }>(parent: T): T => ({
     ...parent,
     cpf: String(parent.cpf || "").replace(/\\D/g, ""),
