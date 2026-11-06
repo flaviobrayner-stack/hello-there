@@ -25,6 +25,7 @@ type DocType = "ficha" | "comprovante" | "saude" | "termo" | "documentacao";
 export function PdfConverterDialog({ isOpen, onClose, enrollment }: PdfConverterDialogProps) {
   const [docType, setDocType] = useState<DocType>("ficha");
   const [copied, setCopied] = useState(false);
+  const isLandscapeDocument = docType === "comprovante" || docType === "documentacao";
   const currentEnrollmentDate = new Intl.DateTimeFormat("pt-BR", {
     day: "numeric",
     month: "long",
@@ -49,7 +50,9 @@ export function PdfConverterDialog({ isOpen, onClose, enrollment }: PdfConverter
   <meta charset="utf-8">
   <title>${enrollment.id} - ${enrollment.name} - ${docType.toUpperCase()}</title>
   <style>
-    @page { size: A4 ${docType === "comprovante" || docType === "documentacao" ? "landscape" : "portrait"}; margin: 12mm 15mm; }
+    @page { size: A4 ${isLandscapeDocument ? "landscape" : "portrait"}; margin: 12mm 15mm; }
+    @page landscape-document { size: A4 landscape; margin: 10mm; }
+    .print-landscape { page: landscape-document; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #0f172a; margin: 0; padding: 20px; font-size: 11pt; line-height: 1.4; }
     .header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 16px; }
     .header h1 { font-size: 14pt; margin: 0; color: #1e3a8a; font-weight: bold; text-transform: uppercase; }
