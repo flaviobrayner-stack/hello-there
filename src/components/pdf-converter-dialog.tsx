@@ -112,9 +112,10 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
         <style>{`
           @media print {
             @page {
-              size: A4 ${docType === "comprovante" || docType === "documentacao" ? "landscape" : "portrait"};
+              size: A4 ${isLandscapeDocument ? "landscape" : "portrait"};
               margin: 10mm;
             }
+            @page landscape-document { size: A4 landscape; margin: 10mm; }
             html, body {
               width: 100% !important;
               margin: 0 !important;
@@ -127,12 +128,16 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
               position: absolute !important;
               left: 0 !important;
               top: 0 !important;
-              width: ${docType === "comprovante" || docType === "documentacao" ? "277mm" : "190mm"} !important;
+              width: ${isLandscapeDocument ? "277mm" : "190mm"} !important;
               max-width: none !important;
               margin: 0 !important;
               padding: 0 !important;
               border: 0 !important;
               box-shadow: none !important;
+            }
+            #printable-pdf-document.print-landscape {
+              page: landscape-document !important;
+              width: 277mm !important;
             }
             .print-signature-gap {
               margin-top: 5cm !important;
