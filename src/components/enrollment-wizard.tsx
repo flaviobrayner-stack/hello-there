@@ -1404,6 +1404,23 @@ Série/Ano Anterior
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
+                    Endereço do Responsável Legal *
+                  </label>
+                  <input
+                    value={student.guardian.address}
+                    onChange={(e) =>
+                      setStudent((prev) => ({
+                        ...prev,
+                        guardian: { ...prev.guardian, address: e.target.value, isSameAddressAsStudent: false },
+                      }))
+                    }
+                    placeholder="Rua, número, complemento, bairro e cidade"
+                    className={inputClass}
+                  />
+                </div>
+
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1.5">
