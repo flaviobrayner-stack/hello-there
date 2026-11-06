@@ -49,7 +49,7 @@ export function PdfConverterDialog({ isOpen, onClose, enrollment }: PdfConverter
   <meta charset="utf-8">
   <title>${enrollment.id} - ${enrollment.name} - ${docType.toUpperCase()}</title>
   <style>
-    @page { size: A4; margin: 12mm 15mm; }
+    @page { size: A4 ${docType === "comprovante" || docType === "documentacao" ? "landscape" : "portrait"}; margin: 12mm 15mm; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #0f172a; margin: 0; padding: 20px; font-size: 11pt; line-height: 1.4; }
     .header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 16px; }
     .header h1 { font-size: 14pt; margin: 0; color: #1e3a8a; font-weight: bold; text-transform: uppercase; }
@@ -106,7 +106,38 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 overflow-y-auto">
       <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
-        {/* Header Actions (do not print) */}
+        <style>{`
+          @media print {
+            @page {
+              size: A4 ${docType === "comprovante" || docType === "documentacao" ? "landscape" : "portrait"};
+              margin: 10mm;
+            }
+            html, body {
+              width: 100% !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #fff !important;
+            }
+            body * { visibility: hidden; }
+            #printable-pdf-document, #printable-pdf-document * { visibility: visible; }
+            #printable-pdf-document {
+              position: absolute !important;
+              left: 0 !important;
+              top: 0 !important;
+              width: ${docType === "comprovante" || docType === "documentacao" ? "277mm" : "190mm"} !important;
+              max-width: none !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              border: 0 !important;
+              box-shadow: none !important;
+            }
+            .print-signature-spacing {
+              margin-top: 4cm !important;
+            }
+          }
+        `}</style>
+
+        {/* Header Actions (do not print) */
         <div className="no-print flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-700 text-white shadow-md shadow-blue-700/20">
@@ -758,14 +789,14 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
               </div>
             )}
 
-            {docType === "ficha" && (
-              <div className="mt-6 mb-8 text-center text-xs font-semibold text-slate-800">
+            {(docType === "ficha" || docType === "comprovante" || docType === "documentacao") && (
+              <div className={`text-center text-xs font-semibold text-slate-800 ${docType === "ficha" ? "mt-6 mb-8" : "mt-6 mb-0"}`}>
                 Bezerros, {currentEnrollmentDate}
               </div>
             )}
 
             {/* Official Signatures Section (Always present on all official print documents) */}
-            <div className="mt-8 pt-4 border-t border-slate-300">
+            <div className={`mt-8 pt-4 border-t border-slate-300 ${docType === "comprovante" || docType === "documentacao" ? "print-signature-spacing" : ""}`}>
               <div className="max-w-md mx-auto text-center text-[10px] text-slate-600">
                 <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
                   Assinatura do(a) responsável pela matrícula
