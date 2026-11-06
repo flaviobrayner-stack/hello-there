@@ -54,6 +54,7 @@ export interface ParentInfo {
   cpf: string;
   rg: string;
   rgIssuer: string;
+  maritalStatus: string;
   phone: string;
   address: string;
   email: string;
@@ -202,10 +203,12 @@ export type EnrollmentData = {
   race?: string;
   motherName?: string;
   motherStatus?: string;
+  motherMaritalStatus?: string;
   motherAddress?: string;
   motherEmail?: string;
   fatherName?: string;
   fatherStatus?: string;
+  fatherMaritalStatus?: string;
   fatherAddress?: string;
   fatherEmail?: string;
   previousClass?: string;
@@ -247,10 +250,12 @@ export function studentToEnrollmentData(s: StudentInfo): EnrollmentData {
     race: s.race,
     motherName: s.mother.name || "Mãe do Estudante",
     motherStatus: s.mother.status,
+    motherMaritalStatus: s.mother.maritalStatus || "Não informado",
     motherAddress: s.mother.address || "",
     motherEmail: s.mother.email || "",
     fatherName: s.father.name || "Pai do Estudante",
     fatherStatus: s.father.status,
+    fatherMaritalStatus: s.father.maritalStatus || "Não informado",
     fatherAddress: s.father.address || "",
     fatherEmail: s.father.email || "",
     previousClass: s.previousClass || "",
