@@ -123,6 +123,7 @@ export function EnrollmentWizard({
         cpf: "",
         rg: "",
         rgIssuer: "SDS/PE",
+        maritalStatus: "",
         phone: "",
         address: "",
         email: "",
@@ -136,6 +137,7 @@ export function EnrollmentWizard({
         cpf: "",
         rg: "",
         rgIssuer: "SDS/PE",
+        maritalStatus: "",
         phone: "",
         address: "",
         email: "",
@@ -1054,6 +1056,27 @@ Série/Ano Anterior
                           />
                         </div>
                       </div>
+                      <div>
+                        <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                          Estado Civil da Mãe
+                        </label>
+                        <select
+                          value={student.mother.maritalStatus || ""}
+                          onChange={(e) => setStudent((prev) => ({
+                            ...prev,
+                            mother: { ...prev.mother, maritalStatus: e.target.value },
+                          }))}
+                          className={inputClass}
+                        >
+                          <option value="">Selecione</option>
+                          <option value="Solteira">Solteira</option>
+                          <option value="Casada">Casada</option>
+                          <option value="União estável">União estável</option>
+                          <option value="Divorciada">Divorciada</option>
+                          <option value="Viúva">Viúva</option>
+                          <option value="Não informado">Não informado</option>
+                        </select>
+                      </div>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div>
                           <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
@@ -1198,6 +1221,27 @@ Série/Ano Anterior
                             className={inputClass}
                           />
                         </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                          Estado Civil do Pai
+                        </label>
+                        <select
+                          value={student.father.maritalStatus || ""}
+                          onChange={(e) => setStudent((prev) => ({
+                            ...prev,
+                            father: { ...prev.father, maritalStatus: e.target.value },
+                          }))}
+                          className={inputClass}
+                        >
+                          <option value="">Selecione</option>
+                          <option value="Solteiro">Solteiro</option>
+                          <option value="Casado">Casado</option>
+                          <option value="União estável">União estável</option>
+                          <option value="Divorciado">Divorciado</option>
+                          <option value="Viúvo">Viúvo</option>
+                          <option value="Não informado">Não informado</option>
+                        </select>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div>
