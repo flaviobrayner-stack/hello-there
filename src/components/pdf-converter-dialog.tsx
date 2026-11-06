@@ -131,7 +131,7 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
               border: 0 !important;
               box-shadow: none !important;
             }
-            .print-signature-spacing {
+            .print-signature-gap {
               margin-top: 4cm !important;
             }
           }
@@ -796,9 +796,9 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
             )}
 
             {/* Official Signatures Section (Always present on all official print documents) */}
-            <div className={`mt-8 pt-4 border-t border-slate-300 ${docType === "comprovante" || docType === "documentacao" ? "print-signature-spacing" : ""}`}>
+            <div className="mt-8 pt-4 border-t border-slate-300">
               <div className="max-w-md mx-auto text-center text-[10px] text-slate-600">
-                <div className="border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900">
+                <div className={`border-t border-slate-800 pt-1.5 mt-8 font-semibold text-slate-900 ${docType === "comprovante" || docType === "documentacao" ? "print-signature-gap" : ""}`}>
                   Assinatura do(a) responsável pela matrícula
                 </div>
               </div>
