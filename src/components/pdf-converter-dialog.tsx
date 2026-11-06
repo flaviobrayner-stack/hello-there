@@ -25,6 +25,12 @@ type DocType = "ficha" | "comprovante" | "saude" | "termo" | "documentacao";
 export function PdfConverterDialog({ isOpen, onClose, enrollment }: PdfConverterDialogProps) {
   const [docType, setDocType] = useState<DocType>("ficha");
   const [copied, setCopied] = useState(false);
+  const currentEnrollmentDate = new Intl.DateTimeFormat("pt-BR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "America/Recife",
+  }).format(new Date());
 
   if (!isOpen) return null;
 
@@ -741,6 +747,12 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+
+            {docType === "ficha" && (
+              <div className="mt-6 mb-8 text-center text-xs font-semibold text-slate-800">
+                Bezerros, {currentEnrollmentDate}
               </div>
             )}
 
