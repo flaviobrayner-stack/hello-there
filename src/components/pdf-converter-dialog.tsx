@@ -368,6 +368,7 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
                         {enrollment.motherName || "Maria da Silva"}
                       </span>
                       <div className="mt-1 text-[10px] text-slate-600">
+                        Estado civil: {enrollment.motherMaritalStatus || "Não Informado"}
                         Endereço: {enrollment.motherAddress || enrollment.address || "Não Informado"}
                       </div>
                       <div className="text-[10px] text-slate-600">
