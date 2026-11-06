@@ -216,6 +216,7 @@ export type EnrollmentData = {
   guardianRelation?: string;
   guardianCpf?: string;
   guardianPhone?: string;
+  guardianAddress?: string;
   address?: string;
   city?: string;
   cep?: string;
@@ -263,6 +264,7 @@ export function studentToEnrollmentData(s: StudentInfo): EnrollmentData {
     guardianRelation: s.guardian.relationship,
     guardianCpf: s.guardian.cpf || "123.456.789-00",
     guardianPhone: s.guardian.phone || "(81) 98765-4321",
+    guardianAddress: s.guardian.address || "",
     address: s.address || "Rua Principal, 123",
     city: s.city || "Bezerros",
     cep: s.cep || "55660-000",
