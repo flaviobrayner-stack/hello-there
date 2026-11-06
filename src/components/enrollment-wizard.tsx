@@ -303,7 +303,7 @@ export function EnrollmentWizard({
       { label: "CPF do Pai", value: student.father?.cpf },
       { label: "CPF do Responsável Legal", value: student.guardian?.cpf },
     ].filter(({ value }) => {
-      const digits = String(value || "").replace(/\\D/g, "");
+      const digits = String(value || "").replace(/\D/g, "");
       return digits.length > 0 && digits.length !== 11;
     });
     if (incompleteParentCpfs.length > 0) {
