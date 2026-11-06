@@ -257,7 +257,7 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
     { label: "CPF do Responsável Legal", value: student.guardian?.cpf },
   ];
   const invalidParentCpfs = parentCpfFields.filter(({ value }) => {
-    const digits = String(value || "").replace(/\\D/g, "");
+    const digits = String(value || "").replace(/\D/g, "");
     return digits.length > 0 && digits.length !== 11;
   });
   if (invalidParentCpfs.length > 0) {
@@ -267,7 +267,7 @@ export async function saveEnrollment(session: SupabaseSession, student: StudentI
   }
   const normalizeParentCpf = <T extends { cpf?: string }>(parent: T): T => ({
     ...parent,
-    cpf: String(parent.cpf || "").replace(/\\D/g, ""),
+    cpf: String(parent.cpf || "").replace(/\D/g, ""),
   });
   const normalizedStudent = {
     ...student,
