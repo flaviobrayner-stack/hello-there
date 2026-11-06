@@ -250,7 +250,7 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
         <div className="flex-1 overflow-y-auto p-6 bg-slate-100 print:bg-white print:p-0">
           <div
             id="printable-pdf-document"
-            className="print-page mx-auto max-w-[210mm] bg-white p-8 sm:p-10 shadow-sm border border-slate-200 print:border-none print:shadow-none print:p-0 text-slate-900"
+            className={`print-page mx-auto max-w-[210mm] bg-white p-8 sm:p-10 shadow-sm border border-slate-200 print:border-none print:shadow-none print:p-0 text-slate-900 ${isLandscapeDocument ? "print-landscape" : ""}`}
           >
             {/* Official Header */}
             <div className="text-center border-b-2 border-blue-900 pb-3 mb-4">
