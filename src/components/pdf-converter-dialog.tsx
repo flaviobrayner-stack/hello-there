@@ -132,7 +132,7 @@ Endereço: ${enrollment.address || "Rua Principal, 123, Centro"} - ${enrollment.
               box-shadow: none !important;
             }
             .print-signature-gap {
-              margin-top: 4cm !important;
+              margin-top: 5cm !important;
             }
           }
         `}</style>
